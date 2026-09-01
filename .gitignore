@@ -1,0 +1,7 @@
+# 本地备份目录（非站点内容，不部署）
+_upgrade/
+
+# 系统/编辑器杂项
+.DS_Store
+Thumbs.db
+*.log
