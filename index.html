@@ -2,9 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <title>王者荣耀 S44 英雄攻略总集 · 全英雄</title>
 <meta name="description" content="王者荣耀 S44 赛季全英雄攻略总集：按分路归类，含版本调整、梯度、出装铭文与克制关系，数据驱动、可实时更新。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="S44 攻略总集">
+<meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
 <script>
 (function(){try{var t=localStorage.getItem('wzry-theme');if(!t){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
@@ -33,7 +38,8 @@
   html{scroll-behavior:smooth;}
   body{margin:0;background:var(--paper);color:var(--ink);
     font-family:var(--font-sans);line-height:1.7;font-size:15px;
-    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s;}
+    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s;
+    -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
   /* 极淡荷塘纹理：仅顶部月光晕染，绝不喧宾夺主 */
   body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -46,7 +52,8 @@
 
   /* 应用栏：顶栏 + 工具栏合并为一条连贯的 sticky 栏（消除双阴影接缝） */
   .appbar{position:sticky;top:0;z-index:40;background:rgba(247,248,244,.82);
-    backdrop-filter:blur(14px) saturate(1.1);border-bottom:1px solid var(--line);transition:background .3s,border-color .3s;}
+    backdrop-filter:blur(14px) saturate(1.1);border-bottom:1px solid var(--line);transition:background .3s,border-color .3s;
+    padding-top:env(safe-area-inset-top);}
   .topbar{background:transparent;}
   .topbar .inner{max-width:1120px;margin:0 auto;padding:13px 24px;
     display:flex;align-items:center;gap:11px;}
@@ -249,6 +256,12 @@
   .changelog .cl-src b{color:var(--ink);}
   .changelog .cl-log{margin:8px 2px 14px;padding-left:20px;font-size:12.5px;color:var(--ink-soft);line-height:1.85;}
   .changelog .cl-log li{margin:3px 0;}
+  /* What's New：版本新增特性（醒目卡片） */
+  .cl-new{margin:6px 2px 14px;padding:12px 15px;border-radius:11px;background:rgba(110,139,123,.10);
+    border:1px solid var(--celadon-soft);border-left:3px solid var(--celadon-deep);}
+  .cl-new .t{display:block;font-size:13px;font-weight:700;color:var(--celadon-deep);margin-bottom:6px;letter-spacing:.02em;}
+  .cl-new ul{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-soft);line-height:1.8;}
+  .cl-new li{margin:2px 0;}
 
   /* ============ 暗色「月色」模式 ============ */
   [data-theme="dark"]{
@@ -311,6 +324,8 @@
   [data-theme="dark"] .match-row .ml.bad{color:var(--cinnabar);}
   [data-theme="dark"] .changelog{background:var(--card);}
   [data-theme="dark"] .changelog summary{color:var(--ink);}
+  [data-theme="dark"] .cl-new{background:rgba(132,165,148,.12);border-color:var(--celadon-soft);}
+  [data-theme="dark"] .cl-new .t{color:var(--celadon);}
   /* 暗色梯度徽标：半透明淡染 + 月白文字 */
   [data-theme="dark"] .t-T0{background:rgba(217,116,94,.20);color:#E89B8C;}
   [data-theme="dark"] .t-T05{background:rgba(203,168,103,.20);color:#DBBC7E;}
@@ -320,17 +335,50 @@
   [data-theme="dark"] .t-dash{background:rgba(255,255,255,.06);color:#9DA6A0;}
 
   @media(max-width:640px){
-    .wrap{padding:0 16px 80px;}
-    .hero h1{font-size:38px;}
-    .hero-card{padding:32px 24px 34px;}
-    .hero-art{width:118px;right:14px;bottom:12px;}
-    .toolbar .row{gap:10px;}
+    .wrap{padding:0 14px calc(64px + env(safe-area-inset-bottom));}
+    .topbar .inner{padding:11px 14px;gap:9px;}
+    .brand{font-size:13.5px;gap:8px;}
+    .hero{padding:26px 0 18px;}
+    .hero h1{font-size:32px;}
+    .hero-card{padding:26px 20px 28px;border-radius:16px;}
+    .hero-art{width:100px;right:8px;bottom:6px;opacity:.18;}
+    .hero .sub{font-size:14px;}
+    .toolbar{padding:8px 2px 10px;}
+    .toolbar .row{gap:9px;}
+    /* 触控目标加大（iOS HIG 建议 ≥ 40px） */
+    .seg .tab,.tier-btn,.toggle-pill{min-height:37px;padding:7px 14px;font-size:13.5px;}
+    .toggle-pill{padding:7px 14px;}
     /* 移动端：分路 / 梯度胶囊改为横向滚动，避免堆叠过高 */
     .seg,.tiers{max-width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
     .seg::-webkit-scrollbar,.tiers::-webkit-scrollbar{display:none;}
-    .count{margin-left:0;width:100%;}
+    .count{margin-left:0;width:100%;order:6;}
+    /* 搜索框独占一行 + 字号 16px（避免 iOS 输入聚焦时自动放大） */
+    .search-wrap{flex-basis:100%;width:100%;min-width:0;order:5;}
+    .search{font-size:16px;padding:10px 14px 10px 38px;}
+    /* 卡片双列，提升扫读效率 */
+    .grid,.grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;}
+    .card{padding:13px 13px;border-radius:13px;}
+    .card .nm{font-size:14.5px;}
+    .ava{width:34px;height:34px;border-radius:10px;}
+    .compact .card .ava{width:30px;height:30px;}
+    .tags{margin-top:9px;gap:5px;}
+    .tag{font-size:10.5px;padding:2px 8px;}
+    .tier{font-size:10.5px;padding:2px 7px;}
+    .vt{font-size:10px;padding:1px 6px;}
+    /* 弹窗安全区适配 */
+    .modal{padding:calc(18px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));}
+    .modal-box{padding:22px 18px;border-radius:16px;max-height:90vh;}
+    .modal-box h2{font-size:20px;gap:11px;}
+    .modal-box h2 .ava-lg{width:46px;height:46px;}
+    .modal-close{width:36px;height:36px;font-size:22px;top:14px;right:14px;}
     .modal-box .m-body .counter{grid-template-columns:1fr;}
-    .modal-box{padding:24px 20px;}
+    .cchip{min-height:32px;padding:3px 12px;}
+    .foot{font-size:11.5px;}
+  }
+  @media(max-width:380px){
+    .hero h1{font-size:28px;}
+    .card .nm{font-size:13.5px;}
+    .ava{width:30px;height:30px;}
   }
   @media(prefers-reduced-motion:reduce){
     .card{animation:none;opacity:1;transform:none;}
@@ -471,9 +519,9 @@
 
   // 头部信息（无重复：总数只在顶栏、版本只在顶栏/页脚；无版本号时不留空尾）
   var metaStr = '全 ' + HEROES.length + ' 名';
-  if(META.version) metaStr += ' · 更新 ' + META.version;
+  if(META.version) metaStr += ' · v' + META.version;
   document.getElementById('topMeta').textContent = metaStr;
-  document.getElementById('footVer').textContent = META.version ? ('· 更新 ' + META.version) : '';
+  document.getElementById('footVer').textContent = META.version ? ('· v' + META.version) : '';
   var badges = document.getElementById('metaBadges');
   var btexts = [];
   if(META.season) btexts.push('赛季：'+META.season);
@@ -482,8 +530,12 @@
   badges.innerHTML = btexts.map(function(b){return '<span class="chip">'+b+'</span>';}).join('');
   // 更新记录 / 数据说明（原生 details 折叠，无需额外 JS）
   var mp = document.getElementById('metaPanel');
-  if(mp && META && (META.updateLog || META.source || META.note)){
-    var mh = '<details class="changelog"><summary>更新记录 · 数据说明</summary>';
+  if(mp && META && (META.updateLog || META.source || META.note || META.whatsNew)){
+    var mh = '<details class="changelog" open><summary>更新记录 · 数据说明'+(META.version?('（v'+esc(META.version)+'）'):'')+'</summary>';
+    if(META.whatsNew && META.whatsNew.length){
+      mh += '<div class="cl-new"><span class="t">新版本 v'+esc(META.version||'')+' 新增特性</span><ul>'
+          + META.whatsNew.map(function(n){return '<li>'+esc(n)+'</li>';}).join('') + '</ul></div>';
+    }
     if(META.note) mh += '<p class="cl-note">'+esc(META.note)+'</p>';
     if(META.source) mh += '<p class="cl-src"><b>数据来源：</b>'+esc(META.source)+'</p>';
     if(META.season) mh += '<p class="cl-src"><b>赛季：</b>'+esc(META.season)+(META.seasonStart?('（'+esc(META.seasonStart)+' 开启）'):'')+'</p>';
