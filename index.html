@@ -652,7 +652,8 @@
   <div class="modal-box">
     <div class="m-head">
       <div class="m-head-actions">
-        <button class="m-share" id="mShare" title="分享 / 导出 PDF">⤴</button>
+        <button class="m-share" id="mShare" title="分享链接">⤴</button>
+        <button class="m-share" id="mPdf" title="导出 PDF">⤓</button>
         <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
       </div>
       <h2 id="mTitle"></h2>
@@ -684,6 +685,7 @@
 <script>
 (function(){
   var META = window.GUIDE_META || {};
+  var currentHero = null;   // 当前打开的英雄对象（用于分享深链 #hero-<id>）
   var HEROES = window.HEROES || [];
   var ROLE_LABEL = {top:'对抗路', jungle:'打野', mid:'中路', adc:'发育路', support:'游走'};
   var ROLE_ORDER = ['top','jungle','mid','adc','support'];
@@ -1088,6 +1090,7 @@
   }
 
   function openModal(h){
+    currentHero = h;
     var ch = (h.name||'?').charAt(0);
     var av = h.avatar ? '<img class="ava ava-lg" alt="" loading="lazy" src="'+h.avatar+'" onerror="avaFail(this,\''+ch+'\')">' : '<span class="ava ava-lg ava-fallback">'+ch+'</span>';
     document.getElementById('mTitle').innerHTML = av + '<span class="m-t">'+h.name+'</span>';
@@ -1177,50 +1180,54 @@
       p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
     });
   }
+  // ===== 分享：即时深链 + 系统面板 / 复制链接兜底 =====
+  // 关键路径不再跑 html2canvas（手机上慢且易失败 -> 沙漏/无法分享），改为分享直达该英雄的链接
   function shareHero(){
     var btn = document.getElementById('mShare');
     var original = btn.textContent;
-    btn.disabled = true; btn.textContent = '⏳';
     var name = (document.getElementById('mTitle').textContent || '英雄').replace(/\s+/g,'') || '英雄';
     var meta = document.getElementById('mMeta').textContent || '';
-    var bodyEl = document.getElementById('mBody');
     var title = name + ' 攻略';
     var text = '王者荣耀 S44 攻略 · ' + (meta || '');
+    var link = location.origin + location.pathname + (currentHero && currentHero.id ? '#hero-' + currentHero.id : '');
     function reset(){ btn.disabled = false; btn.textContent = original; }
-    function toPdf(){
-      return renderBodyToPdf(bodyEl, name).then(function(blob){
-        downloadBlob(blob, name + '-攻略.pdf');
-        return blob;
-      });
+    function fallbackCopy(t){
+      try{ var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly','');
+        ta.style.position='fixed'; ta.style.top='-9999px'; document.body.appendChild(ta);
+        ta.select(); ta.setSelectionRange(0, t.length); document.execCommand('copy'); document.body.removeChild(ta); }catch(e){}
+    }
+    function copyLink(){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(link)
+          .then(function(){ reset(); toast('链接已复制，去微信粘贴即可'); })
+          .catch(function(){ fallbackCopy(link); reset(); toast('链接已复制，去微信粘贴即可'); });
+      } else {
+        fallbackCopy(link); reset(); toast('链接已复制，去微信粘贴即可');
+      }
     }
     if(navigator.share){
-      withTimeout(renderBodyToPdf(bodyEl, name), 12000).then(function(blob){
-        var file = new File([blob], name + '-攻略.pdf', { type:'application/pdf' });
-        if(navigator.canShare && navigator.canShare({ files:[file] })){
-          return navigator.share({ files:[file], title:title, text:text }).catch(function(e){ if(e && e.name==='AbortError') return 'cancel'; throw e; });
-        }
-        return navigator.share({ title:title, text:text, url:location.href }).catch(function(e){ if(e && e.name==='AbortError') return 'cancel'; throw e; });
-      }).then(function(r){
-        if(r === 'cancel'){ reset(); return; }
-        reset(); toast('已唤起分享，选「微信 / 文件」即可发送');
-      }).catch(function(){
-        // PDF 生成失败/超时 -> 退化分享链接（仍弹出系统面板，有反应）
-        if(navigator.share){
-          navigator.share({ title:title, text:text, url:location.href })
-            .then(function(){ reset(); toast('已分享攻略链接'); })
-            .catch(function(){ reset(); toast('分享未完成，可长按截图保存'); });
-        } else {
-          reset(); toast('当前环境暂不支持导出，请长按截图保存');
-        }
-      });
+      try{
+        navigator.share({ title:title, text:text, url:link })
+          .then(function(){ reset(); toast('已唤起分享面板'); })
+          .catch(function(e){ if(e && e.name==='AbortError'){ reset(); return; } copyLink(); });
+      }catch(err){ copyLink(); }
     } else {
-      // 桌面：优先生成 PDF 下载；库异常/超时则退回浏览器打印（可存为 PDF）
-      withTimeout(renderBodyToPdf(bodyEl, name), 12000)
-        .then(function(blob){ downloadBlob(blob, name + '-攻略.pdf'); reset(); toast('已下载 PDF，可直接发给微信'); })
-        .catch(function(){ reset(); window.print(); });
+      copyLink();
     }
   }
+  // 导出 PDF（独立按钮，不阻塞分享；生成慢/失败只提示，不影响分享）
+  function exportPdf(){
+    var btn = document.getElementById('mPdf');
+    var original = btn.textContent;
+    var name = (document.getElementById('mTitle').textContent || '英雄').replace(/\s+/g,'') || '英雄';
+    var bodyEl = document.getElementById('mBody');
+    btn.disabled = true; btn.textContent = '⏳';
+    withTimeout(renderBodyToPdf(bodyEl, name), 15000)
+      .then(function(blob){ downloadBlob(blob, name + '-攻略.pdf'); btn.disabled = false; btn.textContent = original; toast('已下载 PDF'); })
+      .catch(function(){ btn.disabled = false; btn.textContent = original; toast('PDF 生成失败，可改用分享链接'); });
+  }
   document.getElementById('mShare').addEventListener('click', shareHero);
+  document.getElementById('mPdf').addEventListener('click', exportPdf);
   document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;

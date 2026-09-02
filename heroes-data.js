@@ -11,7 +11,7 @@
 window.GUIDE_META = {
   season: "S44「不拘命格」",
   seasonStart: "2026-06-25",
-  version: "2.1.2",
+  version: "2.1.3",
   patch: "截至 S44 赛季末（2026-08）",
   note: "全英雄摘要版先行，详细攻略持续更新中",
   source: "综合搜狐/抖音精选/百度百科等 2026-08 公开榜单，以正式服为准",
