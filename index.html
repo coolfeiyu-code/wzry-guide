@@ -339,6 +339,8 @@
     :root{--ink-soft-mobile:#3D4B43;}
     [data-theme="dark"]{--ink-soft-mobile:#B8C9BE;}
     .wrap{padding:0 14px calc(64px + env(safe-area-inset-bottom));}
+    /* 顶部应用栏改为完全不透明：移动端滚动时内容不再透出，文字清晰可读 */
+    .appbar{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line);}
     body{font-size:17px;line-height:1.75;}
     .topbar .inner{padding:11px 14px;gap:9px;}
     .brand{font-size:13.5px;gap:8px;}
