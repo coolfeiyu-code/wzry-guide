@@ -378,9 +378,10 @@
     .tag{font-size:12px;padding:3px 10px;font-weight:500;}
     .tier{font-size:12px;padding:3px 10px;font-weight:700;letter-spacing:.04em;}
     .vt{font-size:11.5px;padding:2px 7px;font-weight:700;}
-    /* 弹窗安全区适配 + 移动端字号放大 */
-    .modal{padding:calc(18px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));}
-    .modal-box{padding:22px 18px;border-radius:16px;max-height:90vh;}
+    /* 弹窗安全区适配 + 移动端不透明（修复背景透出看不清） */
+    .modal{padding:calc(18px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));
+      background:var(--ink);backdrop-filter:none;-webkit-backdrop-filter:none;}
+    .modal-box{padding:22px 18px;border-radius:16px;max-height:90vh;background:var(--paper);}
     .modal-box h2{font-size:20px;gap:11px;}
     .modal-box h2 .ava-lg{width:46px;height:46px;}
     .modal-close{width:36px;height:36px;font-size:22px;top:14px;right:14px;}
