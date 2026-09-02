@@ -246,8 +246,11 @@
   .card:active{transform:translateY(-1px) scale(.992);}
   .card:focus-visible{outline:none;border-color:var(--celadon);box-shadow:0 0 0 3px rgba(110,139,123,.18);}
   .card.has-detail::before{opacity:1;background:var(--celadon);}
-  .card-top{display:flex;align-items:center;gap:11px;}
-  .card-top .lead{display:flex;align-items:center;gap:11px;min-width:0;}
+  .card-top{display:flex;align-items:flex-start;gap:11px;}
+  /* 名字 + 下方徽标（调整/梯度）作为一个文本块，左对齐到名字，头像在左 */
+  .card-info{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1 1 auto;}
+  .card-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .card-badges .tier{margin-left:0;}
   .card .nm{margin:0;font-size:16px;font-weight:600;color:var(--ink);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ava{width:40px;height:40px;border-radius:12px;object-fit:cover;flex:none;background:var(--paper-2);border:1px solid var(--line);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);}
@@ -478,8 +481,9 @@
     /* 卡片双列，提升扫读效率 —— 加大字号与间距确保可读 */
     .grid,.grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
     .card{padding:16px 15px;border-radius:13px;}
-    /* 移动端：英雄名允许换行，梯度徽标在空间不足时自动换到下一行，避免名字被挤压成「…」看不见 */
-    .card-top{flex-wrap:wrap;align-items:center;}
+    /* 移动端：英雄名允许换行，调整/梯度徽标统一在名字下方左对齐 */
+    .card-top{align-items:flex-start;}
+    .card-info{gap:7px;}
     .card .nm{font-size:16px;font-weight:700;letter-spacing:.03em;color:var(--ink);white-space:normal;overflow:visible;text-overflow:clip;line-height:1.32;}
     .card .core{font-size:14.5px;line-height:1.8;-webkit-line-clamp:3;color:var(--ink-soft-mobile, var(--ink-soft));}
     .ava{width:40px;height:40px;border-radius:11px;}
@@ -770,7 +774,7 @@
     var vt = versionTag(h.detailed);
     var vtHTML = vt ? '<span class="vt vt-'+vt+'" title="本赛季'+(vt==='buff'?'增强':vt==='nerf'?'削弱':'调整')+'">'+(vt==='buff'?'↑增':vt==='nerf'?'↓削':'⇅调')+'</span>' : '';
     return '<article class="'+cls+'" data-id="'+h.id+'" tabindex="0" role="button" aria-label="'+h.name+' 攻略" style="--i:'+i+'">'
-      + '<div class="card-top"><div class="lead">'+avatarHTML(h)+'<h3 class="nm">'+h.name+'</h3></div>'+vtHTML+'<span class="tier '+TIER_CLASS(h.tier)+'">'+tierLabel+'</span></div>'
+      + '<div class="card-top">'+avatarHTML(h)+'<div class="card-info"><h3 class="nm">'+h.name+'</h3><div class="card-badges">'+vtHTML+'<span class="tier '+TIER_CLASS(h.tier)+'">'+tierLabel+'</span></div></div></div>'
       + '<p class="core">'+(h.core||'')+'</p>'
       + (tags?'<div class="tags">'+tags+'</div>':'')
       + '</article>';
