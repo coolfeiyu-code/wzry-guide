@@ -1,0 +1,35 @@
+#!/bin/sh
+# pre-commit: 攻略内容有改动时自动递增 patch 版本号
+# 触发条件：本次提交包含 heroes-data.js 或 index.html（即内容/界面有更新）
+# 仅递增第三位 patch 号（x.y.Z -> x.y.(Z+1)），不改 major/minor
+set -e
+
+ROOT=$(git rev-parse --show-toplevel)
+FILE="heroes-data.js"
+
+# 只有攻略内容文件变动才升版
+changed=$(git diff --cached --name-only -- "$FILE" "index.html")
+if [ -z "$changed" ]; then
+  exit 0
+fi
+
+cd "$ROOT" || exit 0
+
+cur=$(grep -oE 'version: "[0-9]+\.[0-9]+\.[0-9]+"' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+if [ -z "$cur" ]; then
+  echo "pre-commit: 未找到 version 字段，跳过升版"
+  exit 0
+fi
+
+maj=$(echo "$cur" | cut -d. -f1)
+min=$(echo "$cur" | cut -d. -f2)
+pat=$(echo "$cur" | cut -d. -f3)
+pat=$((pat + 1))
+new="$maj.$min.$pat"
+
+# 只替换文件中第一处 version: "x.y.z"（即 GUIDE_META.version）
+sed -i "0,/version: \"[0-9][0-9.]*\"/s//version: \"$new\"/" "$FILE"
+git add "$FILE"
+
+echo "pre-commit: 版本号已自动递增 $cur -> $new"
+exit 0
