@@ -478,7 +478,9 @@
     /* 卡片双列，提升扫读效率 —— 加大字号与间距确保可读 */
     .grid,.grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
     .card{padding:16px 15px;border-radius:13px;}
-    .card .nm{font-size:16px;font-weight:700;letter-spacing:.03em;color:var(--ink);}
+    /* 移动端：英雄名允许换行，梯度徽标在空间不足时自动换到下一行，避免名字被挤压成「…」看不见 */
+    .card-top{flex-wrap:wrap;align-items:center;}
+    .card .nm{font-size:16px;font-weight:700;letter-spacing:.03em;color:var(--ink);white-space:normal;overflow:visible;text-overflow:clip;line-height:1.32;}
     .card .core{font-size:14.5px;line-height:1.8;-webkit-line-clamp:3;color:var(--ink-soft-mobile, var(--ink-soft));}
     .ava{width:40px;height:40px;border-radius:11px;}
     .compact .card .ava{width:36px;height:36px;}
@@ -502,7 +504,7 @@
   }
   @media(max-width:380px){
     .hero h1{font-size:28px;}
-    .card .nm{font-size:15px;}
+    .card .nm{font-size:15px;white-space:normal;overflow:visible;text-overflow:clip;}
     .ava{width:36px;height:36px;}
     .card .core{font-size:14px;-webkit-line-clamp:2;}
   }
