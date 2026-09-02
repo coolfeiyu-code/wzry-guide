@@ -197,13 +197,19 @@
   .m-head{position:sticky;top:0;z-index:5;display:flex;flex-direction:column;gap:5px;
     padding:20px 24px 18px;background:#1E2A24;color:var(--paper);
     border-bottom:1px solid rgba(255,255,255,.10);}
+  /* 页眉右上角按钮组（关闭 + 分享） */
+  .m-head-actions{position:absolute;top:14px;right:16px;display:flex;gap:8px;z-index:6;}
+  .m-share{width:36px;height:36px;border-radius:10px;
+    font-size:17px;cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);
+    display:flex;align-items:center;justify-content:center;transition:.16s;}
+  .m-share:hover,.m-share:active{background:rgba(255,255,255,.20);}
   .m-head h2{margin:0;font-size:23px;color:#fff;letter-spacing:.01em;display:flex;align-items:center;gap:14px;font-family:var(--font-kai);}
   .m-head h2 .ava-lg{width:54px;height:54px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);}
   .m-head h2 .m-t{line-height:1.1;}
   .m-head .m-meta{font-size:13px;color:rgba(255,255,255,.72);margin:0;font-variant-numeric:tabular-nums;letter-spacing:.02em;}
-  .modal-close{position:absolute;top:16px;right:18px;width:36px;height:36px;border-radius:10px;
+  .modal-close{width:36px;height:36px;border-radius:10px;
     font-size:22px;cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);
-    display:flex;align-items:center;justify-content:center;transition:.16s;z-index:6;}
+    display:flex;align-items:center;justify-content:center;transition:.16s;}
   .modal-close:hover{background:rgba(255,255,255,.20);}
   /* 正文居中易读，整页可滚动 */
   .m-body{max-width:900px;margin:0 auto;width:100%;padding:30px 32px 64px;font-size:14px;line-height:1.8;}
@@ -390,6 +396,8 @@
     .m-head h2{font-size:20px;gap:11px;}
     .m-head h2 .ava-lg{width:46px;height:46px;}
     .modal-close{width:36px;height:36px;font-size:22px;top:calc(14px + env(safe-area-inset-top));right:14px;}
+    .m-head-actions{top:calc(10px + env(safe-area-inset-top));right:12px;}
+    .m-share{width:34px;height:34px;font-size:15px;}
     .m-body{font-size:15px;line-height:1.85;padding:22px 16px calc(40px + env(safe-area-inset-bottom));max-width:none;background:var(--paper);}
     .modal-box .m-body .counter{grid-template-columns:1fr;}
     .cchip{min-height:34px;padding:4px 13px;font-size:13px;}
@@ -405,6 +413,41 @@
     .card{animation:none;opacity:1;transform:none;}
     .modal-box{animation:none;}
     html{scroll-behavior:auto;}
+  }
+  /* ===== 打印 / 导出 PDF：只输出英雄详情内容 ===== */
+  @media print{
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}
+    body{background:#fff!important;color:#000!important;}
+    /* 隐藏所有非详情内容 */
+    .appbar,.toolbar,.hero,.hero-art,.grid,.search-wrap,.count,.foot,
+    .anchor-nav,.seg,.tiers,.modal-close,.m-share,.m-head-actions,
+    .theme-toggle,.compact-toggle{display:none!important;}
+    /* 弹窗变为正常文档流 */
+    .modal{position:static!important;display:block!important;inset:auto!important;
+      background:#fff!important;padding:0!important;overflow:visible!important;}
+    .modal-box{position:static!important;width:100%!important;height:auto!important;max-height:none!important;
+      overflow:visible!important;background:#fff!important;padding:0!important;border-radius:0!important;
+      box-shadow:none!important;border:none!important;animation:none!important;}
+    /* 页眉：墨绿底白字（打印保留） */
+    .m-head{position:static!important;background:#1E2A24!important;color:#fff!important;
+      padding:24px 32px 16px!important;border-bottom:2px solid #1E2A24!important;}
+    .m-head h2{color:#fff!important;font-size:26px!important;}
+    .m-head .m-meta{color:rgba(255,255,255,.8)!important;}
+    .m-head h2 .ava-lg{width:64px;height:64px!important;border-radius:14px!important;}
+    /* 正文：白底黑字，易读 */
+    .m-body{padding:28px 36px 48px!important;font-size:13px!important;line-height:1.85!important;
+      color:#1a1a1a!important;background:#fff!important;max-width:none!important;}
+    .m-body h4{color:#1E2A24!important;border-left-color:#1E2A24!important;font-size:15px!important;}
+    .m-body p{color:#1a1a1a!important;orphans:3;widows:3;}
+    .m-body b,.m-body strong{color:#000!important;}
+    /* 克制芯片：边框打印 */
+    .cchip{border:1px solid #ccc!important;break-inside:avoid;}
+    .tag,.tier,.vt{border:1px solid #ccc!important;}
+    /* 图片显示 */
+    img{display:inline-block!important;max-width:100%!important;height:auto!important;}
+    /* 页脚信息 */
+    .tip-box{background:#f5f5f5!important;color:#555!important;border:1px solid #ddd!important;
+      padding:12px 16px!important;border-radius:8px!important;margin-top:16px!important;}
   }
 </style>
 </head>
@@ -502,7 +545,10 @@
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
   <div class="modal-box">
     <div class="m-head">
-      <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
+      <div class="m-head-actions">
+        <button class="m-share" id="mShare" title="分享 / 导出 PDF">⤴</button>
+        <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
+      </div>
       <h2 id="mTitle"></h2>
       <div class="m-meta" id="mMeta"></div>
     </div>
@@ -747,6 +793,7 @@
     document.body.style.overflow='';
   }
   document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('mShare').addEventListener('click', function(){ window.print(); });
   document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
 
