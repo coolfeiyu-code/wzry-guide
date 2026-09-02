@@ -1,7 +1,8 @@
 #!/bin/sh
-# pre-commit: 攻略内容有改动时自动递增 patch 版本号
-# 触发条件：本次提交包含 heroes-data.js 或 index.html（即内容/界面有更新）
-# 仅递增第三位 patch 号（x.y.Z -> x.y.(Z+1)），不改 major/minor
+# pre-commit: 攻略内容有改动时自动递增版本号（三级语义化）
+# 触发条件：本次提交包含 heroes-data.js 或 index.html（内容/界面更新）
+# 档位（通过环境变量 VERSION_BUMP 指定，缺省=patch）：
+#   major -> +1.0.0（大更新）   minor -> +0.1（中更新）   patch -> +0.0.1（小更新，默认）
 set -e
 
 ROOT=$(git rev-parse --show-toplevel)
@@ -21,15 +22,30 @@ if [ -z "$cur" ]; then
   exit 0
 fi
 
+LEVEL=${VERSION_BUMP:-patch}
 maj=$(echo "$cur" | cut -d. -f1)
 min=$(echo "$cur" | cut -d. -f2)
 pat=$(echo "$cur" | cut -d. -f3)
-pat=$((pat + 1))
-new="$maj.$min.$pat"
 
+case "$LEVEL" in
+  major)
+    maj=$((maj + 1)); min=0; pat=0
+    label="大更新 +1.0.0"
+    ;;
+  minor)
+    min=$((min + 1)); pat=0
+    label="中更新 +0.1"
+    ;;
+  *)
+    pat=$((pat + 1))
+    label="小更新 +0.0.1"
+    ;;
+esac
+
+new="$maj.$min.$pat"
 # 只替换文件中第一处 version: "x.y.z"（即 GUIDE_META.version）
 sed -i "0,/version: \"[0-9][0-9.]*\"/s//version: \"$new\"/" "$FILE"
 git add "$FILE"
 
-echo "pre-commit: 版本号已自动递增 $cur -> $new"
+echo "pre-commit: [$label] 版本号 $cur -> $new"
 exit 0
