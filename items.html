@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<title>装备库 · 王者荣耀 S44 全装备图鉴</title>
+<meta name="description" content="王者荣耀 S44 赛季全 121 件装备图鉴：属性、被动、价格、赛季改动一应俱全，数据源自官方，可自动同步。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="装备库">
+<meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<script>
+(function(){try{var t=localStorage.getItem('wzry-theme');if(!t){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<style>
+  :root{
+    --paper:#F7F8F4; --paper-2:#EEF1EA; --card:#FFFFFF;
+    --ink:#1E2A24; --ink-soft:#5C6B62; --line:#E3E7DF;
+    --celadon:#6E8B7B; --celadon-deep:#3C5A4E; --celadon-soft:#A9C2B4;
+    --cinnabar:#BE5A45; --gold:#B6904E;
+    --shadow:0 1px 2px rgba(30,42,36,.04), 0 8px 24px rgba(30,42,36,.06);
+    --shadow-lift:0 2px 6px rgba(30,42,36,.07), 0 14px 34px rgba(30,42,36,.10);
+    --font-sans:"PingFang SC","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+    --font-serif:"Songti SC","STSong","SimSun",serif;
+  }
+  [data-theme="dark"]{
+    --paper:#141A17; --paper-2:#1E2622; --card:#1F2723;
+    --ink:#E9EEE9; --ink-soft:#9FB0A6; --line:#2E3833;
+    --celadon:#84A594; --celadon-deep:#AECBBB; --celadon-soft:#3C5247;
+    --cinnabar:#D9745E; --gold:#CBA867;
+    --shadow:0 1px 2px rgba(0,0,0,.30), 0 8px 24px rgba(0,0,0,.35);
+    --shadow-lift:0 2px 6px rgba(0,0,0,.35), 0 14px 34px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-sans);font-size:15px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;padding-bottom:40px;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:
+    radial-gradient(120% 70% at 82% -8%, rgba(110,139,123,.10), transparent 55%),
+    radial-gradient(80% 50% at 10% 0%, rgba(182,144,78,.05), transparent 50%);}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 16px;}
+
+  /* ============ 顶栏 ============ */
+  .appbar{position:sticky;top:0;z-index:40;background:rgba(247,248,244,.86);
+    backdrop-filter:saturate(1.6) blur(12px);-webkit-backdrop-filter:saturate(1.6) blur(12px);
+    border-bottom:1px solid var(--line);}
+  [data-theme="dark"] .appbar{background:rgba(20,26,23,.86);}
+  .appbar-in{max-width:1180px;margin:0 auto;padding:10px 16px;
+    display:flex;align-items:center;gap:12px;}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);
+    text-decoration:none;font-size:14px;padding:6px 11px;border:1px solid var(--line);
+    border-radius:999px;background:var(--card);white-space:nowrap;transition:.18s;}
+  .back:hover{color:var(--celadon-deep);border-color:var(--celadon-soft);}
+  .appbar h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.5px;
+    font-family:var(--font-serif);flex:1;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .appbar h1 small{font-size:12px;color:var(--ink-soft);font-weight:400;margin-left:8px;
+    font-family:var(--font-sans);letter-spacing:0;}
+  .theme-toggle{background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+    width:34px;height:34px;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+    flex-shrink:0;transition:.18s;}
+  .theme-toggle:hover{color:var(--celadon-deep);border-color:var(--celadon-soft);}
+  .theme-toggle svg{width:16px;height:16px;fill:currentColor;}
+  .theme-toggle .i-moon{display:none;}
+  [data-theme="dark"] .theme-toggle .i-sun{display:none;}
+  [data-theme="dark"] .theme-toggle .i-moon{display:block;}
+
+  /* ============ 改动板块 ============ */
+  .chg{margin:18px 0 6px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
+  .chg-hd{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;
+    user-select:none;border-bottom:1px solid transparent;}
+  .chg-hd .ttl{font-family:var(--font-serif);font-size:15.5px;font-weight:600;flex:1;}
+  .chg-hd .cnt{font-size:12px;color:var(--ink-soft);}
+  .chg-hd .arw{color:var(--ink-soft);font-size:12px;transition:transform .22s;}
+  .chg.open .chg-hd{border-bottom-color:var(--line);}
+  .chg.open .chg-hd .arw{transform:rotate(90deg);}
+  .chg-bd{display:none;padding:4px 16px 14px;}
+  .chg.open .chg-bd{display:block;}
+  .chg-item{padding:12px 0;border-bottom:1px dashed var(--line);}
+  .chg-item:last-child{border-bottom:none;}
+  .chg-item .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+  .chg-item .nm{font-weight:600;font-size:14.5px;}
+  .chg-item .sub{font-size:13px;color:var(--ink-soft);flex-basis:100%;margin-top:2px;}
+  .chg-item .ds{font-size:13.5px;color:var(--ink-soft);line-height:1.68;}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600;
+    letter-spacing:.3px;flex-shrink:0;}
+  .b-new{background:rgba(110,139,123,.15);color:var(--celadon-deep);
+    border:1px solid var(--celadon-soft);}
+  .b-buff{background:rgba(182,144,78,.14);color:var(--gold);border:1px solid rgba(182,144,78,.35);}
+  .b-nerf{background:rgba(190,90,69,.13);color:var(--cinnabar);border:1px solid rgba(190,90,69,.32);}
+  [data-theme="dark"] .b-new{background:rgba(132,165,148,.18);color:#AECBBB;}
+  [data-theme="dark"] .b-buff{background:rgba(203,168,103,.18);color:#DBBC7E;}
+  [data-theme="dark"] .b-nerf{background:rgba(217,116,94,.18);color:#E89B8C;}
+  .rel{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+  .rel a{font-size:12.5px;color:var(--celadon-deep);text-decoration:none;
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:3px 10px;transition:.16s;}
+  .rel a:hover{border-color:var(--celadon-soft);background:var(--card);}
+
+  /* ============ 工具条 ============ */
+  .toolbar{padding:14px 0 6px;}
+  .seg{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px;}
+  .seg .tab{background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+    padding:6px 13px;border-radius:999px;font-size:13.5px;cursor:pointer;
+    font-family:inherit;transition:.16s;white-space:nowrap;}
+  .seg .tab:hover{border-color:var(--celadon-soft);color:var(--celadon-deep);}
+  .seg .tab.active{background:var(--celadon-deep);color:#fff;border-color:var(--celadon-deep);}
+  [data-theme="dark"] .seg .tab.active{color:#10160F;}
+  .seg .tab .n{opacity:.65;font-size:11.5px;margin-left:4px;}
+  .search-wrap{position:relative;}
+  .search{width:100%;background:var(--card);border:1px solid var(--line);
+    color:var(--ink);border-radius:11px;padding:10px 14px 10px 36px;font-size:14.5px;
+    font-family:inherit;outline:none;transition:.16s;}
+  .search:focus{border-color:var(--celadon-soft);box-shadow:0 0 0 3px rgba(110,139,123,.10);}
+  .search::placeholder{color:var(--ink-soft);opacity:.75;}
+  .search-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+    color:var(--ink-soft);font-size:13px;pointer-events:none;}
+  .count{font-size:12.5px;color:var(--ink-soft);padding:10px 2px 0;}
+
+  /* ============ 装备网格 ============ */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));
+    gap:11px;padding:12px 0 20px;}
+  .icard{background:var(--card);border:1px solid var(--line);border-radius:13px;
+    padding:12px;cursor:pointer;box-shadow:var(--shadow);
+    display:flex;gap:11px;align-items:flex-start;transition:.18s;position:relative;overflow:hidden;}
+  .icard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);
+    border-color:var(--celadon-soft);}
+  .icard.season{border-color:rgba(182,144,78,.45);}
+  .icard.season::before{content:"赛季";position:absolute;top:0;right:0;
+    background:var(--gold);color:#fff;font-size:10px;padding:2px 7px;
+    border-bottom-left-radius:8px;letter-spacing:.5px;}
+  .iico{width:46px;height:46px;border-radius:10px;flex-shrink:0;overflow:hidden;
+    background:var(--paper-2);display:grid;place-items:center;border:1px solid var(--line);}
+  .iico img{width:100%;height:100%;object-fit:cover;display:block;}
+  .iico .ph{width:100%;height:100%;display:grid;place-items:center;
+    font-size:17px;font-weight:600;color:#fff;font-family:var(--font-serif);}
+  .ph-atk{background:linear-gradient(135deg,#C06752,#A24B37);}
+  .ph-magic{background:linear-gradient(135deg,#6C7BA8,#54628C);}
+  .ph-def{background:linear-gradient(135deg,#6E8B7B,#526B5C);}
+  .ph-move{background:linear-gradient(135deg,#B6904E,#96733A);}
+  .ph-jungle{background:linear-gradient(135deg,#8A6E4E,#6E5539);}
+  .ph-support{background:linear-gradient(135deg,#5E8C7E,#477066);}
+  .ph-season{background:linear-gradient(135deg,#C9A15C,#A8802F);}
+  .ph-other{background:linear-gradient(135deg,#7C8A83,#5F6C66);}
+  .imeta{min-width:0;flex:1;}
+  .imeta .nm{font-size:14.5px;font-weight:600;line-height:1.35;margin-bottom:3px;
+    word-break:break-all;}
+  .imeta .pr{font-size:11.5px;color:var(--gold);margin-bottom:5px;}
+  .imeta .at{font-size:12px;color:var(--ink-soft);line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .imeta .cat{display:inline-block;font-size:10.5px;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-top:5px;}
+
+  /* ============ 详情弹窗 ============ */
+  .modal{position:fixed;inset:0;z-index:80;display:none;
+    background:rgba(20,26,23,.42);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+  .modal.open{display:block;}
+  .m-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(560px,92vw);max-height:86vh;overflow-y:auto;background:var(--card);
+    border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.28);}
+  .m-hd{position:sticky;top:0;z-index:2;background:#1E2A24;color:#F2F5F1;
+    padding:14px 50px 14px 18px;border-radius:16px 16px 0 0;}
+  .m-hd .nm{font-size:18px;font-weight:600;font-family:var(--font-serif);
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  .m-hd .pr{font-size:12.5px;color:#A9C2B4;margin-top:4px;}
+  .m-close{position:absolute;right:12px;top:12px;width:30px;height:30px;
+    border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#F2F5F1;
+    font-size:19px;line-height:1;cursor:pointer;display:grid;place-items:center;}
+  .m-close:hover{background:rgba(255,255,255,.24);}
+  .m-bd{padding:16px 18px 20px;}
+  .m-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
+  .m-top .iico{width:64px;height:64px;border-radius:12px;}
+  .m-top .iico .ph{font-size:24px;}
+  .m-sec{margin-top:13px;}
+  .m-sec .lb{font-size:12px;color:var(--ink-soft);margin-bottom:5px;
+    letter-spacing:.6px;font-weight:600;}
+  .m-sec .vl{font-size:14px;line-height:1.72;white-space:pre-wrap;word-break:break-word;}
+  .m-sec.pv{background:var(--paper-2);border-left:3px solid var(--celadon-soft);
+    border-radius:0 9px 9px 0;padding:11px 13px;margin-top:13px;}
+  .m-sec.pv .vl{font-size:13.5px;color:var(--ink);}
+  .m-note{margin-top:14px;background:rgba(182,144,78,.09);border:1px solid rgba(182,144,78,.35);
+    border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.7;color:var(--ink);}
+  .m-note .t{font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+
+  .empty{text-align:center;color:var(--ink-soft);padding:46px 16px;font-size:14px;}
+  .foot{text-align:center;color:var(--ink-soft);font-size:12px;padding:8px 16px 24px;line-height:1.8;}
+
+  /* ============ 移动端：全屏沉浸 ============ */
+  @media (max-width:640px){
+    .appbar{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;}
+    [data-theme="dark"] .appbar{background:var(--paper);}
+    .appbar-in{padding:9px 12px;gap:9px;}
+    .appbar h1{font-size:16px;}
+    .appbar h1 small{display:none;}
+    .wrap{padding:0 12px;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px;}
+    .icard{padding:10px;gap:9px;}
+    .iico{width:40px;height:40px;}
+    .imeta .nm{font-size:13.5px;}
+    .modal{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none;}
+    .m-box{position:fixed;inset:0;left:0;top:0;transform:none;width:100%;
+      max-height:100vh;height:100vh;border-radius:0;overflow-y:auto;
+      -webkit-overflow-scrolling:touch;}
+    .m-hd{border-radius:0;padding-top:calc(14px + env(safe-area-inset-top));
+      padding-left:14px;padding-right:52px;}
+    .m-bd{padding:14px 14px calc(28px + env(safe-area-inset-bottom));}
+  }
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="back" href="index.html">← 英雄攻略</a>
+    <h1>装备库<small id="metaLine">S44 · 官方数据</small></h1>
+    <button class="theme-toggle" id="themeBtn" aria-label="切换主题">
+      <svg class="i-sun" viewBox="0 0 24 24"><path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.41-1.41M4.93 19.07l1.41-1.41m11.32 0 1.41 1.41M4.93 4.93l1.41 1.41M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- S44 改动 -->
+  <section class="chg open" id="chgBox">
+    <div class="chg-hd" id="chgHd">
+      <span class="ttl">S44 装备改动</span>
+      <span class="cnt" id="chgCnt"></span>
+      <span class="arw">▶</span>
+    </div>
+    <div class="chg-bd" id="chgBd"></div>
+  </section>
+
+  <div class="toolbar">
+    <div class="seg" id="seg"></div>
+    <div class="search-wrap">
+      <span class="ico">⌕</span>
+      <input class="search" id="search" type="search" placeholder="搜装备名 / 属性 / 被动，如「暴击」「吸血」" autocomplete="off">
+    </div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="m-box">
+    <div class="m-hd">
+      <button class="m-close" id="mClose" aria-label="关闭">×</button>
+      <div class="nm" id="mNm"></div>
+      <div class="pr" id="mPr"></div>
+    </div>
+    <div class="m-bd" id="mBd"></div>
+  </div>
+</div>
+
+<script src="items-data.js"></script>
+<script>
+(function(){
+  var D = window.ITEMS || {items:[],cats:[],changes:[],meta:{}};
+  var ITEMS = D.items || [], CATS = D.cats || [], CHANGES = D.changes || [];
+  var cur = 'all', kw = '';
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function iconHTML(it, cls){
+    var src = 'items-icon/' + it.id + '.jpg';
+    if(it.hasIcon){
+      return '<span class="iico ' + (cls||'') + '"><img src="' + src + '" alt="" loading="lazy" '
+           + 'onerror="this.parentNode.innerHTML=\'<span class=&quot;ph ph-' + it.cat + '&quot;>' + esc(it.name.charAt(0)) + '</span>\'"></span>';
+    }
+    return '<span class="iico ' + (cls||'') + '"><span class="ph ph-' + it.cat + '">' + esc(it.name.charAt(0)) + '</span></span>';
+  }
+
+  /* ---------- 改动板块 ---------- */
+  function renderChanges(){
+    var box = document.getElementById('chgBd');
+    var cnt = document.getElementById('chgCnt');
+    if(!CHANGES.length){ document.getElementById('chgBox').style.display='none'; return; }
+    cnt.textContent = CHANGES.length + ' 项调整';
+    var badgeTxt = {new:'新增', buff:'加强', nerf:'削弱'};
+    box.innerHTML = CHANGES.map(function(c){
+      var rel = (c.related && c.related.length)
+        ? '<div class="rel">' + c.related.map(function(n){
+            return '<a href="#" data-goto="' + esc(n) + '">' + esc(n) + '</a>';
+          }).join('') + '</div>'
+        : '';
+      return '<div class="chg-item">'
+        + '<div class="hd"><span class="badge b-' + esc(c.badge) + '">' + (badgeTxt[c.badge]||'调整') + '</span>'
+        + '<span class="nm">' + esc(c.name) + '</span>'
+        + '<span class="sub">' + esc(c.title) + '</span></div>'
+        + '<div class="ds">' + esc(c.desc) + '</div>' + rel
+        + '</div>';
+    }).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('[data-goto]'), function(a){
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        openByName(a.getAttribute('data-goto'));
+      });
+    });
+  }
+  function openByName(name){
+    var it = null;
+    for(var i=0;i<ITEMS.length;i++){ if(ITEMS[i].name === name){ it = ITEMS[i]; break; } }
+    if(!it){
+      for(var j=0;j<ITEMS.length;j++){ if(ITEMS[j].name.indexOf(name) === 0){ it = ITEMS[j]; break; } }
+    }
+    if(it) openModal(it);
+  }
+
+  /* ---------- 分类条 ---------- */
+  function renderSeg(){
+    var total = ITEMS.length;
+    var tabs = [{id:'all', name:'全部', count:total}].concat(CATS);
+    document.getElementById('seg').innerHTML = tabs.map(function(t){
+      return '<button class="tab' + (t.id===cur?' active':'') + '" data-cat="' + esc(t.id) + '">'
+        + esc(t.name) + '<span class="n">' + t.count + '</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('#seg .tab'), function(b){
+      b.addEventListener('click', function(){
+        cur = b.getAttribute('data-cat');
+        renderSeg(); renderGrid();
+      });
+    });
+  }
+
+  /* ---------- 网格 ---------- */
+  function matched(){
+    var k = kw.trim().toLowerCase();
+    return ITEMS.filter(function(it){
+      if(cur !== 'all' && it.cat !== cur) return false;
+      if(!k) return true;
+      return (it.name + ' ' + it.attrs + ' ' + it.passive + ' ' + it.catName)
+             .toLowerCase().indexOf(k) >= 0;
+    });
+  }
+  function renderGrid(){
+    var list = matched();
+    var g = document.getElementById('grid');
+    document.getElementById('count').textContent =
+      '共 ' + list.length + ' 件装备' + (kw ? '（关键词：' + kw + '）' : '');
+    if(!list.length){
+      g.innerHTML = '<div class="empty">没有匹配的装备，换个词或分类试试。</div>';
+      return;
+    }
+    g.innerHTML = list.map(function(it){
+      return '<div class="icard' + (it.cat==='season'?' season':'') + '" data-id="' + it.id + '">'
+        + iconHTML(it)
+        + '<div class="imeta">'
+        +   '<div class="nm">' + esc(it.name) + '</div>'
+        +   '<div class="pr">' + (it.total ? it.total + ' 金' : '—') + '</div>'
+        +   '<div class="at">' + esc(it.attrs || '—') + '</div>'
+        +   '<span class="cat">' + esc(it.catName) + '</span>'
+        + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call(g.querySelectorAll('.icard'), function(el){
+      el.addEventListener('click', function(){
+        var id = parseInt(el.getAttribute('data-id'), 10);
+        for(var i=0;i<ITEMS.length;i++){ if(ITEMS[i].id === id){ openModal(ITEMS[i]); break; } }
+      });
+    });
+  }
+
+  /* ---------- 详情 ---------- */
+  function openModal(it){
+    document.getElementById('mNm').innerHTML =
+      esc(it.name) + '<span class="badge b-' + (it.cat==='season'?'buff':'new') + '" style="font-size:11px">'
+      + esc(it.catName) + '</span>';
+    var pr = it.total ? (it.total + ' 金') : '—';
+    if(it.price && it.total && it.total > it.price){
+      pr += '　·　合成价 ' + it.price + ' 金';
+    }
+    document.getElementById('mPr').textContent = pr;
+
+    var html = '<div class="m-top">' + iconHTML(it) + '<div style="flex:1;min-width:0">'
+      + '<div class="m-sec" style="margin-top:0"><div class="lb">属性</div>'
+      + '<div class="vl">' + esc(it.attrs || '—') + '</div></div></div></div>';
+    if(it.passive){
+      html += '<div class="m-sec pv"><div class="lb">被动 / 唯一被动</div>'
+           +  '<div class="vl">' + esc(it.passive) + '</div></div>';
+    }
+    // 关联改动
+    var rel = CHANGES.filter(function(c){
+      if(!c.related || !c.related.length) return false;
+      for(var i=0;i<c.related.length;i++){
+        if(it.name === c.related[i] || it.name.indexOf(c.related[i]) === 0) return true;
+      }
+      return false;
+    });
+    if(it.cat === 'season' && !rel.length){
+      rel = CHANGES.filter(function(c){ return c.badge === 'new'; });
+    }
+    if(rel.length){
+      var bt = {new:'新增', buff:'加强', nerf:'削弱'};
+      html += rel.map(function(c){
+        return '<div class="m-note"><div class="t"><span class="badge b-' + esc(c.badge) + '">'
+          + (bt[c.badge]||'调整') + '</span>' + esc(c.name) + '</div>'
+          + '<div>' + esc(c.desc) + '</div></div>';
+      }).join('');
+    }
+    document.getElementById('mBd').innerHTML = html;
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    var box = document.querySelector('.m-box'); if(box) box.scrollTop = 0;
+  }
+  function closeModal(){
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('modal').addEventListener('click', function(e){
+    if(e.target === this) closeModal();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeModal();
+  });
+
+  /* ---------- 交互绑定 ---------- */
+  document.getElementById('chgHd').addEventListener('click', function(){
+    document.getElementById('chgBox').classList.toggle('open');
+  });
+  var si = document.getElementById('search');
+  var tm = null;
+  si.addEventListener('input', function(){
+    clearTimeout(tm);
+    tm = setTimeout(function(){ kw = si.value; renderGrid(); }, 160);
+  });
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', n);
+    try{ localStorage.setItem('wzry-theme', n); }catch(e){}
+  });
+
+  /* ---------- 启动 ---------- */
+  renderChanges();
+  renderSeg();
+  renderGrid();
+  var m = D.meta || {};
+  document.getElementById('metaLine').textContent =
+    (m.season || 'S44') + ' · 官方数据 ' + (m.updated || '');
+  document.getElementById('foot').innerHTML =
+    '数据来自官方装备接口，共 ' + ITEMS.length + ' 件装备'
+    + (m.iconTotal ? '（' + m.iconTotal + ' 张官方图标）' : '')
+    + '<br>赛季更新后重跑 scripts/sync-items.py 即可自动同步';
+})();
+</script>
+</body>
+</html>

@@ -14,6 +14,84 @@
 .toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);background:rgba(20,26,23,.94);color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;line-height:1.45;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;max-width:84vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .m-share:disabled{opacity:.55;cursor:default;}
+
+/* ===== 出装 chip：英雄详情里的装备名 -> 带图标可点 ===== */
+.item-chip{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;
+  background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px 2px 3px;margin:2px 1px;font-size:13.5px;line-height:1.5;
+  color:var(--ink);cursor:pointer;transition:.16s;white-space:nowrap;}
+.item-chip:hover{border-color:var(--celadon-soft);background:var(--card);transform:translateY(-1px);}
+.item-chip img{width:20px;height:20px;border-radius:5px;display:block;flex-shrink:0;}
+.item-chip .ph{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;
+  font-size:11px;color:#fff;flex-shrink:0;}
+.ph-atk{background:linear-gradient(135deg,#C06752,#A24B37);}
+.ph-magic{background:linear-gradient(135deg,#6C7BA8,#54628C);}
+.ph-def{background:linear-gradient(135deg,#6E8B7B,#526B5C);}
+.ph-move{background:linear-gradient(135deg,#B6904E,#96733A);}
+.ph-jungle{background:linear-gradient(135deg,#8A6E4E,#6E5539);}
+.ph-support{background:linear-gradient(135deg,#5E8C7E,#477066);}
+.ph-season{background:linear-gradient(135deg,#C9A15C,#A8802F);}
+.ph-other{background:linear-gradient(135deg,#7C8A83,#5F6C66);}
+
+/* ===== 装备详情弹窗（叠在英雄详情之上）===== */
+#itemModal{z-index:120;}
+.im-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(520px,92vw);max-height:80vh;overflow-y:auto;background:var(--card);
+  border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.28);}
+.im-hd{position:sticky;top:0;z-index:2;background:#1E2A24;color:#F2F5F1;
+  padding:14px 50px 14px 18px;border-radius:16px 16px 0 0;}
+.im-nm{font-size:18px;font-weight:600;font-family:var(--font-serif);
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.im-pr{font-size:12.5px;color:#A9C2B4;margin-top:4px;}
+.im-close{position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;
+  border:none;background:rgba(255,255,255,.14);color:#F2F5F1;font-size:19px;line-height:1;
+  cursor:pointer;display:grid;place-items:center;}
+.im-close:hover{background:rgba(255,255,255,.24);}
+.im-bd{padding:16px 18px 20px;}
+.im-top{display:flex;gap:14px;align-items:flex-start;}
+.im-ico{width:62px;height:62px;border-radius:12px;flex-shrink:0;overflow:hidden;
+  background:var(--paper-2);display:grid;place-items:center;border:1px solid var(--line);}
+.im-ico img{width:100%;height:100%;object-fit:cover;display:block;}
+.im-ico .ph{width:100%;height:100%;display:grid;place-items:center;font-size:22px;
+  font-weight:600;color:#fff;font-family:var(--font-serif);}
+.im-sec{margin-top:12px;}
+.im-sec .lb{font-size:12px;color:var(--ink-soft);margin-bottom:5px;
+  letter-spacing:.6px;font-weight:600;}
+.im-sec .vl{font-size:14px;line-height:1.72;white-space:pre-wrap;word-break:break-word;}
+.im-pv{background:var(--paper-2);border-left:3px solid var(--celadon-soft);
+  border-radius:0 9px 9px 0;padding:11px 13px;margin-top:12px;}
+.im-pv .vl{font-size:13.5px;}
+.im-note{margin-top:13px;background:rgba(182,144,78,.09);border:1px solid rgba(182,144,78,.35);
+  border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.7;}
+.im-note .t{font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.im-goto{display:inline-block;margin-top:15px;font-size:13px;color:var(--celadon-deep);
+  text-decoration:none;border:1px solid var(--line);border-radius:999px;
+  padding:6px 15px;background:var(--paper-2);transition:.16s;}
+.im-goto:hover{border-color:var(--celadon-soft);background:var(--card);}
+/* 顶栏「装备库」入口 */
+.nav-link{display:inline-flex;align-items:center;gap:2px;font-size:13px;color:var(--ink-soft);
+  text-decoration:none;padding:6px 13px;border-radius:999px;border:1px solid var(--line);
+  background:var(--card);white-space:nowrap;transition:.18s;margin-left:auto;flex-shrink:0;}
+.nav-link:hover{color:var(--celadon-deep);border-color:var(--celadon-soft);}
+[data-theme="dark"] .nav-link{color:var(--ink-soft);border-color:var(--line);}
+[data-theme="dark"] .nav-link:hover{color:var(--celadon);border-color:var(--celadon-soft);}
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600;
+  letter-spacing:.3px;display:inline-block;flex-shrink:0;}
+.b-new{background:rgba(110,139,123,.15);color:var(--celadon-deep);border:1px solid var(--celadon-soft);}
+.b-buff{background:rgba(182,144,78,.14);color:var(--gold);border:1px solid rgba(182,144,78,.35);}
+.b-nerf{background:rgba(190,90,69,.13);color:var(--cinnabar);border:1px solid rgba(190,90,69,.32);}
+[data-theme="dark"] .b-new{background:rgba(132,165,148,.18);color:#AECBBB;}
+[data-theme="dark"] .b-buff{background:rgba(203,168,103,.18);color:#DBBC7E;}
+[data-theme="dark"] .b-nerf{background:rgba(217,116,94,.18);color:#E89B8C;}
+@media (max-width:640px){
+  #itemModal{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none;}
+  .im-box{position:fixed;inset:0;left:0;top:0;transform:none;width:100%;
+    max-height:100vh;height:100vh;border-radius:0;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;}
+  .im-hd{border-radius:0;padding-top:calc(14px + env(safe-area-inset-top));
+    padding-left:14px;padding-right:52px;}
+  .im-bd{padding:14px 14px calc(28px + env(safe-area-inset-bottom));}
+}
 </style>
 <script>
 (function(){try{var t=localStorage.getItem('wzry-theme');if(!t){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
@@ -433,6 +511,8 @@
     .modal-box{position:static!important;width:100%!important;height:auto!important;max-height:none!important;
       overflow:visible!important;background:#fff!important;padding:0!important;border-radius:0!important;
       box-shadow:none!important;border:none!important;animation:none!important;}
+    /* 装备弹窗不参与打印：分享 PDF 时只输出英雄详情 */
+    #itemModal{display:none!important;}
     /* 页眉：墨绿底白字（打印保留） */
     .m-head{position:static!important;background:#1E2A24!important;color:#fff!important;
       padding:24px 32px 16px!important;border-bottom:2px solid #1E2A24!important;}
@@ -467,6 +547,7 @@
         王者荣耀 · S44 攻略总集
       </span>
       <span class="meta" id="topMeta"></span>
+      <a class="nav-link" href="items.html" title="S44 全装备图鉴 · 属性/被动/改动">装备库 ›</a>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换深色 / 浅色模式" title="切换深色模式">
         <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5Z"/></svg>
@@ -561,7 +642,20 @@
   </div>
 </div>
 
+<!-- 装备详情弹窗（出装 chip 点击后弹出） -->
+<div class="modal" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="imNm">
+  <div class="im-box">
+    <div class="im-hd">
+      <button class="im-close" id="imClose" aria-label="关闭">×</button>
+      <div class="im-nm" id="imNm"></div>
+      <div class="im-pr" id="imPr"></div>
+    </div>
+    <div class="im-bd" id="imBd"></div>
+  </div>
+</div>
+
 <script src="heroes-data.js"></script>
+<script src="items-data.js"></script>
 <script src="vendor/html2canvas.min.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <script>
@@ -763,6 +857,147 @@
       + (b ? '<div class="match-row"><span class="ml bad">怕</span><span class="mnames">'+b+'</span></div>' : '')
       + '</div>';
   }
+  // ===== 出装注入：把详情里的装备名渲染成带官方图标的可点 chip =====
+  var ITEM_INDEX = null;   // 显示名（含简称）-> 装备对象
+  var ITEM_RE = null;      // 匹配正则，长名优先，避免「破晓」吃掉「仁者破晓」
+  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function buildItemIndex(){
+    if(ITEM_INDEX || !window.ITEMS) return;
+    ITEM_INDEX = {};
+    var names = [];
+    (window.ITEMS.items || []).forEach(function(it){
+      // 只取成装/鞋/打野刀：滤掉基础小件（<700 金）与过短易误伤的名字
+      if(it.total < 700) return;
+      if(it.name.length < 3 && it.total < 1500) return;
+      ITEM_INDEX[it.name] = it;
+      names.push(it.name);
+    });
+    // 常见简称 -> 官方全名（只收无歧义、高频的；长名优先保证全名先匹配）
+    var ALIAS = {
+      '破晓':'仁者破晓', '复活甲':'贤者的庇护', '名刀':'名刀·司命',
+      '苍穹':'纯净苍穹', '黑切':'暗影战斧', '电刀':'闪电匕首',
+      '破败':'末世', '无尽':'无尽战刃', '饮血':'泣血之刃',
+      '金身':'辉月', '不详':'不祥征兆', '面具':'痛苦面具'
+    };
+    Object.keys(ALIAS).forEach(function(a){
+      var full = ALIAS[a];
+      if(ITEM_INDEX[full]){ ITEM_INDEX[a] = ITEM_INDEX[full]; names.push(a); }
+    });
+    names.sort(function(a, b){ return b.length - a.length; });
+    ITEM_RE = names.length ? new RegExp('(' + names.map(escRe).join('|') + ')', 'g') : null;
+  }
+  function makeItemChip(name){
+    var it = ITEM_INDEX[name] || null;
+    var sp = document.createElement('span');
+    sp.className = 'item-chip';
+    sp.setAttribute('data-item', name);
+    sp.setAttribute('title', '查看「' + (it ? it.name : name) + '」详情');
+    if(it && it.hasIcon){
+      var img = document.createElement('img');
+      img.src = 'items-icon/' + it.id + '.jpg';
+      img.alt = ''; img.loading = 'lazy';
+      img.onerror = function(){ if(img.parentNode) img.parentNode.removeChild(img); };
+      sp.appendChild(img);
+    } else {
+      var ph = document.createElement('span');
+      ph.className = 'ph ph-' + ((it && it.cat) || 'other');
+      ph.textContent = name.charAt(0);
+      sp.appendChild(ph);
+    }
+    var tx = document.createElement('span');
+    tx.textContent = name;
+    sp.appendChild(tx);
+    return sp;
+  }
+  function injectItemChips(root){
+    buildItemIndex();
+    if(!ITEM_RE) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    var nodes = [], n;
+    while((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(function(node){
+      var txt = node.nodeValue;
+      if(!txt || !node.parentNode) return;
+      // 只在出装行（含 →）内注入，技能/连招/正文一律不动，杜绝误伤
+      if(txt.indexOf('→') < 0) return;
+      ITEM_RE.lastIndex = 0;
+      if(!ITEM_RE.test(txt)) return;
+      ITEM_RE.lastIndex = 0;
+      var frag = document.createDocumentFragment(), last = 0, m;
+      while((m = ITEM_RE.exec(txt)) !== null){
+        if(m.index > last) frag.appendChild(document.createTextNode(txt.slice(last, m.index)));
+        frag.appendChild(makeItemChip(m[0]));
+        last = m.index + m[0].length;
+        if(m.index === ITEM_RE.lastIndex) ITEM_RE.lastIndex++;  // 防零宽匹配死循环
+      }
+      if(last < txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  // ===== 装备详情弹窗 =====
+  function openItemModal(it){
+    var CAT_LABEL = {atk:'攻击', magic:'法术', def:'防御', move:'移动', jungle:'打野', support:'辅助', season:'赛季神器'};
+    var CH2 = (window.ITEMS && window.ITEMS.changes) || [];
+    var rel = CH2.filter(function(c){
+      if(!c.related || !c.related.length) return false;
+      for(var i=0;i<c.related.length;i++){
+        if(it.name === c.related[i] || it.name.indexOf(c.related[i]) === 0) return true;
+      }
+      return false;
+    });
+    if(it.cat === 'season' && !rel.length){
+      rel = CH2.filter(function(c){ return c.badge === 'new'; });
+    }
+    var bt = {new:'新增', buff:'加强', nerf:'削弱'};
+    var badges = '<span class="badge b-' + (it.cat==='season'?'buff':'new') + '">'
+               + (CAT_LABEL[it.cat] || '其他') + '</span>';
+    if(rel.length){
+      badges += '<span class="badge b-' + esc(rel[0].badge) + '">'
+              + (bt[rel[0].badge] || '调整') + '</span>';
+    }
+    document.getElementById('imNm').innerHTML = esc(it.name) + badges;
+    var pr = it.total ? it.total + ' 金' : '—';
+    if(it.price && it.total > it.price) pr += '　·　合成价 ' + it.price + ' 金';
+    document.getElementById('imPr').textContent = pr;
+    var html = '<div class="im-top"><div class="im-ico">'
+      + (it.hasIcon ? '<img src="items-icon/' + it.id + '.jpg" alt="">'
+                    : '<span class="ph ph-' + it.cat + '">' + esc(it.name.charAt(0)) + '</span>')
+      + '</div><div style="flex:1;min-width:0">'
+      + '<div class="im-sec" style="margin-top:0"><div class="lb">属性</div>'
+      + '<div class="vl">' + esc(it.attrs || '—') + '</div></div></div></div>';
+    if(it.passive){
+      html += '<div class="im-sec im-pv"><div class="lb">被动 / 唯一被动</div>'
+           +  '<div class="vl">' + esc(it.passive) + '</div></div>';
+    }
+    if(rel.length){
+      html += rel.map(function(c){
+        return '<div class="im-note"><div class="t"><span class="badge b-' + esc(c.badge) + '">'
+          + (bt[c.badge] || '调整') + '</span>' + esc(c.name) + '</div>'
+          + '<div>' + esc(c.desc) + '</div></div>';
+      }).join('');
+    }
+    html += '<a class="im-goto" href="items.html">→ 打开完整装备库</a>';
+    document.getElementById('imBd').innerHTML = html;
+    document.getElementById('itemModal').classList.add('open');
+  }
+  function closeItemModal(){ document.getElementById('itemModal').classList.remove('open'); }
+  document.getElementById('imClose').addEventListener('click', closeItemModal);
+  document.getElementById('itemModal').addEventListener('click', function(e){
+    if(e.target === this) closeItemModal();
+  });
+
+  function bindItemChips(root){
+    Array.prototype.forEach.call(root.querySelectorAll('.item-chip[data-item]'), function(el){
+      el.addEventListener('click', function(e){
+        e.stopPropagation();
+        buildItemIndex();
+        var it = ITEM_INDEX[el.getAttribute('data-item')];
+        if(it) openItemModal(it);
+      });
+    });
+  }
+
   function bindMatchChips(root){
     Array.prototype.forEach.call(root.querySelectorAll('.cchip[data-name]'), function(el){
       el.addEventListener('click', function(){
@@ -790,6 +1025,8 @@
     }
     body += matchupHTML(h);   // 克制关系始终展示（即便有 detailed，good/bad 也一并呈现）
     document.getElementById('mBody').innerHTML = body;
+    injectItemChips(document.getElementById('mBody'));   // 出装文本 -> 带图标可点 chip
+    bindItemChips(document.getElementById('mBody'));
     bindMatchChips(document.getElementById('mBody'));
     var box = document.querySelector('.modal-box'); if(box) box.scrollTop = 0;
     document.getElementById('modal').classList.add('open');
@@ -905,7 +1142,12 @@
   }
   document.getElementById('mShare').addEventListener('click', shareHero);
   document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    var im = document.getElementById('itemModal');
+    if(im && im.classList.contains('open')) closeItemModal();  // 装备弹窗优先关闭
+    else closeModal();
+  });
 
   // 工具栏事件
   document.getElementById('roleTabs').addEventListener('click', function(e){
