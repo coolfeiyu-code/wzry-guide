@@ -39,13 +39,18 @@
   width:min(520px,92vw);max-height:80vh;overflow-y:auto;background:var(--card);
   border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.28);}
 .im-hd{position:sticky;top:0;z-index:2;background:#1E2A24;color:#F2F5F1;
-  padding:14px 50px 14px 18px;border-radius:16px 16px 0 0;}
+  padding:12px 16px;border-radius:16px 16px 0 0;}
+.im-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.im-back{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);
+  color:#F2F5F1;border:none;border-radius:999px;padding:6px 13px;font-size:13.5px;
+  cursor:pointer;font-family:inherit;transition:.16s;white-space:nowrap;}
+.im-back:hover{background:rgba(255,255,255,.22);}
 .im-nm{font-size:18px;font-weight:600;font-family:var(--font-serif);
   display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 .im-pr{font-size:12.5px;color:#A9C2B4;margin-top:4px;}
-.im-close{position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;
+.im-close{width:30px;height:30px;border-radius:50%;
   border:none;background:rgba(255,255,255,.14);color:#F2F5F1;font-size:19px;line-height:1;
-  cursor:pointer;display:grid;place-items:center;}
+  cursor:pointer;display:grid;place-items:center;flex-shrink:0;}
 .im-close:hover{background:rgba(255,255,255,.24);}
 .im-bd{padding:16px 18px 20px;}
 .im-top{display:flex;gap:14px;align-items:flex-start;}
@@ -68,6 +73,16 @@
   text-decoration:none;border:1px solid var(--line);border-radius:999px;
   padding:6px 15px;background:var(--paper-2);transition:.16s;}
 .im-goto:hover{border-color:var(--celadon-soft);background:var(--card);}
+/* 装备 ↔ 英雄 联动 */
+.im-hero{margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+.im-hero .lb{font-size:12px;color:var(--ink-soft);margin-bottom:8px;letter-spacing:.6px;font-weight:600;}
+.im-hr{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+.im-hr-l{flex-shrink:0;font-size:12.5px;color:var(--celadon-deep);width:48px;font-weight:600;padding-top:3px;}
+[data-theme="dark"] .im-hr-l{color:var(--celadon);}
+.im-hr-c{display:flex;flex-wrap:wrap;gap:6px;}
+.hchip{font-size:12.5px;color:var(--ink);text-decoration:none;background:var(--paper-2);
+  border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer;transition:.16s;}
+.hchip:hover{border-color:var(--celadon-soft);background:var(--card);color:var(--celadon-deep);}
 /* 顶栏「装备库」入口 */
 .nav-link{display:inline-flex;align-items:center;gap:2px;font-size:13px;color:var(--ink-soft);
   text-decoration:none;padding:6px 13px;border-radius:999px;border:1px solid var(--line);
@@ -88,8 +103,7 @@
   .im-box{position:fixed;inset:0;left:0;top:0;transform:none;width:100%;
     max-height:100vh;height:100vh;border-radius:0;overflow-y:auto;
     -webkit-overflow-scrolling:touch;}
-  .im-hd{border-radius:0;padding-top:calc(14px + env(safe-area-inset-top));
-    padding-left:14px;padding-right:52px;}
+  .im-hd{border-radius:0;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;}
   .im-bd{padding:14px 14px calc(28px + env(safe-area-inset-bottom));}
 }
 </style>
@@ -646,7 +660,10 @@
 <div class="modal" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="imNm">
   <div class="im-box">
     <div class="im-hd">
-      <button class="im-close" id="imClose" aria-label="关闭">×</button>
+      <div class="im-bar">
+        <button class="im-back" id="imBack" aria-label="返回">← 返回</button>
+        <button class="im-close" id="imClose" aria-label="关闭">×</button>
+      </div>
       <div class="im-nm" id="imNm"></div>
       <div class="im-pr" id="imPr"></div>
     </div>
@@ -860,6 +877,7 @@
   // ===== 出装注入：把详情里的装备名渲染成带官方图标的可点 chip =====
   var ITEM_INDEX = null;   // 显示名（含简称）-> 装备对象
   var ITEM_RE = null;      // 匹配正则，长名优先，避免「破晓」吃掉「仁者破晓」
+  var ITEM_HEROES = null;  // 装备id -> [hero]，出装引用统计（装备↔英雄联动）
   function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function buildItemIndex(){
     if(ITEM_INDEX || !window.ITEMS) return;
@@ -885,6 +903,31 @@
     });
     names.sort(function(a, b){ return b.length - a.length; });
     ITEM_RE = names.length ? new RegExp('(' + names.map(escRe).join('|') + ')', 'g') : null;
+  }
+  function buildItemHeroes(){
+    if(ITEM_HEROES) return;
+    buildItemIndex();
+    ITEM_HEROES = {};
+    (window.ITEMS.items || []).forEach(function(it){ ITEM_HEROES[it.id] = []; });
+    if(!ITEM_RE) return;
+    HEROES.forEach(function(h){
+      var text = (h.detailed || '') + '\n' + (h.build || '');
+      ITEM_RE.lastIndex = 0; var m, seen = {};
+      while((m = ITEM_RE.exec(text)) !== null){
+        var it = ITEM_INDEX[m[0]];
+        if(it && !seen[it.id]){ seen[it.id] = 1; ITEM_HEROES[it.id].push(h); }
+        if(m.index === ITEM_RE.lastIndex) ITEM_RE.lastIndex++;
+      }
+    });
+  }
+  function roleOf(it){
+    var hs = ITEM_HEROES[it.id] || [];
+    if(!hs.length) return null;
+    var cnt = {};
+    hs.forEach(function(h){ cnt[h.role] = (cnt[h.role]||0) + 1; });
+    var best = null, bestN = -1;
+    ['top','jungle','mid','adc','support'].forEach(function(r){ var c = cnt[r]||0; if(c > bestN){ bestN = c; best = r; } });
+    return best;
   }
   function makeItemChip(name){
     var it = ITEM_INDEX[name] || null;
@@ -977,14 +1020,45 @@
           + '<div>' + esc(c.desc) + '</div></div>';
       }).join('');
     }
+    // 装备 ↔ 英雄 联动：哪些英雄常用这件装备（点名字直达该英雄详情）
+    buildItemHeroes();
+    var hs = (ITEM_HEROES && ITEM_HEROES[it.id]) || [];
+    if(hs.length){
+      var ROLE_LABEL3 = {top:'对抗路', jungle:'打野', mid:'中路', adc:'发育路', support:'游走'};
+      var byRole = {};
+      hs.forEach(function(h){ (byRole[h.role] = byRole[h.role] || []).push(h); });
+      html += '<div class="im-hero"><div class="lb">常用英雄（' + hs.length + ' 位，点名字直达英雄攻略）</div>';
+      ['top','jungle','mid','adc','support'].forEach(function(r){
+        var arr = byRole[r]; if(!arr || !arr.length) return;
+        html += '<div class="im-hr"><span class="im-hr-l">' + ROLE_LABEL3[r] + '</span><div class="im-hr-c">';
+        arr.slice(0, 14).forEach(function(h){
+          html += '<a class="hchip" data-hero="' + esc(h.id) + '">' + esc(h.name) + '</a>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="im-hero"><div class="lb">暂无英雄出装引用（基础/冷门装备）</div></div>';
+    }
     html += '<a class="im-goto" href="items.html">→ 打开完整装备库</a>';
     document.getElementById('imBd').innerHTML = html;
     document.getElementById('itemModal').classList.add('open');
   }
   function closeItemModal(){ document.getElementById('itemModal').classList.remove('open'); }
   document.getElementById('imClose').addEventListener('click', closeItemModal);
+  document.getElementById('imBack').addEventListener('click', closeItemModal);
   document.getElementById('itemModal').addEventListener('click', function(e){
     if(e.target === this) closeItemModal();
+  });
+  // 装备弹窗里的英雄名 -> 关闭装备弹窗并打开该英雄详情
+  document.getElementById('imBd').addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('.hchip[data-hero]');
+    if(a){
+      e.preventDefault();
+      var h = HEROES.find(function(x){ return x.id === a.getAttribute('data-hero'); });
+      closeItemModal();
+      if(h) openModal(h);
+    }
   });
 
   function bindItemChips(root){
@@ -1195,7 +1269,17 @@
     render();
   });
 
+  // 深链：从装备库（items.html#hero-xxx）或分享链接直达某英雄详情
+  function openHeroFromHash(){
+    var m = (location.hash || '').match(/^#hero-([\w-]+)$/);
+    if(!m) return;
+    var h = HEROES.find(function(x){ return x.id === m[1]; });
+    if(h){ closeItemModal(); openModal(h); }
+  }
+  window.addEventListener('hashchange', openHeroFromHash);
+
   render();
+  openHeroFromHash();
 })();
 </script>
 </body>

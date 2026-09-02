@@ -156,6 +156,9 @@
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .imeta .cat{display:inline-block;font-size:10.5px;color:var(--ink-soft);
     border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-top:5px;}
+  .imeta .used{font-size:11px;color:var(--celadon-deep);margin-top:5px;font-weight:600;}
+  [data-theme="dark"] .imeta .used{color:var(--celadon);}
+  .seg-label{font-size:12px;color:var(--ink-soft);margin:4px 2px 2px;font-weight:600;letter-spacing:.4px;}
 
   /* ============ 详情弹窗 ============ */
   .modal{position:fixed;inset:0;z-index:80;display:none;
@@ -165,14 +168,28 @@
     width:min(560px,92vw);max-height:86vh;overflow-y:auto;background:var(--card);
     border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.28);}
   .m-hd{position:sticky;top:0;z-index:2;background:#1E2A24;color:#F2F5F1;
-    padding:14px 50px 14px 18px;border-radius:16px 16px 0 0;}
+    padding:12px 16px;border-radius:16px 16px 0 0;}
+  .m-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .m-back{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);
+    color:#F2F5F1;border:none;border-radius:999px;padding:6px 13px;font-size:13.5px;
+    cursor:pointer;font-family:inherit;transition:.16s;white-space:nowrap;}
+  .m-back:hover{background:rgba(255,255,255,.22);}
+  .m-close{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.14);
+    color:#F2F5F1;font-size:19px;line-height:1;cursor:pointer;display:grid;place-items:center;flex-shrink:0;}
+  .m-close:hover{background:rgba(255,255,255,.24);}
   .m-hd .nm{font-size:18px;font-weight:600;font-family:var(--font-serif);
     display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
   .m-hd .pr{font-size:12.5px;color:#A9C2B4;margin-top:4px;}
-  .m-close{position:absolute;right:12px;top:12px;width:30px;height:30px;
-    border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#F2F5F1;
-    font-size:19px;line-height:1;cursor:pointer;display:grid;place-items:center;}
-  .m-close:hover{background:rgba(255,255,255,.24);}
+  /* 装备↔英雄联动 */
+  .m-hero{margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+  .m-hero .lb{font-size:12px;color:var(--ink-soft);margin-bottom:8px;letter-spacing:.6px;font-weight:600;}
+  .hr{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+  .hr-l{flex-shrink:0;font-size:12.5px;color:var(--celadon-deep);width:48px;font-weight:600;padding-top:3px;}
+  [data-theme="dark"] .hr-l{color:var(--celadon);}
+  .hr-c{display:flex;flex-wrap:wrap;gap:6px;}
+  .hchip{font-size:12.5px;color:var(--ink);text-decoration:none;background:var(--paper-2);
+    border:1px solid var(--line);border-radius:999px;padding:3px 10px;transition:.16s;}
+  .hchip:hover{border-color:var(--celadon-soft);background:var(--card);color:var(--celadon-deep);}
   .m-bd{padding:16px 18px 20px;}
   .m-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
   .m-top .iico{width:64px;height:64px;border-radius:12px;}
@@ -207,8 +224,7 @@
     .m-box{position:fixed;inset:0;left:0;top:0;transform:none;width:100%;
       max-height:100vh;height:100vh;border-radius:0;overflow-y:auto;
       -webkit-overflow-scrolling:touch;}
-    .m-hd{border-radius:0;padding-top:calc(14px + env(safe-area-inset-top));
-      padding-left:14px;padding-right:52px;}
+    .m-hd{border-radius:0;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;}
     .m-bd{padding:14px 14px calc(28px + env(safe-area-inset-bottom));}
   }
 </style>
@@ -239,6 +255,8 @@
 
   <div class="toolbar">
     <div class="seg" id="seg"></div>
+    <div class="seg-label">适配分路（按英雄出装统计）</div>
+    <div class="seg" id="segRole"></div>
     <div class="search-wrap">
       <span class="ico">⌕</span>
       <input class="search" id="search" type="search" placeholder="搜装备名 / 属性 / 被动，如「暴击」「吸血」" autocomplete="off">
@@ -253,7 +271,10 @@
 <div class="modal" id="modal">
   <div class="m-box">
     <div class="m-hd">
-      <button class="m-close" id="mClose" aria-label="关闭">×</button>
+      <div class="m-bar">
+        <button class="m-back" id="mBack" aria-label="返回">← 返回</button>
+        <button class="m-close" id="mClose" aria-label="关闭">×</button>
+      </div>
       <div class="nm" id="mNm"></div>
       <div class="pr" id="mPr"></div>
     </div>
@@ -261,12 +282,55 @@
   </div>
 </div>
 
+<script src="heroes-data.js"></script>
 <script src="items-data.js"></script>
 <script>
 (function(){
   var D = window.ITEMS || {items:[],cats:[],changes:[],meta:{}};
   var ITEMS = D.items || [], CATS = D.cats || [], CHANGES = D.changes || [];
-  var cur = 'all', kw = '';
+  var HEROES = window.HEROES || [];
+  var cur = 'all', curRole = 'all', kw = '';
+  var ROLE_LABEL2 = {top:'对抗路', jungle:'打野', mid:'中路', adc:'发育路', support:'游走'};
+  var ROLE_ORDER2 = ['top','jungle','mid','adc','support'];
+  // ===== 装备 ↔ 英雄 联动：统计每件装备被哪些英雄出装引用 =====
+  var ITEM_HEROES = {};
+  ITEMS.forEach(function(it){ ITEM_HEROES[it.id] = []; });
+  (function buildHeroLink(){
+    if(!HEROES.length) return;
+    var idx = {}, nms = [];
+    ITEMS.forEach(function(it){
+      if(it.total < 700) return;
+      if(it.name.length < 3 && it.total < 1500) return;
+      if(!idx[it.name]){ idx[it.name] = it; nms.push(it.name); }
+    });
+    var AL = {'破晓':'仁者破晓','复活甲':'贤者的庇护','名刀':'名刀·司命','苍穹':'纯净苍穹',
+      '黑切':'暗影战斧','电刀':'闪电匕首','破败':'末世','无尽':'无尽战刃','饮血':'泣血之刃',
+      '金身':'辉月','不详':'不祥征兆','面具':'痛苦面具'};
+    Object.keys(AL).forEach(function(a){ var f = AL[a]; if(idx[f]){ idx[a] = idx[f]; nms.push(a); } });
+    nms.sort(function(a,b){ return b.length - a.length; });
+    if(!nms.length) return;
+    var re = new RegExp('(' + nms.map(function(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }).join('|') + ')', 'g');
+    HEROES.forEach(function(h){
+      var text = (h.detailed||'') + '\n' + (h.build||'');
+      re.lastIndex = 0; var m, seen = {};
+      while((m = re.exec(text)) !== null){
+        var it = idx[m[0]];
+        if(it && !seen[it.id]){ seen[it.id] = 1; ITEM_HEROES[it.id].push(h); }
+        if(m.index === re.lastIndex) re.lastIndex++;
+      }
+    });
+  })();
+  // 每件装备的主分路（被哪个分路英雄用得最多）；以及常用英雄数
+  function roleOf(it){
+    var hs = ITEM_HEROES[it.id] || [];
+    if(!hs.length) return null;
+    var cnt = {};
+    hs.forEach(function(h){ cnt[h.role] = (cnt[h.role]||0) + 1; });
+    var best = null, bestN = -1;
+    ROLE_ORDER2.forEach(function(r){ var c = cnt[r]||0; if(c > bestN){ bestN = c; best = r; } });
+    return best;
+  }
+  ITEMS.forEach(function(it){ it.heroCount = (ITEM_HEROES[it.id]||[]).length; it.mainRole = roleOf(it); });
 
   function esc(s){
     return String(s == null ? '' : s)
@@ -333,12 +397,31 @@
       });
     });
   }
+  function renderRoleSeg(){
+    var tabs = [
+      {id:'all',name:'全部'},{id:'top',name:'对抗路'},{id:'jungle',name:'打野'},
+      {id:'mid',name:'中路'},{id:'adc',name:'发育路'},{id:'support',name:'游走'}
+    ];
+    document.getElementById('segRole').innerHTML = tabs.map(function(t){
+      var n = t.id==='all' ? ITEMS.length
+        : ITEMS.filter(function(it){ return it.mainRole === t.id; }).length;
+      return '<button class="tab' + (t.id===curRole?' active':'') + '" data-role="' + t.id + '">'
+        + t.name + '<span class="n">' + n + '</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('#segRole .tab'), function(b){
+      b.addEventListener('click', function(){
+        curRole = b.getAttribute('data-role');
+        renderRoleSeg(); renderGrid();
+      });
+    });
+  }
 
   /* ---------- 网格 ---------- */
   function matched(){
     var k = kw.trim().toLowerCase();
     return ITEMS.filter(function(it){
       if(cur !== 'all' && it.cat !== cur) return false;
+      if(curRole !== 'all' && it.mainRole !== curRole) return false;
       if(!k) return true;
       return (it.name + ' ' + it.attrs + ' ' + it.passive + ' ' + it.catName)
              .toLowerCase().indexOf(k) >= 0;
@@ -348,19 +431,23 @@
     var list = matched();
     var g = document.getElementById('grid');
     document.getElementById('count').textContent =
-      '共 ' + list.length + ' 件装备' + (kw ? '（关键词：' + kw + '）' : '');
+      '共 ' + list.length + ' 件装备' + (kw ? '（关键词：' + kw + '）' : '')
+      + (curRole !== 'all' ? ' · ' + ROLE_LABEL2[curRole] + '核心装' : '');
     if(!list.length){
       g.innerHTML = '<div class="empty">没有匹配的装备，换个词或分类试试。</div>';
       return;
     }
     g.innerHTML = list.map(function(it){
+      var used = it.heroCount ? '<div class="used">' + it.heroCount + ' 位英雄常用</div>' : '';
+      var roleTag = it.mainRole ? '<span class="cat">' + esc(ROLE_LABEL2[it.mainRole]) + '</span> ' : '';
       return '<div class="icard' + (it.cat==='season'?' season':'') + '" data-id="' + it.id + '">'
         + iconHTML(it)
         + '<div class="imeta">'
         +   '<div class="nm">' + esc(it.name) + '</div>'
         +   '<div class="pr">' + (it.total ? it.total + ' 金' : '—') + '</div>'
         +   '<div class="at">' + esc(it.attrs || '—') + '</div>'
-        +   '<span class="cat">' + esc(it.catName) + '</span>'
+        +   '<span class="cat">' + esc(it.catName) + '</span> ' + roleTag
+        +   used
         + '</div></div>';
     }).join('');
     Array.prototype.forEach.call(g.querySelectorAll('.icard'), function(el){
@@ -388,6 +475,24 @@
     if(it.passive){
       html += '<div class="m-sec pv"><div class="lb">被动 / 唯一被动</div>'
            +  '<div class="vl">' + esc(it.passive) + '</div></div>';
+    }
+    // 装备 ↔ 英雄 联动：哪些英雄常用这件装备
+    var hs = ITEM_HEROES[it.id] || [];
+    if(hs.length){
+      var byRole = {};
+      hs.forEach(function(h){ (byRole[h.role] = byRole[h.role] || []).push(h); });
+      html += '<div class="m-hero"><div class="lb">常用英雄（' + hs.length + ' 位，点名字直达英雄攻略）</div>';
+      ROLE_ORDER2.forEach(function(r){
+        var arr = byRole[r]; if(!arr || !arr.length) return;
+        html += '<div class="hr"><span class="hr-l">' + ROLE_LABEL2[r] + '</span><div class="hr-c">';
+        arr.slice(0, 14).forEach(function(h){
+          html += '<a class="hchip" href="index.html#hero-' + esc(h.id) + '">' + esc(h.name) + '</a>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="m-hero"><div class="lb">暂无英雄出装引用（基础/冷门装备）</div></div>';
     }
     // 关联改动
     var rel = CHANGES.filter(function(c){
@@ -418,6 +523,7 @@
     document.body.style.overflow = '';
   }
   document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('mBack').addEventListener('click', closeModal);
   document.getElementById('modal').addEventListener('click', function(e){
     if(e.target === this) closeModal();
   });
@@ -444,6 +550,7 @@
   /* ---------- 启动 ---------- */
   renderChanges();
   renderSeg();
+  renderRoleSeg();
   renderGrid();
   var m = D.meta || {};
   document.getElementById('metaLine').textContent =
