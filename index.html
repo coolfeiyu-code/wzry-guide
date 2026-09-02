@@ -653,7 +653,6 @@
     <div class="m-head">
       <div class="m-head-actions">
         <button class="m-share" id="mShare" title="分享链接">⤴</button>
-        <button class="m-share" id="mPdf" title="导出 PDF">⤓</button>
         <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
       </div>
       <h2 id="mTitle"></h2>
@@ -680,8 +679,6 @@
 
 <script src="heroes-data.js"></script>
 <script src="items-data.js"></script>
-<script src="vendor/html2canvas.min.js"></script>
-<script src="vendor/jspdf.umd.min.js"></script>
 <script>
 (function(){
   var META = window.GUIDE_META || {};
@@ -1121,65 +1118,14 @@
   }
   document.getElementById('modalClose').addEventListener('click', closeModal);
 
-  // ===== 分享 / 导出 PDF（手机优先系统分享面板 + PDF 文件，桌面降级下载）=====
+  // ===== 分享：即时深链 + 系统面板 / 复制链接兜底（无 PDF 导出）=====
   function toast(msg){
     var t = document.getElementById('toast');
     if(!t){ t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
     t.textContent = msg; t.classList.add('show');
     clearTimeout(t._tm); t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2800);
   }
-  function downloadBlob(blob, filename){
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click();
-    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
-  }
-  // 把详情内容区渲染成 A4 PDF（多页自动切片）
-  function renderBodyToPdf(el, name){
-    return window.html2canvas(el, {
-      scale: 2,
-      backgroundColor: (getComputedStyle(el).backgroundColor || '#FFFFFF'),
-      useCORS: true,
-      logging: false,
-      onclone: function(doc){
-        var imgs = doc.querySelectorAll('#mBody img');
-        Array.prototype.forEach.call(imgs, function(i){ i.style.visibility = 'hidden'; });
-      }
-    }).then(function(cv){
-      var imgData = cv.toDataURL('image/jpeg', 0.92);
-      var pdf = new window.jspdf.jsPDF({ unit:'pt', format:'a4', compress:true });
-      var pageW = pdf.internal.pageSize.getWidth();
-      var pageH = pdf.internal.pageSize.getHeight();
-      var imgW = pageW;
-      var imgH = cv.height * imgW / cv.width;
-      if(imgH <= pageH){
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
-      } else {
-        var pageCanvas = document.createElement('canvas');
-        pageCanvas.width = cv.width;
-        var pageHpx = Math.ceil(cv.width * pageH / pageW);
-        var pages = Math.ceil(cv.height / pageHpx);
-        for(var i=0;i<pages;i++){
-          var sh = Math.min(pageHpx, cv.height - i*pageHpx);
-          pageCanvas.height = sh;
-          var pctx = pageCanvas.getContext('2d');
-          pctx.fillStyle = '#FFFFFF'; pctx.fillRect(0,0,pageCanvas.width, sh);
-          pctx.drawImage(cv, 0, i*pageHpx, cv.width, sh, 0, 0, cv.width, sh);
-          if(i>0) pdf.addPage();
-          pdf.addImage(pageCanvas.toDataURL('image/jpeg',0.92), 'JPEG', 0, 0, imgW, sh*imgW/cv.width);
-        }
-      }
-      return pdf.output('blob');
-    });
-  }
-  // 给异步渲染加超时，避免极端环境下按钮长时间卡在「生成中」
-  function withTimeout(p, ms){
-    return new Promise(function(res, rej){
-      var t = setTimeout(function(){ rej(new Error('timeout')); }, ms);
-      p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
-    });
-  }
+  // PDF 导出已移除：html2canvas 在手机上不稳定，分享改为即时深链（见 shareHero）
   // ===== 分享：即时深链 + 系统面板 / 复制链接兜底 =====
   // 关键路径不再跑 html2canvas（手机上慢且易失败 -> 沙漏/无法分享），改为分享直达该英雄的链接
   function shareHero(){
@@ -1215,19 +1161,7 @@
       copyLink();
     }
   }
-  // 导出 PDF（独立按钮，不阻塞分享；生成慢/失败只提示，不影响分享）
-  function exportPdf(){
-    var btn = document.getElementById('mPdf');
-    var original = btn.textContent;
-    var name = (document.getElementById('mTitle').textContent || '英雄').replace(/\s+/g,'') || '英雄';
-    var bodyEl = document.getElementById('mBody');
-    btn.disabled = true; btn.textContent = '⏳';
-    withTimeout(renderBodyToPdf(bodyEl, name), 15000)
-      .then(function(blob){ downloadBlob(blob, name + '-攻略.pdf'); btn.disabled = false; btn.textContent = original; toast('已下载 PDF'); })
-      .catch(function(){ btn.disabled = false; btn.textContent = original; toast('PDF 生成失败，可改用分享链接'); });
-  }
   document.getElementById('mShare').addEventListener('click', shareHero);
-  document.getElementById('mPdf').addEventListener('click', exportPdf);
   document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;
