@@ -8,8 +8,8 @@ set -e
 ROOT=$(git rev-parse --show-toplevel)
 FILE="heroes-data.js"
 
-# 只有攻略内容文件变动才升版
-changed=$(git diff --cached --name-only -- "$FILE" "index.html")
+# 攻略内容、界面、图标或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
+changed=$(git diff --cached --name-only -- "$FILE" "index.html" "manifest.json" "icons/")
 if [ -z "$changed" ]; then
   exit 0
 fi
