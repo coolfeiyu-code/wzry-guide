@@ -11,7 +11,7 @@
 window.GUIDE_META = {
   season: "S44「不拘命格」",
   seasonStart: "2026-06-25",
-  version: "2.1.9",
+  version: "2.1.10",
   patch: "截至 S44 赛季末（2026-09-03 含 9.3 英雄平衡）",
   note: "全英雄摘要版先行，详细攻略持续更新中",
   source: "综合搜狐/抖音精选/百度百科等 2026-08 公开榜单，以正式服为准",
@@ -392,9 +392,9 @@ window.HEROES = [
   <div class="tip-box"><strong>版本调整（S44）：</strong>🔺 <b>暗信加强</b>：1/2技能伤害提升、1技能 CD 减少、3技能生效更快（范围略缩）；光信环境平调。综合暗信崛起吃双形态红利。</div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动 · 灰暗利刃<span class="tag">双形态 / 增益</span></div><div class="desc">统御形态：每 <code>1%</code> 攻速提升 <code>0.15%穿透</code>（满能量 <code>+50%</code>，上限 <code>100%</code>）。狂暴形态：每 <code>1.5</code> 额外物攻提升 <code>0.1%攻速</code>（满能量 <code>+50%</code>）。切换形态获全额能量，每秒消耗 <code>10</code> 点。</div><div class="note">光信堆攻速=堆穿透；暗信堆物攻=堆攻速。两套出装逻辑完全不同。</div></div>
-<div class="skill"><div class="name">一技能（光信）· 急速突进<span class="tag">位移 / 伤害</span></div><div class="desc">向指定方向突进 <code>300/360/420/480/540/600 + 100%额外物攻</code>；未命中获 <code>200 + 3%额外生命</code> 回复。CD <code>6.5→5秒</code>，蓝耗 <code>40</code>。<b>暗信</b>：长距离穿墙冲锋，命中强化三次普攻，可绕后切C、穿墙跑图。</div><div class="note">光信一技能蓄力可保命位移；暗信一技能是带线拉扯灵魂。</div></div>
-<div class="skill"><div class="name">二技能（光信）· 强力斩击 / 暗影猎兽<span class="tag">远程消耗 / 减速</span></div><div class="desc"><b>光信</b>：斩出剑气 <code>450/540/630/720/810/900 + 135%额外物攻</code> + <code>25%</code> 减速（<code>2秒</code>），命中刷新减 CD。<b>暗信</b>：范围伤害 + 减速，叠加撕裂持续掉血，黏人留人核心。CD <code>10→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">S44 暗信二技能可触发法球/暴击——这是暗信前中期伤害不降的关键。</div></div>
-<div class="skill"><div class="name">三技能 · 力量觉醒 / 暗影爆发<span class="tag">形态切换 / 控制</span></div><div class="desc"><b>光信</b>：瞬间切统御形态获全额能量。<b>暗信</b>：范围击飞 <code>0.75秒</code> 控制，团战分割阵型、单带被包夹反手控多人。S44 三技能延迟/跟随优化，可配合闪现"大闪"开团秒C。CD <code>30/27/24秒</code>，蓝耗 <code>80</code>。</div><div class="note">暗信大闪是从0到1的突破，让"独狼"也能创造奇迹。</div></div>
+<div class="skill"><div class="name">一技能（光信）· 急速突进<span class="tag">位移 / 伤害</span></div><div class="desc">向指定方向突进 <code>300/360/420/480/540/600 + 100%额外物攻</code>；未命中获 <code>200 + 3%额外生命</code> 回复。CD <code>8→3秒</code>，蓝耗 <code>40</code>。<b>暗信</b>：长距离穿墙冲锋，命中强化三次普攻，可绕后切C、穿墙跑图。</div><div class="note">光信一技能蓄力可保命位移；暗信一技能是带线拉扯灵魂。</div></div>
+<div class="skill"><div class="name">二技能（光信）· 强力斩击 / 暗影猎兽<span class="tag">远程消耗 / 减速</span></div><div class="desc"><b>光信</b>：斩出剑气 <code>300/350/400/450/500/550 + 135%额外物攻</code> + <code>25%</code> 减速（<code>2秒</code>），命中刷新减 CD。<b>暗信</b>：范围伤害 + 减速，叠加撕裂持续掉血，黏人留人核心。CD <code>5→5秒</code>，蓝耗 <code>50</code>。</div><div class="note">S44 暗信二技能可触发法球/暴击——这是暗信前中期伤害不降的关键。</div></div>
+<div class="skill"><div class="name">三技能 · 力量觉醒 / 暗影爆发<span class="tag">形态切换 / 控制</span></div><div class="desc"><b>光信</b>：瞬间切统御形态获全额能量。<b>暗信</b>：范围击飞 <code>0.75秒</code> 控制，团战分割阵型、单带被包夹反手控多人。S44 三技能延迟/跟随优化，可配合闪现"大闪"开团秒C。CD <code>30→30秒</code>，蓝耗 <code>80</code>。</div><div class="note">暗信大闪是从0到1的突破，让"独狼"也能创造奇迹。</div></div>
 <h4>连招</h4>
   <div class="combo"><b>光信消耗</b>：二技能远程poke → 普攻减CD → 一技能蓄力留保命；爆发 1蓄力+3+2+平A</div>
   <div class="combo"><b>暗信带线</b>：一技能霸体加速+高吸血循环 1+A+1+A；被包夹 三技能击飞反手控多人脱身</div>
@@ -753,8 +753,8 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">暗影之月（被动）<span class="tag">续航</span></div><div class="desc">释放技能召唤暗影仆从（最多 <code>6</code> 个），自动攻击附近敌人造成法术伤害并回复自身生命。暗影之力满格时普攻强化为远程链镰。</div><div class="note">仆从是芈月续航根本，站撸时尽量留住被动层数再接普攻。</div></div>
-<div class="skill"><div class="name">痛苦冲击（一技能）<span class="tag">位移</span></div><div class="desc">向指定方向释放暗影，命中敌人造成 <code>200/260/320/380/440/500 + 28%法术</code> 法术伤害并连接；可二段释放瞬移到暗影位置，连接状态目标受伤加深 <code>10%</code>。CD <code>11→9秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能二段是芈月唯一硬位移，用来追杀、逃跑或穿墙，捏好别乱交。</div></div>
-<div class="skill"><div class="name">幻翼仆从（二技能）<span class="tag">核心</span></div><div class="desc">释放链镰连接敌人，持续吸取其攻击力与生命，期间降低目标输出；链子存在时芈月普攻附带额外伤害。冷却返还比例 <code>65%</code>，施法距离 <code>+50</code> 码。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">二技能是灵魂，命中即赢一半；链住后边走边 A，越打越赚。</div></div>
+<div class="skill"><div class="name">痛苦冲击（一技能）<span class="tag">位移</span></div><div class="desc">向指定方向释放暗影，命中敌人造成 <code>200/220/240/260/280/300 + 28%法术</code> 法术伤害并连接；可二段释放瞬移到暗影位置，连接状态目标受伤加深 <code>10%</code>。CD <code>10→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能二段是芈月唯一硬位移，用来追杀、逃跑或穿墙，捏好别乱交。</div></div>
+<div class="skill"><div class="name">幻翼仆从（二技能）<span class="tag">核心</span></div><div class="desc">释放链镰连接敌人，持续吸取其攻击力与生命，期间降低目标输出；链子存在时芈月普攻附带额外伤害。冷却返还比例 <code>65%</code>，施法距离 <code>+50</code> 码。CD <code>9→9秒</code>，蓝耗 <code>60</code>。</div><div class="note">二技能是灵魂，命中即赢一半；链住后边走边 A，越打越赚。</div></div>
 <div class="skill"><div class="name">暗影之遁（三技能）<span class="tag">不可选中</span></div><div class="desc">化身暗影无法被选中 <code>2秒</code>，增加移速并造成 <code>400/500/600/700/800/900 + 70%法术</code> 法术伤害，结束后留下暗影仆从。CD <code>20→16秒</code>，蓝耗 <code>90</code>。</div><div class="note">大招用来躲关键控制/爆发（如妲己二技能、诸葛亮大招），也是反杀的资本。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线消耗：</b>二技能链住 → 普攻 ×3 → 一技能拉近补伤害<br><span>链子吸血越久越赚，注意走位保持链距。</span></div>
@@ -825,9 +825,9 @@ window.HEROES = [
   <div class="tip-box"><strong>版本调整（S44）：</strong>🔺 <b>加强</b>：被动真实伤害提升（法球装备削弱的弥补方案），但二技能仍依赖法球触发，整体小幅提升。</div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动 · 师道尊严<span class="tag">训诫 / 真伤 / 免伤</span></div><div class="desc">普攻叠训诫（最多 <code>5层</code>），满层获 <code>60</code> 移速 + <code>25%</code> 攻速，普攻附 <code>90 + 28%额外物攻</code> 真伤；每次攻击减 <code>1秒</code> 圣人训诫/举一反三 CD。蓝耗 <code>0</code>。</div><div class="note">贯穿全程穿插普攻维持5层，断层后坦度与输出大幅下滑。</div></div>
-<div class="skill"><div class="name">一技能 · 圣人训诫<span class="tag">拉拽 / 穿墙</span></div><div class="desc">挥戒尺拉拽命中敌至身前 <code>320/384/448/512/576/640 + 100%额外物攻</code> + <code>25%</code> 减速（<code>1.5秒</code>，随等级延长）。CD <code>8→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">唯一拉扯手段，可穿墙探草打断突进；别空放。团战拉扯刺客/限后排走位。</div></div>
-<div class="skill"><div class="name">二技能 · 举一反三<span class="tag">减伤 / 反弹</span></div><div class="desc">获 <code>45%~65%减伤</code> + <code>25%</code> 移速（<code>2秒</code>）；期间受英雄普攻反弹伤害（带法球，每敌 1 次）+ <code>15%</code> 减速；<code>25%</code> 几率额外普攻（<code>50%</code> 伤）。CD <code>8→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">自保神技。面对马可/后羿/公孙离平A直接开，大幅降持续输出；别用来清兵消耗。</div></div>
-<div class="skill"><div class="name">三技能 · 圣人之威<span class="tag">捆绑 / 强开</span></div><div class="desc">冲锋 <code>600/900/1200 + 200%额外物攻</code>，束缚首个撞到的英雄 <code>5秒</code>（期间目标伤降 <code>20%</code>）。CD <code>45→35秒</code>，蓝耗 <code>100</code>。</div><div class="note">唯一定点强开。捆绑期间目标无法位移但能放技能，同步开二技能减免站撸。别绑坦克/带净化目标，优先锁无位移射手。</div></div>
+<div class="skill"><div class="name">一技能 · 圣人训诫<span class="tag">拉拽 / 穿墙</span></div><div class="desc">挥戒尺拉拽命中敌至身前 <code>200/240/280/320/360/400 + 100%额外物攻</code> + <code>25%</code> 减速（<code>1.5秒</code>，随等级延长）。CD <code>8→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">唯一拉扯手段，可穿墙探草打断突进；别空放。团战拉扯刺客/限后排走位。</div></div>
+<div class="skill"><div class="name">二技能 · 举一反三<span class="tag">减伤 / 反弹</span></div><div class="desc">获 <code>45%~65%减伤</code> + <code>25%</code> 移速（<code>2秒</code>）；期间受英雄普攻反弹伤害（带法球，每敌 1 次）+ <code>15%</code> 减速；<code>25%</code> 几率额外普攻（<code>50%</code> 伤）。CD <code>8→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">自保神技。面对马可/后羿/公孙离平A直接开，大幅降持续输出；别用来清兵消耗。</div></div>
+<div class="skill"><div class="name">三技能 · 圣人之威<span class="tag">捆绑 / 强开</span></div><div class="desc">冲锋 <code>400/500/600 + 200%额外物攻</code>，束缚首个撞到的英雄 <code>5秒</code>（期间目标伤降 <code>20%</code>）。CD <code>45→35秒</code>，蓝耗 <code>100</code>。</div><div class="note">唯一定点强开。捆绑期间目标无法位移但能放技能，同步开二技能减免站撸。别绑坦克/带净化目标，优先锁无位移射手。</div></div>
 <h4>连招</h4>
   <div class="combo"><b>对线换血</b>：1拉回 → 开2减伤反弹 → 普攻叠满5层真伤 → 血优后撤</div>
   <div class="combo"><b>绕后锁C（核心）</b>：闪现侧面绕后 → 3捆绑射手/法师 → 1拉近 → 晕眩补控 → 2抵挡反打</div>
@@ -1011,9 +1011,9 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">怒潮（被动）<span class="tag">续航</span></div><div class="desc">每次受击或释放技能叠加「怒气」（最多 <code>5层</code>），满层后下次普攻造成额外 <code>80 + 40%物攻</code> 并回血 <code>6%最大生命</code>，提升持续作战能力。</div><div class="note">被动让孙策越打越硬，对拼时尽量叠满怒气再交普攻。</div></div>
-<div class="skill"><div class="name">劈风斩（一技能）<span class="tag">控制</span></div><div class="desc">向前横扫造成 <code>220/264/308/352/396/440 + 100%物攻</code> 物理伤害，命中敌人后短暂停顿并造成 <code>0.5秒</code> 击退/眩晕。CD <code>7→5秒</code>，蓝耗 <code>40</code>。</div><div class="note">一技能是清线与控制衔接，接大招撞人前可先手控制。</div></div>
-<div class="skill"><div class="name">惊涛骇浪（二技能）<span class="tag">位移</span></div><div class="desc">向前突进并造成范围 <code>180/216/252/288/324/360 + 80%物攻</code> 物理伤害，命中英雄减少冷却，可连续释放追击。CD <code>8→6秒</code>，蓝耗 <code>40</code>。</div><div class="note">二技能提供两段位移，用于追击、穿墙或调整大招撞人角度。</div></div>
-<div class="skill"><div class="name">长帆破浪（三技能）<span class="tag">开团</span></div><div class="desc">驾船冲锋，撞到敌人造成 <code>300/375/450/525/600 + 110%物攻</code> 物理伤害与 <code>1秒</code> 眩晕并击飞，航行中可转向，撞墙或结束驶出；航行期间获得护盾 <code>300 + 10%额外物攻</code>。CD <code>35→25秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招是孙策灵魂，预判敌人走位开船撞人，全图支援开团。</div></div>
+<div class="skill"><div class="name">劈风斩（一技能）<span class="tag">控制</span></div><div class="desc">向前横扫造成 <code>110/132/154/176/198/220 + 100%物攻</code> 物理伤害，命中敌人后短暂停顿并造成 <code>0.5秒</code> 击退/眩晕。CD <code>8→7.6秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是清线与控制衔接，接大招撞人前可先手控制。</div></div>
+<div class="skill"><div class="name">惊涛骇浪（二技能）<span class="tag">位移</span></div><div class="desc">向前突进并造成范围 <code>180/242/304/366/428/490 + 80%物攻</code> 物理伤害，命中英雄减少冷却，可连续释放追击。CD <code>9→6秒</code>，蓝耗 <code>70</code>。</div><div class="note">二技能提供两段位移，用于追击、穿墙或调整大招撞人角度。</div></div>
+<div class="skill"><div class="name">长帆破浪（三技能）<span class="tag">开团</span></div><div class="desc">驾船冲锋，撞到敌人造成 <code>250/400/550 + 110%物攻</code> 物理伤害与 <code>1秒</code> 眩晕并击飞，航行中可转向，撞墙或结束驶出；航行期间获得护盾 <code>300 + 10%额外物攻</code>。CD <code>40→30秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招是孙策灵魂，预判敌人走位开船撞人，全图支援开团。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>开船撞人：</b>大招开船 → 撞中眩晕 → 二技能贴近 → 一技能控制 → 普攻<br><span>开船撞中是整套爆发前提，预判走位。</span></div>
 <div class="combo"><b>支援先手：</b>大招从野区/河道开船进场 → 撞后排 → 二技能 + 一技能连控<br><span>利用全图机动性绕后撞 C 位。</span></div>
@@ -1052,9 +1052,9 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">石之炼金（被动）<span class="tag">核心</span></div><div class="desc">造成伤害有 <code>25%~100%</code> 几率将敌人石化 <code>1秒</code>，本赛季改为渐进叠加（每次受击 <code>+10%</code>，最高 <code>100%</code> 必中），同一目标有内置 CD <code>6秒</code>。</div><div class="note">被动是钟无艳灵魂，连续输出必出石化，近身黏人无解。</div></div>
-<div class="skill"><div class="name">狂飙突进（一技能）<span class="tag">位移</span></div><div class="desc">向指定方向位移并造成 <code>250/310/370/430/490/550 + 120%物攻</code> 物理伤害，命中后 <code>+30%</code> 加速 <code>2秒</code>；大招命中可减少其 CD <code>1秒</code>。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">一技能贴脸起手，配合大招减 CD 可频繁位移黏人。</div></div>
-<div class="skill"><div class="name">震慑打击（二技能）<span class="tag">护盾</span></div><div class="desc">生成 <code>500/650/800/950/1100/1250 + 150%物攻</code> 护盾并造成范围伤害，护盾存在期间提升 <code>30%</code> 输出。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">二技能护盾是换血资本，开拼前先开盾再贴脸。</div></div>
-<div class="skill"><div class="name">飓风之锤（三技能）<span class="tag">范围</span></div><div class="desc">蓄力后旋转锤击，持续 <code>3秒</code> 多段 <code>180/220/260/300/340/380 + 80%物攻</code> 物理伤害，每命中一次减少一技能 CD <code>1秒</code>；本赛季移除移速惩罚。CD <code>12→9秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招是团战/单挑核心输出，边转边黏，配合被动石化锁死敌人。</div></div>
+<div class="skill"><div class="name">狂飙突进（一技能）<span class="tag">位移</span></div><div class="desc">向指定方向位移并造成 <code>225/270/315/360/405/450 + 120%物攻</code> 物理伤害，命中后 <code>+30%</code> 加速 <code>2秒</code>；大招命中可减少其 CD <code>5→5秒</code>。CD <code>10→8秒</code>，蓝耗 <code>40</code>。</div><div class="note">一技能贴脸起手，配合大招减 CD 可频繁位移黏人。</div></div>
+<div class="skill"><div class="name">震慑打击（二技能）<span class="tag">护盾</span></div><div class="desc">生成 <code>300/380/460/540/620/700 + 150%物攻</code> 护盾并造成范围伤害，护盾存在期间提升 <code>30%</code> 输出。CD <code>8.0→5.0秒</code>，蓝耗 <code>55</code>。</div><div class="note">二技能护盾是换血资本，开拼前先开盾再贴脸。</div></div>
+<div class="skill"><div class="name">飓风之锤（三技能）<span class="tag">范围</span></div><div class="desc">蓄力后旋转锤击，持续 <code>3秒</code> 多段 <code>150/225/300 + 80%物攻</code> 物理伤害，每命中一次减少一技能 CD <code>40→30秒</code>；本赛季移除移速惩罚。CD <code>12→9秒</code>，蓝耗 <code>80</code>。</div><div class="note">大招是团战/单挑核心输出，边转边黏，配合被动石化锁死敌人。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>贴脸爆发：</b>一技能位移贴近 → 二技能开盾 → 大招旋转 → 石化触发补普攻<br><span>大招命中减一技能 CD，可再次位移黏人。</span></div>
 <div class="combo"><b>蹲草先手：</b>二技能开盾预存 → 一技能突进 → 大招旋转压血<br><span>草丛起手避免被消耗，贴脸即赢。</span></div>
@@ -1094,8 +1094,8 @@ window.HEROES = [
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">霸道之刃（被动）<span class="tag">强化</span></div><div class="desc">每次释放技能后下次普攻强化为三段斩击，第三段击飞 <code>0.5秒</code>，是曹操主要输出与控制手段。</div><div class="note">普攻穿插技能打出三段，第三段击飞用于留人/补控。</div></div>
 <div class="skill"><div class="name">剑气斩（一技能）<span class="tag">输出</span></div><div class="desc">向前释放剑气造成 <code>300/360/420/480/540/600 + 100%物攻</code> 物理伤害，可三段释放（最后一段范围更大），命中英雄减少冷却。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能三段是核心输出，贴脸打满伤害并触发被动强化普攻。</div></div>
-<div class="skill"><div class="name">纵横天下（二技能）<span class="tag">减速</span></div><div class="desc">释放剑气减速敌人 <code>50%</code> 并造成 <code>240/288/336/384/432/480 + 90%物攻</code> 伤害；被动：普攻命中减少二技能冷却 <code>1秒</code>。CD <code>10→8秒</code>，蓝耗 <code>40</code>。</div><div class="note">二技能减速黏人，配合普攻减 CD 可频繁释放。</div></div>
-<div class="skill"><div class="name">浴血枭雄（三技能）<span class="tag">核心</span></div><div class="desc">解除控制并大幅提升攻速 <code>+50%~100%</code>、吸血 <code>+20%~35%</code> 与韧性 <code>+30%</code>，持续 <code>8秒</code>，期间普攻附带额外伤害并回血。CD <code>30→24秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招是曹操灵魂，残血开启反杀；S44 续航优化后吸血更猛。</div></div>
+<div class="skill"><div class="name">纵横天下（二技能）<span class="tag">减速</span></div><div class="desc">释放剑气减速敌人 <code>50%</code> 并造成 <code>350/420/490/560/630/700 + 90%物攻</code> 伤害；被动：普攻命中减少二技能冷却 <code>1秒</code>。CD <code>10→6秒</code>，蓝耗 <code>40</code>。</div><div class="note">二技能减速黏人，配合普攻减 CD 可频繁释放。</div></div>
+<div class="skill"><div class="name">浴血枭雄（三技能）<span class="tag">核心</span></div><div class="desc">解除控制并大幅提升攻速 <code>+50%~100%</code>、吸血 <code>+20%~35%</code> 与韧性 <code>+30%</code>，持续 <code>8秒</code>，期间普攻附带额外伤害并回血。CD <code>40→30秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招是曹操灵魂，残血开启反杀；S44 续航优化后吸血更猛。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对拼反杀：</b>二技能减速 → 一技能三段 → 被动强化普攻 → 大招开吸血反打<br><span>残血开大招吸血翻盘，越打越满。</span></div>
 <div class="combo"><b>贴脸爆发：</b>大招开启 → 一技能三段 → 二技能减速 → 强化普攻击飞<br><span>大招期间攻速吸血拉满，持续输出。</span></div>
@@ -1128,9 +1128,9 @@ window.HEROES = [
   <div class="tip-box"><strong>版本调整（S44）：</strong>⚖️ <b>平调</b>：S44 无直接改动；收枪戳枪高机动，高分段版本之子、低分易暴毙。</div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动 · 魔影突袭<span class="tag">移速 / 强化普攻</span></div><div class="desc">放技能 <code>+5</code> 移速（最多 <code>3层</code>）；拾冷晖枪获 <code>20</code> 移速（<code>4秒</code>，<code>2秒</code> 达上限）+ 强化普攻 <code>70 + 22%额外物攻</code> + 回血 <code>100 + 2%额外生命</code>（捡/收枪一半），减所有技能 <code>15%</code> CD。<b>额外移速等量提升技能/强普伤害</b>。</div><div class="note">理想状态每次强普都收枪加速，形成"收枪-突刺-收枪"闭环。枪消失 5 秒后恢复。</div></div>
-<div class="skill"><div class="name">一技能 · 萧索之刃<span class="tag">投掷 / 穿透</span></div><div class="desc">投枪 <code>320/384/448/512/576/640 + 110%额外物攻</code> 插敌后（<code>10秒</code>）；击败目标继续飞 <code>+50%</code> 伤。CD <code>7.5→6秒</code>，蓝耗 <code>40</code>。</div><div class="note">用于存枪（扔远处）、消耗、收割；击败继续飞可穿透。</div></div>
-<div class="skill"><div class="name">二技能 · 日落孤枪<span class="tag">召唤 / 减速</span></div><div class="desc">指定位置召枪 <code>240/288/336/384/432/480 + 90%额外物攻</code> + <code>15%</code> 减速（<code>2秒</code>，随等级）。CD <code>7.5→6秒</code>，蓝耗 <code>40</code>。</div><div class="note">脚下放枪=近身戳枪起点；团战前提前扔枪准备进场爆发。</div></div>
-<div class="skill"><div class="name">三技能 · 万刃归鞘<span class="tag">召回 / 位移 / 爆发</span></div><div class="desc">召最近枪飞回 <code>100 + 63%额外物攻 + 4.5%损失生命</code>；升级增上限（最多 <code>4次</code>）。召回路径即位移。CD <code>6→4秒</code>，蓝耗 <code>80</code>。</div><div class="note">爆发来源也是位移。追击收枪突进，撤退反向开大抛石机逃生。别等所有枪到位再开大，实时开。</div></div>
+<div class="skill"><div class="name">一技能 · 萧索之刃<span class="tag">投掷 / 穿透</span></div><div class="desc">投枪 <code>200/240/280/320/360/400 + 110%额外物攻</code> 插敌后（<code>10秒</code>）；击败目标继续飞 <code>+50%</code> 伤。CD <code>8→7秒</code>，蓝耗 <code>40</code>。</div><div class="note">用于存枪（扔远处）、消耗、收割；击败继续飞可穿透。</div></div>
+<div class="skill"><div class="name">二技能 · 日落孤枪<span class="tag">召唤 / 减速</span></div><div class="desc">指定位置召枪 <code>150/180/210/240/270/300 + 90%额外物攻</code> + <code>15%</code> 减速（<code>2秒</code>，随等级）。CD <code>8→7秒</code>，蓝耗 <code>40</code>。</div><div class="note">脚下放枪=近身戳枪起点；团战前提前扔枪准备进场爆发。</div></div>
+<div class="skill"><div class="name">三技能 · 万刃归鞘<span class="tag">召回 / 位移 / 爆发</span></div><div class="desc">召最近枪飞回 <code>100 + 63%额外物攻 + 4.5%损失生命</code>；升级增上限（最多 <code>4次</code>）。召回路径即位移。CD <code>50→45秒</code>，蓝耗 <code>80</code>。</div><div class="note">爆发来源也是位移。追击收枪突进，撤退反向开大抛石机逃生。别等所有枪到位再开大，实时开。</div></div>
 <h4>连招</h4>
   <div class="combo"><b>对线消耗</b>：2A1A（脚下放2→捡枪戳→远处扔1→捡枪再戳，无伤消耗）</div>
   <div class="combo"><b>存枪单杀（4级后）</b>：提前2存枪 → 1扔敌后 → 捡A → 开大收两枪 → 两段强普秒脆皮</div>
@@ -1676,9 +1676,9 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">毫发无伤（被动）<span class="tag">核心</span></div><div class="desc">受到伤害转为「灰血」，攻击英雄/野怪将 <code>40%</code> 灰血转为真实回复；灰血超时未转化则消失。</div><div class="note">被动是残血反杀根源，越打越肉，但被制裁直接废掉回复。</div></div>
-<div class="skill"><div class="name">肉弹蹦床（一技能）<span class="tag">位移</span></div><div class="desc">跳起造成 <code>150 + 8%最大生命</code> 伤害 + 击飞 <code>0.5秒</code>，落地再砸一次；可两段跳调整位置。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是跳劈起手+留人，主升，残血开大后跳劈击飞。</div></div>
-<div class="skill"><div class="name">倒打一耙（二技能）<span class="tag">控制</span></div><div class="desc">钉耙突进，命中墙/英雄钉住造成 <code>250 + 12%最大生命</code> 伤害 + 眩晕（撞墙触发额外 <code>150 + 6%最大生命</code> 伤 + 晕 <code>0.5秒</code>）。CD <code>10→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">二技能撞墙晕是核心控，把人顶到墙上打额外晕。</div></div>
-<div class="skill"><div class="name">圈养时刻（三技能）<span class="tag">限制</span></div><div class="desc">筑起围墙 <code>4秒</code> 限制敌人走位，墙上附加伤害 <code>100 + 4%最大生命</code>；分割战场与留人神技。CD <code>35→30秒</code>，蓝耗 <code>90</code>。</div><div class="note">大招圈人专治站桩输出，团战把 C 位圈住集火。</div></div>
+<div class="skill"><div class="name">肉弹蹦床（一技能）<span class="tag">位移</span></div><div class="desc">跳起造成 <code>150 + 8%最大生命</code> 伤害 + 击飞 <code>0.5秒</code>，落地再砸一次；可两段跳调整位置。CD <code>8→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是跳劈起手+留人，主升，残血开大后跳劈击飞。</div></div>
+<div class="skill"><div class="name">倒打一耙（二技能）<span class="tag">控制</span></div><div class="desc">钉耙突进，命中墙/英雄钉住造成 <code>250 + 12%最大生命</code> 伤害 + 眩晕（撞墙触发额外 <code>150 + 6%最大生命</code> 伤 + 晕 <code>0.5秒</code>）。CD <code>11→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">二技能撞墙晕是核心控，把人顶到墙上打额外晕。</div></div>
+<div class="skill"><div class="name">圈养时刻（三技能）<span class="tag">限制</span></div><div class="desc">筑起围墙 <code>4秒</code> 限制敌人走位，墙上附加伤害 <code>100 + 4%最大生命</code>；分割战场与留人神技。CD <code>36→28秒</code>，蓝耗 <code>90</code>。</div><div class="note">大招圈人专治站桩输出，团战把 C 位圈住集火。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线换血：</b>二技能撞墙晕 → 一技能跳 → 普攻回血<br><span>撞墙晕后疯狂输出转灰血回复。</span></div>
 <div class="combo"><b>开团圈人：</b>大招圈 C 位 → 二技能晕 → 一技能跳<br><span>圈住后集火，敌人跑不掉。</span></div>
@@ -1716,9 +1716,9 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">不屈再起（被动）<span class="tag">核心</span></div><div class="desc">死亡后进入濒死 <code>5秒</code>，需队友/自身点亮烽火台复活满血；期间免控获 <code>+30%</code> 移速；复活后对周围造成 <code>300 + 100%物攻</code> 伤害 + <code>30%</code> 减速 <code>1.5秒</code>。被动内置 CD <code>120秒</code>。</div><div class="note">被动让苏烈团战多一条命，但队友不点灯就白死，需沟通。</div></div>
-<div class="skill"><div class="name">烽烟踏破（一技能）<span class="tag">控制</span></div><div class="desc">强化下次普攻击飞 <code>0.75秒</code> + <code>100/130/160/190/220/250 + 100%物攻</code>，三连击第三段击飞。CD <code>6→4秒</code>，蓝耗 <code>40</code>。</div><div class="note">一技能是主要击飞手段，连招起手或补控。</div></div>
-<div class="skill"><div class="name">所向披靡（二技能）<span class="tag">冲锋</span></div><div class="desc">冲锋撞墙造成 <code>250/300/350/400/450/500 + 100%物攻</code> 伤害 + 眩晕 <code>1秒</code>（撞墙额外 <code>150 + 50%物攻</code> + 晕 <code>0.5秒</code>）。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">二技能撞墙晕是核心开团，把人顶到墙上打额外晕。</div></div>
-<div class="skill"><div class="name">豪烈万军（三技能）<span class="tag">开团</span></div><div class="desc">蓄力砸地造成范围 <code>300/450/600 + 150%物攻</code> + 击飞 <code>0.75/1.0/1.25秒</code>（蓄力越久范围越大），蓄力期间<b>免控</b>；是顶级开团技。CD <code>40/35/30秒</code>，蓝耗 <code>120</code>。</div><div class="note">大招蓄力砸，免控保命开团，但蓄力期易被拉扯，需卡视野。</div></div>
+<div class="skill"><div class="name">烽烟踏破（一技能）<span class="tag">控制</span></div><div class="desc">强化下次普攻击飞 <code>0.75秒</code> + <code>100/130/160/190/220/250 + 100%物攻</code>，三连击第三段击飞。CD <code>5→5秒</code>，蓝耗 <code>60</code>。</div><div class="note">一技能是主要击飞手段，连招起手或补控。</div></div>
+<div class="skill"><div class="name">所向披靡（二技能）<span class="tag">冲锋</span></div><div class="desc">冲锋撞墙造成 <code>100/130/160/190/220/250 + 100%物攻</code> 伤害 + 眩晕 <code>1秒</code>（撞墙额外 <code>150 + 50%物攻</code> + 晕 <code>0.5秒</code>）。CD <code>10→8秒</code>，蓝耗 <code>80</code>。</div><div class="note">二技能撞墙晕是核心开团，把人顶到墙上打额外晕。</div></div>
+<div class="skill"><div class="name">豪烈万军（三技能）<span class="tag">开团</span></div><div class="desc">蓄力砸地造成范围 <code>300/375/450 + 150%物攻</code> + 击飞 <code>38/42/46秒</code>（蓄力越久范围越大），蓄力期间<b>免控</b>；是顶级开团技。CD <code>45→35秒</code>，蓝耗 <code>120</code>。</div><div class="note">大招蓄力砸，免控保命开团，但蓄力期易被拉扯，需卡视野。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线换血：</b>二技能撞墙晕 → 一技能击飞 → 普攻<br><span>撞墙晕后疯狂输出。</span></div>
 <div class="combo"><b>正面开团：</b>大招蓄力砸 → 二技能补晕 → 一技能击飞<br><span>三段控制链秒控敌方后排。</span></div>
@@ -1756,9 +1756,9 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">勇士之魂（被动）<span class="tag">核心</span></div><div class="desc">进入战斗获战意（满 <code>100</code> 减伤至多 <code>20%</code>），释放技能获 <code>1秒</code> <b>霸体</b>；受到伤害积累战意。被动内置 CD <code>8秒</code>。</div><div class="note">被动让廉颇硬刚不吃控，越打越肉，团战搅局核心。</div></div>
-<div class="skill"><div class="name">爆裂冲撞（一技能）<span class="tag">控制</span></div><div class="desc">冲锋击飞 <code>0.5秒</code> + <code>150/180/210/240/270/300 + 80%物攻</code>，可两段；主升，是主要开团起手。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能击飞接大招，连招流畅。</div></div>
-<div class="skill"><div class="name">熔岩重击（二技能）<span class="tag">护盾</span></div><div class="desc">获得护盾 <code>300/360/420/480/540/600 + 100%物攻</code>，护盾破裂爆炸造成 <code>150 + 60%物攻</code> + <code>30%</code> 减速 <code>1.5秒</code>；核心换血/输出。CD <code>9→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">二技能护盾炸是主要伤害来源，副升。</div></div>
-<div class="skill"><div class="name">天崩地裂（三技能）<span class="tag">开团</span></div><div class="desc">三段锤击，每段 <code>200/300/400 + 80%物攻</code> 范围伤害 + 减速 <code>30%</code>/击飞 <code>0.75秒</code>，期间<b>霸体</b>；长控制链开团技。CD <code>28/24/20秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招三段控，配合一技能击飞可打出超长控制链。</div></div>
+<div class="skill"><div class="name">爆裂冲撞（一技能）<span class="tag">控制</span></div><div class="desc">冲锋击飞 <code>0.5秒</code> + <code>150/170/190/210/230/250 + 80%物攻</code>，可两段；主升，是主要开团起手。CD <code>9→9秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能击飞接大招，连招流畅。</div></div>
+<div class="skill"><div class="name">熔岩重击（二技能）<span class="tag">护盾</span></div><div class="desc">获得护盾 <code>350/420/490/560/630/700 + 100%物攻</code>，护盾破裂爆炸造成 <code>150 + 60%物攻</code> + <code>30%</code> 减速 <code>1.5秒</code>；核心换血/输出。CD <code>11→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">二技能护盾炸是主要伤害来源，副升。</div></div>
+<div class="skill"><div class="name">天崩地裂（三技能）<span class="tag">开团</span></div><div class="desc">三段锤击，每段 <code>60/90/120 + 80%物攻</code> 范围伤害 + 减速 <code>30%</code>/击飞 <code>0.75秒</code>，期间<b>霸体</b>；长控制链开团技。CD <code>54→36秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招三段控，配合一技能击飞可打出超长控制链。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线换血：</b>二技能护盾炸 → 一技能击飞 → 普攻<br><span>护盾炸完接击飞，换血占优。</span></div>
 <div class="combo"><b>正面开团：</b>一技能击飞 → 大招三段锤 → 二技能补炸<br><span>霸体期间不吃控，控制链拉满。</span></div>
@@ -2054,9 +2054,9 @@ window.HEROES = [
   <p>孙悟空的全部伤害都压在<b>「强化普攻」</b>上：<b>释放任意技能后</b>就获得一次可冲锋的强力敲击，造成 <code>475 + 100%物攻</code> 并<b>全额暴击</b>。所以他的连招本质是"用技能把棍子攒出来，然后一棒敲死人"，而不是拼技能伤害。</p>
   <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动 · 大圣神威<span class="tag">核心 / 强化普攻 / 全额暴击</span></div><div class="desc">释放技能后获得<b>强化普攻</b>，可向目标<b>冲锋</b>并进行强力敲击，造成 <code>475 + 100%物理攻击</code> 物理伤害（<b>全额暴击</b>）。<br>孙悟空天生拥有 <b>20% 暴击率</b> 和 <b>150% 初始暴击效果</b>。使用回城后再次点击可骑<b>筋斗云</b>快速返回泉水（可被打断）。</div><div class="note"><b>⭐ 必学技巧「藏棍」</b>：在草丛或敌人视野外，先用二技能<b>空位移</b>，把下一次普攻变成强化普攻存起来（<b>头顶会有金箍标记</b>）。进场时直接走A敲过去接1技能取消后摇，再A接3技能控制，最后再A——比无脑1技能跳进去的成功率高得多。</div></div>
-<div class="skill"><div class="name">一技能 · 护身咒法<span class="tag">格挡 / 无敌 / 护盾</span></div><div class="desc">获得 <b>40% 移动速度</b>（<code>1秒</code>），并能<b>抵挡一次敌方技能</b>（持续 <code>1.5秒</code>）；<b>抵挡成功时获得 0.2 秒无敌</b> 和 <code>500/600/700/800/900/1000 + 150%物攻 + 15%额外生命</code> 护盾（持续 <code>4秒</code>）。CD <code>12→10秒</code>，蓝耗 <code>65</code>。</div><div class="note">格挡成功的护盾量极高（后期轻松2000+）。<b>反打时先手开一技能触发无敌护盾</b>，能直接吃掉兰陵王/阿轲的起手爆发。</div></div>
-<div class="skill"><div class="name">二技能 · 斗战冲锋<span class="tag">位移 / 二段跳 / 斩杀</span></div><div class="desc">向指定方向冲锋，<b>触碰目标时借力腾空跳跃</b>（释放普攻或技能可中断）。<br><b>身外身</b>：冲锋过程中触碰敌方目标时获得 <b>90% 移动速度</b>（<code>1秒</code> 内衰减），并召唤分身造成 <code>320/384/448/512/576/640 + 100%额外物攻</code> 物理伤害（<b>对主宰、暴君提升 25%~50%</b>）；目标为兵线/野怪（主宰暴君除外）且剩余血量低于 <b>15% 最大生命</b> 则<b>直接触发斩杀</b>。CD <code>6→5秒</code>，蓝耗 <code>45</code>。</div><div class="note">⚠️ <b>S44 重要改动</b>：二技能位移<b>距离缩短</b>。对主宰暴君提升 25%~50%，<b>抢龙能力极强</b>。</div></div>
-<div class="skill"><div class="name">三技能 · 如意金箍<span class="tag">大招 / 击飞 / 3层印记</span></div><div class="desc">将金箍棒直插入地，对范围内敌人造成 <code>250/375/500 + 80%额外物攻</code> 物理伤害和<b>击飞 1秒</b>，同时添加 <b>3层印记</b>（持续 <code>6秒</code>）。<b>普攻命中消耗 1 层印记</b>，对目标额外造成 <code>200/300/400 + 65%额外物攻</code>。CD <code>40/35/30秒</code>，蓝耗 <code>100</code>。</div><div class="note"><b>S44 加强</b>：大招印记新增 0.65 额外AD 加成，后期一棒伤害质变。3 层印记 = 3 次额外爆发，<b>开大之后一定要 A 满 3 下</b>。</div></div>
+<div class="skill"><div class="name">一技能 · 护身咒法<span class="tag">格挡 / 无敌 / 护盾</span></div><div class="desc">获得 <b>40% 移动速度</b>（<code>1秒</code>），并能<b>抵挡一次敌方技能</b>（持续 <code>1.5秒</code>）；<b>抵挡成功时获得 0.2 秒无敌</b> 和 <code>500/600/700/800/900/1000 + 150%物攻 + 15%额外生命</code> 护盾（持续 <code>4秒</code>）。CD <code>12→10秒</code>，蓝耗 <code>70</code>。</div><div class="note">格挡成功的护盾量极高（后期轻松2000+）。<b>反打时先手开一技能触发无敌护盾</b>，能直接吃掉兰陵王/阿轲的起手爆发。</div></div>
+<div class="skill"><div class="name">二技能 · 斗战冲锋<span class="tag">位移 / 二段跳 / 斩杀</span></div><div class="desc">向指定方向冲锋，<b>触碰目标时借力腾空跳跃</b>（释放普攻或技能可中断）。<br><b>身外身</b>：冲锋过程中触碰敌方目标时获得 <b>90% 移动速度</b>（<code>1秒</code> 内衰减），并召唤分身造成 <code>240/260/280/300/320/340 + 100%额外物攻</code> 物理伤害（<b>对主宰、暴君提升 25%~50%</b>）；目标为兵线/野怪（主宰暴君除外）且剩余血量低于 <b>15% 最大生命</b> 则<b>直接触发斩杀</b>。CD <code>8→5秒</code>，蓝耗 <code>50</code>。</div><div class="note">⚠️ <b>S44 重要改动</b>：二技能位移<b>距离缩短</b>。对主宰暴君提升 25%~50%，<b>抢龙能力极强</b>。</div></div>
+<div class="skill"><div class="name">三技能 · 如意金箍<span class="tag">大招 / 击飞 / 3层印记</span></div><div class="desc">将金箍棒直插入地，对范围内敌人造成 <code>150/190/230 + 80%额外物攻</code> 物理伤害和<b>击飞 1秒</b>，同时添加 <b>3层印记</b>（持续 <code>6秒</code>）。<b>普攻命中消耗 1 层印记</b>，对目标额外造成 <code>270/405/540 + 65%额外物攻</code>。CD <code>40/35/30秒</code>，蓝耗 <code>100</code>。</div><div class="note"><b>S44 加强</b>：大招印记新增 0.65 额外AD 加成，后期一棒伤害质变。3 层印记 = 3 次额外爆发，<b>开大之后一定要 A 满 3 下</b>。</div></div>
 <h4>连招</h4>
   <div class="combo"><b>标准秒C（通用抓人）</b>：<b>2A1A3A</b> —— 二技能跳棍贴脸打出存棍普攻 → 一技能格挡敌方反制 → A → 大招击飞增伤 → 最后一棒收割</div>
   <div class="combo"><b>草丛埋伏（单抓成功率最高）</b>：进草<b>空放2存棍</b> → <b>A3A1A2A</b> —— 敌人踏入草丛先吃一棒 → 大招击飞 → 一技能挡控 → 二技能追击补伤害</div>
@@ -2205,9 +2205,9 @@ window.HEROES = [
 
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">秘技·极意（被动）<span class="tag">核心</span></div><div class="desc">朝敌方英雄移动时获得 <code>15%~30%</code> 移速，是前期抓人追击的核心保障。</div><div class="note">被动让兰陵王绕后效率极高，贴脸前先利用移速接近。</div></div>
-<div class="skill"><div class="name">秘技·分身（一技能）<span class="tag">伤害</span></div><div class="desc">挥砍身边敌人造成 <code>325/370/415/460/505/550 + 125%额外物攻</code> 伤害并召唤影分身攻击附近敌人（优先残血）。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是主要补伤手段，主升。</div></div>
-<div class="skill"><div class="name">秘技·影蚀（二技能）<span class="tag">控制</span></div><div class="desc">投掷暗影匕首造成伤害 + 极限减速并标记（<code>3秒</code>），首次普攻标记目标造成 <code>1秒</code> 眩晕并回复 <code>350 + 10%额外生命</code>；标记消失时目标受已损生命伤害。CD <code>10→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">二技能标记+晕是秒人关键，先挂标记再普攻触发晕。</div></div>
-<div class="skill"><div class="name">秘技·暗袭（三技能）<span class="tag">隐身</span></div><div class="desc">解除隐身向指定方向冲锋造成 <code>700/875/1050 + 250%额外物攻</code> 伤害；隐身期间敌方头顶显示感叹号（<code>1500码</code> 内自动现形），兼具突袭与视野压制。CD <code>25→20秒</code>，蓝耗 <code>80</code>。</div><div class="note">大招隐身是灵魂，绕后贴近再冲锋收割，注意 1500 码内自动现形。</div></div>
+<div class="skill"><div class="name">秘技·分身（一技能）<span class="tag">伤害</span></div><div class="desc">挥砍身边敌人造成 <code>220/265/310/355/400/445 + 125%额外物攻</code> 伤害并召唤影分身攻击附近敌人（优先残血）。CD <code>5→5秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是主要补伤手段，主升。</div></div>
+<div class="skill"><div class="name">秘技·影蚀（二技能）<span class="tag">控制</span></div><div class="desc">投掷暗影匕首造成伤害 + 极限减速并标记（<code>3秒</code>），首次普攻标记目标造成 <code>1秒</code> 眩晕并回复 <code>350 + 10%额外生命</code>；标记消失时目标受已损生命伤害。CD <code>9.6→5.6秒</code>，蓝耗 <code>60</code>。</div><div class="note">二技能标记+晕是秒人关键，先挂标记再普攻触发晕。</div></div>
+<div class="skill"><div class="name">秘技·暗袭（三技能）<span class="tag">隐身</span></div><div class="desc">解除隐身向指定方向冲锋造成 <code>660/830/1000 + 250%额外物攻</code> 伤害；隐身期间敌方头顶显示感叹号（<code>1500码</code> 内自动现形），兼具突袭与视野压制。CD <code>24→20秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招隐身是灵魂，绕后贴近再冲锋收割，注意 1500 码内自动现形。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准秒杀：</b>隐身贴近 → 二技能标记 → 普攻触发晕 → 一技能补伤 → 大招冲锋收尾<br><span>标记+晕期间打出全部伤害，秒完即撤。</span></div>
 <div class="combo"><b>反野抓单：</b>二技能减速 → 普攻晕 → 一技能分身 → 大招斩杀<br><span>野区遭遇先手标记，不给逃生机会。</span></div>
@@ -2247,9 +2247,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·杀意之枪<span class="tag">击飞/攻速</span></div><div class="desc">第四次普攻额外造成 <code>90 + 35%额外物攻</code> 并击飞 <code>0.5秒</code>，附带 <code>20%</code> 物理吸血；技能命中或释放二技能后获得 <code>25%</code> 攻速（<code>3秒</code>）。</div><div class="note">打团前先空 A 三次存击飞；第四下击飞可打断露娜连招等关键技能。</div></div>
-<div class="skill"><div class="name">一技能·无情冲锋<span class="tag">位移/控制</span></div><div class="desc">冲锋造成 <code>240/270/300/330/360/390 + 85%额外物攻</code> 并击飞 <code>0.5秒</code>，<code>5秒</code> 内可再次使用（等额伤害）。CD <code>7.5→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">核心位移，可穿薄墙；第一段可接闪现改变落点远距离击飞；两段之间 5 秒真空期最脆弱。</div></div>
-<div class="skill"><div class="name">二技能·背水一战<span class="tag">强化普攻</span></div><div class="desc">向后跳跃，强化下次普攻为横扫（持续 <code>3秒</code>），对范围内敌人额外造成 <code>120 + 50%额外物攻</code>；若横扫恰为第四次普攻，横扫+击飞效果一起打出。CD <code>6→5秒</code>，蓝耗 <code>40</code>。</div><div class="note">S44 可取消后摇。正确用法：二技能存横扫 → 一技能突进 → 横扫瞬间双爆发。</div></div>
-<div class="skill"><div class="name">三技能·国士无双<span class="tag">爆发/霸体</span></div><div class="desc">乱舞 <code>4</code> 次长枪，每次 <code>250/275/300 + 85%额外物攻</code>，最后一击击飞 <code>0.5秒</code>；期间获得霸体和 <code>30%</code> 减伤。CD <code>30→24秒</code>，蓝耗 <code>100</code>。</div><div class="note">残血被集火时开大反杀+躲控（挡妲己爱心等）；最后一击是韩信唯一团控，尽量罩多人。</div></div>
+<div class="skill"><div class="name">一技能·无情冲锋<span class="tag">位移/控制</span></div><div class="desc">冲锋造成 <code>300/320/340/360/380/400 + 85%额外物攻</code> 并击飞 <code>0.5秒</code>，<code>5秒</code> 内可再次使用（等额伤害）。CD <code>9→6秒</code>，蓝耗 <code>45</code>。</div><div class="note">核心位移，可穿薄墙；第一段可接闪现改变落点远距离击飞；两段之间 5 秒真空期最脆弱。</div></div>
+<div class="skill"><div class="name">二技能·背水一战<span class="tag">强化普攻</span></div><div class="desc">向后跳跃，强化下次普攻为横扫（持续 <code>3秒</code>），对范围内敌人额外造成 <code>120 + 50%额外物攻</code>；若横扫恰为第四次普攻，横扫+击飞效果一起打出。CD <code>5→5秒</code>，蓝耗 <code>50</code>。</div><div class="note">S44 可取消后摇。正确用法：二技能存横扫 → 一技能突进 → 横扫瞬间双爆发。</div></div>
+<div class="skill"><div class="name">三技能·国士无双<span class="tag">爆发/霸体</span></div><div class="desc">乱舞 <code>4</code> 次长枪，每次 <code>250/300/350 + 85%额外物攻</code>，最后一击击飞 <code>0.5秒</code>；期间获得霸体和 <code>30%</code> 减伤。CD <code>36→24秒</code>，蓝耗 <code>140</code>。</div><div class="note">残血被集火时开大反杀+躲控（挡妲己爱心等）；最后一击是韩信唯一团控，尽量罩多人。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>基础爆发</b>：2（存横扫）→ 1（击飞）→ A（横扫+被动）→ 3<br><span>最稳伤害循环：二技能先存横扫，一技能突进时刚好双爆发。</span></div>
 <div class="combo"><b>远距离突袭</b>：2 → 1 闪（第一段落点前接闪现）→ A → 3<br><span>位移距离翻倍，越塔强杀/闪现开团；需训练营练 20 次以上成肌肉记忆。</span></div>
@@ -2293,8 +2293,8 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·死吻<span class="tag">暴击核心</span></div><div class="desc">背后攻击必暴击、正面必不暴击；初始暴击伤害 <code>125%</code>，每 <code>1%</code> 暴击率额外 <code>+0.5%</code> 暴伤；正面攻击非英雄单位提升 <code>20%</code> 伤害（对非英雄最多 <code>2000</code>）。</div><div class="note">永远绕到目标背后输出；清野正面 A 效率也不低。</div></div>
-<div class="skill"><div class="name">一技能·弧光<span class="tag">主要伤害</span></div><div class="desc">挥动双刺发起 2 次攻击，每次 <code>150/190/230/270/310/350 + 65%额外物攻</code>。CD <code>4→3秒</code>，蓝耗 <code>30</code>。</div><div class="note">S44 加成提升后是主要伤害来源；CD 极短，标记目标时频繁刷新节奏。</div></div>
-<div class="skill"><div class="name">二技能·瞬华<span class="tag">位移/标记</span></div><div class="desc">快速位移，抵达后对附近一名敌人造成 <code>270/310/350/390/430/470 + 85%额外物攻</code> 并标记（<code>10秒</code>），自身 <code>+40%</code> 攻速（<code>3秒</code>）；攻击被标记者附带 <code>30%</code> 减速并减本技能 <code>1秒</code> CD；<strong>被标记者对阿轲伤害 <code>-30%</code></strong>。CD <code>9→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">核心生存技能：先标记再进场，等于自带 30% 减伤。S44 CD 缩短后一次 gank 可用两次。</div></div>
+<div class="skill"><div class="name">一技能·弧光<span class="tag">主要伤害</span></div><div class="desc">挥动双刺发起 2 次攻击，每次 <code>150/170/190/210/230/250 + 65%额外物攻</code>。CD <code>4→3秒</code>，蓝耗 <code>30</code>。</div><div class="note">S44 加成提升后是主要伤害来源；CD 极短，标记目标时频繁刷新节奏。</div></div>
+<div class="skill"><div class="name">二技能·瞬华<span class="tag">位移/标记</span></div><div class="desc">快速位移，抵达后对附近一名敌人造成 <code>270/306/342/378/414/450 + 85%额外物攻</code> 并标记（<code>10秒</code>），自身 <code>+40%</code> 攻速（<code>3秒</code>）；攻击被标记者附带 <code>30%</code> 减速并减本技能 <code>1秒</code> CD；<strong>被标记者对阿轲伤害 <code>-30%</code></strong>。CD <code>9→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">核心生存技能：先标记再进场，等于自带 30% 减伤。S44 CD 缩短后一次 gank 可用两次。</div></div>
 <div class="skill"><div class="name">三技能·幻舞<span class="tag">隐身/刷新</span></div><div class="desc">短暂准备后隐身 <code>3秒</code>，期间 <code>+40%</code> 移速并持续回复（<code>150 + 25%额外物攻 + 5%额外生命</code>，每 <code>0.5秒</code> 一次）；发起攻击解除隐身并 <code>+120</code> 物攻（<code>3秒</code>），造成伤害时 <code>+30%</code> 移速（<code>1秒</code>）。击杀/助攻刷新全部技能（S44 为 100%）。CD <code>20→16秒</code>，蓝耗 <code>90</code>。</div><div class="note">绕后进场、脱离战场两用；隐身起手有 0.2 秒延迟，被近身贴脸时慎用。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>草丛伏击</b>：草丛等待 → 2（标记+突进到背后）→ A → 1 → A → 3（隐身脱离或追击）→ 2 → 1<br><span>先标记吃 30% 减伤，绕背后全暴击，杀完刷新再进第二次。</span></div>
@@ -3428,9 +3428,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·失心<span class="tag">法穿</span></div><div class="desc">技能命中减少目标 <code>36</code> 点法术防御（持续 <code>3秒</code>，最多 <code>3层</code> 合计 <code>144</code> 法防）。S44 新增每层叠加 <code>3%</code> 法术穿透（最高 <code>15%</code>）。</div><div class="note">先手二技能叠满被动再打伤害，一套的穿透收益最大化。</div></div>
-<div class="skill"><div class="name">一技能·灵魂冲击<span class="tag">主要伤害</span></div><div class="desc">挥出灵魂冲击波，造成 <code>570/640/710/780/850/920 + 120%法术</code> 法术伤害。CD <code>5→4秒</code>，蓝耗 <code>60</code>。</div><div class="note">法师里数一数二的技能加成，主升。清线、消耗、收割一技多用。</div></div>
-<div class="skill"><div class="name">二技能·偶像魅力<span class="tag">锁定控制</span></div><div class="desc">锁定敌人抛出爱心，造成 <code>285/320/355/390/425/460 + 66%法术</code> 和 <code>1.5秒</code> 晕眩。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">锁定不吃预判，满级 CD 8 秒；出冷静之靴+小冰心可压到 5 秒内。</div></div>
-<div class="skill"><div class="name">三技能·女王崇拜<span class="tag">爆发</span></div><div class="desc">放出 <code>5</code> 团狐火攻击范围内敌人，每团 <code>325/360/395/430/465/500 + 75%法术</code>，命中同目标后续狐火只造成 <code>50%</code> 伤害。CD <code>15→12秒</code>，蓝耗 <code>100</code>。</div><div class="note">对单体 5 团全吃约为一套大头伤害；团战则分散多目标。</div></div>
+<div class="skill"><div class="name">一技能·灵魂冲击<span class="tag">主要伤害</span></div><div class="desc">挥出灵魂冲击波，造成 <code>570/635/700/765/830/895 + 120%法术</code> 法术伤害。CD <code>5→4秒</code>，蓝耗 <code>60</code>。</div><div class="note">法师里数一数二的技能加成，主升。清线、消耗、收割一技多用。</div></div>
+<div class="skill"><div class="name">二技能·偶像魅力<span class="tag">锁定控制</span></div><div class="desc">锁定敌人抛出爱心，造成 <code>285/320/355/390/425/460 + 66%法术</code> 和 <code>1.5秒</code> 晕眩。CD <code>10→7秒</code>，蓝耗 <code>80</code>。</div><div class="note">锁定不吃预判，满级 CD 8 秒；出冷静之靴+小冰心可压到 5 秒内。</div></div>
+<div class="skill"><div class="name">三技能·女王崇拜<span class="tag">爆发</span></div><div class="desc">放出 <code>5</code> 团狐火攻击范围内敌人，每团 <code>325/405/485 + 75%法术</code>，命中同目标后续狐火只造成 <code>50%</code> 伤害。CD <code>18→12秒</code>，蓝耗 <code>120</code>。</div><div class="note">对单体 5 团全吃约为一套大头伤害；团战则分散多目标。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准一套秒</b>：2 → 1 → 3<br><span>二技能锁定眩晕起手，被动减防叠满，一技能+狐火全吃，铭文成型可秒满血脆皮。</span></div>
 <div class="combo"><b>蹲草秒人</b>：草丛埋伏 → 2 → 1 → 3 → 1（刷新后补）<br><span>草丛前移 50 码后蹲草成功率全分段 62%；注意顶端局仅 39%，对面辅助会主动探草。</span></div>
@@ -3514,9 +3514,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·治愈微笑<span class="tag">加速</span></div><div class="desc">技能命中敌人时获得 <code>25%</code> 移动速度（持续 <code>2秒</code>）。</div><div class="note">全技能生效——清线、拉扯、逃生都靠它，命中就有加速，走A手感极好。</div></div>
-<div class="skill"><div class="name">一技能·绽放之舞<span class="tag">消耗/清线</span></div><div class="desc">扔出回旋飞行的扇子，对首个命中的敌人造成 <code>585/635/685/735/785/835 + 80%法强</code> 法术伤害（每次命中衰减 <code>20%</code>，最低衰减至初始的 <code>50%</code>）。CD <code>5→4秒</code>，蓝耗 <code>60</code>。</div><div class="note">S44 伤害上调；务必让扇子飞出+折返两段都命中，贴脸只打一段亏一半伤害。</div></div>
+<div class="skill"><div class="name">一技能·绽放之舞<span class="tag">消耗/清线</span></div><div class="desc">扔出回旋飞行的扇子，对首个命中的敌人造成 <code>585/635/685/735/785/835 + 80%法强</code> 法术伤害（每次命中衰减 <code>20%</code>，最低衰减至初始的 <code>50%</code>）。CD <code>5→4秒</code>，蓝耗 <code>45</code>。</div><div class="note">S44 伤害上调；务必让扇子飞出+折返两段都命中，贴脸只打一段亏一半伤害。</div></div>
 <div class="skill"><div class="name">二技能·甜蜜恋风<span class="tag">击飞</span></div><div class="desc">召唤旋风造成 <code>300/340/380/420/460/500 + 50%法强</code> 法术伤害和击飞 <code>1.5秒</code>。CD <code>10→8秒</code>，蓝耗 <code>70</code>。</div><div class="note">S44 施法距离 +<code>50</code> 码。铁律：不先手交二技能，留给突进刺客，贴身时放脚下 100% 命中自保。</div></div>
-<div class="skill"><div class="name">三技能·星华缭乱<span class="tag">范围爆发</span></div><div class="desc">召唤流星坠落 <code>6秒</code> 并持续获得被动加速，每颗流星 <code>400/450/500/550/600/650 + 100%法强</code>（同一目标后续流星只造成 <code>50%</code> 伤害，每目标最多承受 <code>4次</code>）。CD <code>35→28秒</code>，蓝耗 <code>120</code>。</div><div class="note">S44 覆盖提升；开大不仅是输出，更是拉扯走位的加速器，辉月不会打断大招。</div></div>
+<div class="skill"><div class="name">三技能·星华缭乱<span class="tag">范围爆发</span></div><div class="desc">召唤流星坠落 <code>6秒</code> 并持续获得被动加速，每颗流星 <code>400/500/600 + 100%法强</code>（同一目标后续流星只造成 <code>50%</code> 伤害，每目标最多承受 <code>4次</code>）。CD <code>42→28秒</code>，蓝耗 <code>140</code>。</div><div class="note">S44 覆盖提升；开大不仅是输出，更是拉扯走位的加速器，辉月不会打断大招。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线消耗</b>：2（预判击飞）→ 1（打满两段）<br><span>21连招，前期稳定消耗、秒杀残血。</span></div>
 <div class="combo"><b>团战拉扯</b>：3（开大加速+减速场）→ 走位调整 → 2 控场 → 1 补爆发<br><span>321顺序，先开大拿移速再进场，避免被秒。</span></div>
@@ -3602,9 +3602,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·哀歌<span class="tag">强化普攻</span></div><div class="desc">普攻和技能视为弹奏，每三次弹奏后的下次普攻强化为能量和弦，对路径敌人造成 <code>280/320/360/400/440/480 + 80%法强</code> 法术伤害。</div><div class="note">S44 起该强化普攻的法球效果享受吸血；连招间隙必须穿插普攻，否则伤害损失近一半。</div></div>
-<div class="skill"><div class="name">一技能·狂歌<span class="tag">消耗/弹射</span></div><div class="desc">弹奏音符对范围内至多 <code>2</code> 名敌人造成 <code>350/400/450/500/550/600 + 47%法强</code>，音符命中后向附近敌人弹射（最多 <code>2次</code>）；多音符命中同一英雄时后续只造成 <code>30%</code> 伤害。CD <code>8→7秒</code>，蓝耗 <code>60</code>。</div><div class="note">清线+消耗主手段，贴脸放让弹射全部命中。</div></div>
-<div class="skill"><div class="name">二技能·离歌<span class="tag">位移/回复</span></div><div class="desc">朝指定方向位移，对附近敌人造成 <code>450/500/550/600/650/700 + 60%法强</code> + <code>15%</code> 减速 <code>2秒</code>；每命中 <code>1</code> 名英雄回复 <code>100 + 15%法强</code>（非英雄减半）；期间获 <code>10%~20%</code> 减伤并免疫减速；位移期间释放一技能可二次位移。CD <code>10→8秒</code>，蓝耗 <code>70</code>。</div><div class="note">进场、追击、撤退三用；命中越多英雄回血越多，贴脸放收益最大。</div></div>
-<div class="skill"><div class="name">三技能·魔音贯耳<span class="tag">核心爆发</span></div><div class="desc">激情演奏造成 <code>200 + 20%法强</code>/<code>0.5秒</code>（持续 <code>5秒</code>）；开始时 <code>+50%</code> 移速（<code>3秒</code> 内衰减）；持续期间附近有敌方英雄获 <code>10%</code> 减伤，每多 <code>1</code> 名英雄额外 <code>+5%</code>（5人团≈<code>30%</code>）。CD <code>45→35秒</code>，蓝耗 <code>120</code>。</div><div class="note">S44 伤害+10%且可接狂暴；大招期间被控不会打断（狂暴优化），放心站桩输出。</div></div>
+<div class="skill"><div class="name">一技能·狂歌<span class="tag">消耗/弹射</span></div><div class="desc">弹奏音符对范围内至多 <code>2</code> 名敌人造成 <code>350/410/470/530/590/650 + 47%法强</code>，音符命中后向附近敌人弹射（最多 <code>2次</code>）；多音符命中同一英雄时后续只造成 <code>30%</code> 伤害。CD <code>7→7秒</code>，蓝耗 <code>80</code>。</div><div class="note">清线+消耗主手段，贴脸放让弹射全部命中。</div></div>
+<div class="skill"><div class="name">二技能·离歌<span class="tag">位移/回复</span></div><div class="desc">朝指定方向位移，对附近敌人造成 <code>500/560/620/680/740/800 + 60%法强</code> + <code>15%</code> 减速 <code>2秒</code>；每命中 <code>1</code> 名英雄回复 <code>100 + 15%法强</code>（非英雄减半）；期间获 <code>10%~20%</code> 减伤并免疫减速；位移期间释放一技能可二次位移。CD <code>10→7秒</code>，蓝耗 <code>70</code>。</div><div class="note">进场、追击、撤退三用；命中越多英雄回血越多，贴脸放收益最大。</div></div>
+<div class="skill"><div class="name">三技能·魔音贯耳<span class="tag">核心爆发</span></div><div class="desc">激情演奏造成 <code>200 + 20%法强</code>/<code>0.5秒</code>（持续 <code>5秒</code>）；开始时 <code>+50%</code> 移速（<code>3秒</code> 内衰减）；持续期间附近有敌方英雄获 <code>10%</code> 减伤，每多 <code>1</code> 名英雄额外 <code>+5%</code>（5人团≈<code>30%</code>）。CD <code>45→30秒</code>，蓝耗 <code>140</code>。</div><div class="note">S44 伤害+10%且可接狂暴；大招期间被控不会打断（狂暴优化），放心站桩输出。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>狂暴法王连（S44 版本答案）</b>：2（位移进场）→ 3（开大）→ 狂暴（吸血）→ 1 → A 循环<br><span>60%吸血+30%减伤，团战中心站3-5秒不倒，边打边回血。</span></div>
 <div class="combo"><b>闪现开团连</b>：闪现 → 2 → 3 → 1 → A → 1 → A<br><span>敌方后排站位靠前时直接闪现贴脸秒C。</span></div>
@@ -3646,9 +3646,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·策谋之刻<span class="tag">法球</span></div><div class="desc">技能命中叠 <code>1层</code> 印记（最多 <code>5层</code>），满层召唤 <code>5</code> 颗法球自动攻击周围目标（英雄优先），每颗 <code>135 + 25%法术</code>，对野怪 <code>-40%</code> / 对小兵 <code>+40%</code>。</div><div class="note">贴脸 5 球全中伤害爆表；大招击败立刻获得满层被动，收割链核心。</div></div>
-<div class="skill"><div class="name">一技能·东风破袭<span class="tag">主要伤害</span></div><div class="desc">发射三颗法球，造成 <code>450/520/590/660/730/800 + 80%法术</code>（命中同目标衰减至 <code>20%</code>）。储备制：<code>7.5秒</code> 存 1 次，最多 <code>2</code> 次，CD <code>1.5秒</code>，蓝耗 <code>60</code>。</div><div class="note">主升。扇形边缘刮多人叠被动，不必贴脸。</div></div>
-<div class="skill"><div class="name">二技能·时空穿梭<span class="tag">位移/伤害</span></div><div class="desc">闪烁，对起点和终点范围敌人造成 <code>350/400/450/500/550/600 + 52%法术</code>（同时命中衰减至 <code>50%</code>），<code>5秒</code> 内再次命中造成极限减速（<code>3秒</code> 衰减）。储备制同上，蓝耗 <code>60</code>。</div><div class="note">既是位移也是叠层+减速手段；不要起手交二技能贴脸，先一技能远程叠层。</div></div>
-<div class="skill"><div class="name">三技能·元气弹<span class="tag">斩杀</span></div><div class="desc">短暂蓄力发出元气弹，造成 <code>450/560/670 + 55%法术</code>，目标每损失 <code>1%</code> 生命提升 <code>2%</code> 伤害；命中前目标死亡或被击败返还 <code>80%</code> CD；击败目标立刻获得满层被动。CD <code>35→25秒</code>，蓝耗 <code>120</code>。</div><div class="note">永远锁残血；斩杀线约 30-35% 血（对面无魔女时）。</div></div>
+<div class="skill"><div class="name">一技能·东风破袭<span class="tag">主要伤害</span></div><div class="desc">发射三颗法球，造成 <code>500/600/700/800/900/1000 + 80%法术</code>（命中同目标衰减至 <code>20%</code>）。储备制：<code>7.5秒</code> 存 1 次，最多 <code>2</code> 次，CD <code>7→5秒</code>，蓝耗 <code>60</code>。</div><div class="note">主升。扇形边缘刮多人叠被动，不必贴脸。</div></div>
+<div class="skill"><div class="name">二技能·时空穿梭<span class="tag">位移/伤害</span></div><div class="desc">闪烁，对起点和终点范围敌人造成 <code>350/420/490/560/630/700 + 52%法术</code>（同时命中衰减至 <code>50%</code>），<code>5秒</code> 内再次命中造成极限减速（<code>3秒</code> 衰减）。储备制同上，蓝耗 <code>40</code>。</div><div class="note">既是位移也是叠层+减速手段；不要起手交二技能贴脸，先一技能远程叠层。</div></div>
+<div class="skill"><div class="name">三技能·元气弹<span class="tag">斩杀</span></div><div class="desc">短暂蓄力发出元气弹，造成 <code>450/630/810 + 55%法术</code>，目标每损失 <code>1%</code> 生命提升 <code>2%</code> 伤害；命中前目标死亡或被击败返还 <code>80%</code> CD；击败目标立刻获得满层被动。CD <code>35→25秒</code>，蓝耗 <code>120</code>。</div><div class="note">永远锁残血；斩杀线约 30-35% 血（对面无魔女时）。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准消耗</b>：1（远程叠层）→ 2（调整位置+减速+叠层）→ 被动法球自动输出<br><span>先手只用一技能，二技能留作进退调整，生存率大幅提升。</span></div>
 <div class="combo"><b>收割链</b>：大（锁残血）→ 击败刷新 80% CD + 满层被动 → 1 → 大（下一个残血）<br><span>团战收割永动机，中期一波团能放 2-3 个大。</span></div>
@@ -3683,8 +3683,8 @@ window.HEROES = [
   <div class="tip-box"><strong>版本调整（S44）：</strong>⚖️ <b>平调</b>：S44 无直接改动；全图控制 + 消耗，环境中性。</div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动 · 天命之女<span class="tag">脱战续航</span></div><div class="desc">脱离战斗 <code>3秒</code> 后获得 <b>50</b> 移动速度和 <b>2% 最大法力</b> 回复（每秒 <code>1</code> 次）。</div><div class="note">脱战即回蓝+加速，让武则天能频繁游走支援而不必回家。</div></div>
-<div class="skill"><div class="name">一技能 · 女帝辉光<span class="tag">核心消耗 · 可强化</span></div><div class="desc">释放能量法球，对路径敌人造成 <code>360/420/480/540/600/660 + 47%法强</code> 法术伤害。<br><b>释放任意两个技能后</b>，本技能立即刷新并强化（持续 <code>3秒</code>）：造成<b>双倍伤害 + 击飞 0.75秒</b>。CD <code>3秒</code>，蓝耗 <code>40</code>。</div><div class="note">武则天的主要输出与开团点。一级空放一格能量可提前存被动，兵线交汇瞬间两段一技能打出强化大球清线。</div></div>
-<div class="skill"><div class="name">二技能 · 女帝威严<span class="tag">自保 · 击退</span></div><div class="desc">散发威能，对附近敌人造成 <code>200/240/280/320/360/400 + 35%法强</code> 法术伤害和<b>击退</b>，命中时自身获得 <code>25%~50%</code> 移速（<code>1秒</code>）并对敌人造成 <code>25%~50%</code> 减速（<code>2秒</code>）。CD <code>7.5→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">武则天<b>唯一自保位移 + 近身击退</b>，只留给贴身突进刺客。提前交等于暴露破绽。</div></div>
+<div class="skill"><div class="name">一技能 · 女帝辉光<span class="tag">核心消耗 · 可强化</span></div><div class="desc">释放能量法球，对路径敌人造成 <code>360/420/480/540/600/660 + 47%法强</code> 法术伤害。<br><b>释放任意两个技能后</b>，本技能立即刷新并强化（持续 <code>3秒</code>）：造成<b>双倍伤害 + 击飞 0.75秒</b>。CD <code>3秒</code>，蓝耗 <code>60</code>。</div><div class="note">武则天的主要输出与开团点。一级空放一格能量可提前存被动，兵线交汇瞬间两段一技能打出强化大球清线。</div></div>
+<div class="skill"><div class="name">二技能 · 女帝威严<span class="tag">自保 · 击退</span></div><div class="desc">散发威能，对附近敌人造成 <code>250/280/310/340/370/400 + 35%法强</code> 法术伤害和<b>击退</b>，命中时自身获得 <code>25%~50%</code> 移速（<code>1秒</code>）并对敌人造成 <code>25%~50%</code> 减速（<code>2秒</code>）。CD <code>8→6秒</code>，蓝耗 <code>90</code>。</div><div class="note">武则天<b>唯一自保位移 + 近身击退</b>，只留给贴身突进刺客。提前交等于暴露破绽。</div></div>
 <div class="skill"><div class="name">三技能 · 生杀予夺<span class="tag">全图大招 · 视野</span></div><div class="desc">在敌方英雄脚下召唤法阵并引爆（<b>最多 5 人</b>），造成 <code>750/925/1100 + 75%法强</code> 法术伤害和<b>眩晕 1秒</b>，同时获取敌方视野（持续 <code>3秒</code>）。CD <code>80/70/60秒</code>，蓝耗 <code>150</code>。</div><div class="note"><b>控制优先级 > 伤害优先级</b>——哪怕没法强，1 秒全图眩晕 + 3 秒视野足以扭转团战。</div></div>
 <h4>连招</h4>
   <div class="combo"><b>清线起手</b>：1 → 1（存被动 + 强化大球）<br><span>一级抢线固定细节：原地空放 1 技能提前存一格，兵线交汇瞬间两段 1 技能打出强化大球，一次性清完前排兵。</span></div>
@@ -3801,9 +3801,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·名刀之护<span class="tag">保命</span></div><div class="desc">受到致命伤害时 <code>1.5秒</code> 无敌并获得 <code>30%~50%</code> 移速（类似名刀，内置 CD <code>90秒</code>）。</div><div class="note">自带"第二条命"——越塔、被刺客切都有兜底；90秒CD记好时间，没被动时别浪。</div></div>
-<div class="skill"><div class="name">一技能·飞攻<span class="tag">消耗/连线</span></div><div class="desc">落下一颗棋子造成 <code>280/330/380/430/480/530 + 48%法术</code> 法术伤害；棋子之间/与其他技能连线可触发额外 <code>150 + 30%法术</code> 连线伤害。CD <code>1.5秒</code>（可连续落子），蓝耗 <code>40</code>。</div><div class="note">主升技能，清线+消耗核心；预判敌方走位落子，连线命中伤害翻倍。</div></div>
-<div class="skill"><div class="name">二技能·镇神<span class="tag">控制/可存储</span></div><div class="desc">落子将范围内敌人拉回并造成 <code>200/240/280/320/360/400 + 50%法术</code>，减速 <code>30%~50%</code>（<code>1秒</code>）/中心眩晕 <code>0.5秒</code>；可储存 <code>2</code> 次。CD <code>7→5秒</code>，蓝耗 <code>60</code>。</div><div class="note">拉扯核心——把突进刺客拉离C位，或把敌方前排拉进我方集火圈；存2次意味着连控。</div></div>
-<div class="skill"><div class="name">三技能·万变之局<span class="tag">大范围团控</span></div><div class="desc">画出一个巨大棋盘（持续 <code>4秒</code>），棋盘结束时对范围内敌人造成 <code>400/600/800 + 70%法术</code> 并<strong>眩晕 1.5秒</strong>。CD <code>50/45/40秒</code>，蓝耗 <code>120</code>。</div><div class="note">先手砸容易空——等敌方交完位移再落子；窄地形/龙坑处命中率翻倍；棋盘还可分割战场保护后排。</div></div>
+<div class="skill"><div class="name">一技能·飞攻<span class="tag">消耗/连线</span></div><div class="desc">落下一颗棋子造成 <code>120/145/170/195/220/245 + 48%法术</code> 法术伤害；棋子之间/与其他技能连线可触发额外 <code>150 + 30%法术</code> 连线伤害。CD <code>1.5→1秒</code>（可连续落子），蓝耗 <code>30</code>。</div><div class="note">主升技能，清线+消耗核心；预判敌方走位落子，连线命中伤害翻倍。</div></div>
+<div class="skill"><div class="name">二技能·镇神<span class="tag">控制/可存储</span></div><div class="desc">落子将范围内敌人拉回并造成 <code>175/200/225/250/275/300 + 50%法术</code>，减速 <code>30%~50%</code>（<code>1秒</code>）/中心眩晕 <code>0.5秒</code>；可储存 <code>2</code> 次。CD <code>10→10秒</code>，蓝耗 <code>65</code>。</div><div class="note">拉扯核心——把突进刺客拉离C位，或把敌方前排拉进我方集火圈；存2次意味着连控。</div></div>
+<div class="skill"><div class="name">三技能·万变之局<span class="tag">大范围团控</span></div><div class="desc">画出一个巨大棋盘（持续 <code>4秒</code>），棋盘结束时对范围内敌人造成 <code>400/600/800 + 70%法术</code> 并<strong>眩晕 1.5秒</strong>。CD <code>60→55秒</code>，蓝耗 <code>100</code>。</div><div class="note">先手砸容易空——等敌方交完位移再落子；窄地形/龙坑处命中率翻倍；棋盘还可分割战场保护后排。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准连</b>：2（拉回）→ 1（连线消耗）→ A → 2（二段控制）<br><span>双段镇神控住后稳定打满一技能伤害。</span></div>
 <div class="combo"><b>团战连</b>：1+1 消耗 → 等敌方位移交完 → 3（棋盘困人）→ 2（拉扯补控）→ 1 收尾<br><span>221A3 / 3闪221A，大招落点是团战胜负手。</span></div>
@@ -3841,9 +3841,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·少女的把戏<span class="tag">远程增伤</span></div><div class="desc">与敌人距离每 <code>+100</code> 码，技能伤害 <code>+5%</code>，最多 <code>+40%</code>。</div><div class="note">拉满被动要多站远 800 码—— poke 时尽量卡极限距离放技能，一套伤害差 40%。</div></div>
-<div class="skill"><div class="name">一技能·纱缚之印<span class="tag">强制位移</span></div><div class="desc">掷出法器造成 <code>120/150/180/210/240/270 + 24%法攻</code> 法伤（非英雄双倍），标记一名敌方英雄 <code>5秒</code>；施法范围内再次使用，将标记目标向指定方向牵引 <code>1秒</code>，并打断其施法。CD <code>11→9秒</code>，蓝耗 <code>50</code>。</div><div class="note">S44 前摇缩短后命中手感明显变好；二段拉人可以等 1-2 秒再拉。</div></div>
-<div class="skill"><div class="name">二技能·幻纱之灵<span class="tag">持续伤害</span></div><div class="desc">抛出能量球（遇野怪停下），对周围目标 <code>150/185/220/255/290/325 + 50%法攻</code> 法伤（<code>0.5秒</code>/次，后续衰减 <code>25%</code>），首个目标 <code>15%</code> 减速 <code>1.5秒</code>；<code>2秒</code> 后爆炸 <code>150/185/220/255/290/325 + 33%法攻</code>，中心伤害翻倍；能量球自动朝被一技能标记的目标移动。CD <code>7秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能标记 + 二技能自动追踪 = 基本必中的消耗组合。</div></div>
-<div class="skill"><div class="name">三技能·心无旁骛<span class="tag">强化</span></div><div class="desc">获得视野提升 <code>8秒</code> 与 <code>50%</code> 移速 <code>0.5秒</code>，刷新二技能 CD；强化期间一技能可<b>连续牵引目标移动两次</b>，且二技能 CD <code>-50%</code>。CD <code>35→25秒</code>，蓝耗 <code>100</code>。</div><div class="note">开大后 1→1 双拉是"把人拉回自家泉水门口"的完整控制链，控制时长约 2.5 秒。</div></div>
+<div class="skill"><div class="name">一技能·纱缚之印<span class="tag">强制位移</span></div><div class="desc">掷出法器造成 <code>120/144/168/192/216/240 + 24%法攻</code> 法伤（非英雄双倍），标记一名敌方英雄 <code>5秒</code>；施法范围内再次使用，将标记目标向指定方向牵引 <code>1秒</code>，并打断其施法。CD <code>11→10秒</code>，蓝耗 <code>40</code>。</div><div class="note">S44 前摇缩短后命中手感明显变好；二段拉人可以等 1-2 秒再拉。</div></div>
+<div class="skill"><div class="name">二技能·幻纱之灵<span class="tag">持续伤害</span></div><div class="desc">抛出能量球（遇野怪停下），对周围目标 <code>150/180/210/240/270/300 + 50%法攻</code> 法伤（<code>0.5秒</code>/次，后续衰减 <code>25%</code>），首个目标 <code>15%</code> 减速 <code>1.5秒</code>；<code>2秒</code> 后爆炸 <code>150/180/210/240/270/300 + 33%法攻</code>，中心伤害翻倍；能量球自动朝被一技能标记的目标移动。CD <code>7秒</code>，蓝耗 <code>40</code>。</div><div class="note">一技能标记 + 二技能自动追踪 = 基本必中的消耗组合。</div></div>
+<div class="skill"><div class="name">三技能·心无旁骛<span class="tag">强化</span></div><div class="desc">获得视野提升 <code>8秒</code> 与 <code>50%</code> 移速 <code>0.5秒</code>，刷新二技能 CD；强化期间一技能可<b>连续牵引目标移动两次</b>，且二技能 CD <code>45→45秒</code>。CD <code>35→25秒</code>，蓝耗 <code>90</code>。</div><div class="note">开大后 1→1 双拉是"把人拉回自家泉水门口"的完整控制链，控制时长约 2.5 秒。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准控制链</b>：一（标记+打断）→ 三（强化刷新）→ 二（爆发+爆炸）<br><span>132 顺序，S44 控制链优化后衔接更顺滑，总控制约 2.5 秒。</span></div>
 <div class="combo"><b>双拉连拉</b>：三（先开大）→ 一（第一拉）→ 二（跟进）→ 一（第二拉到队友脸上）<br><span>两段牵引把目标拖过半个屏幕，专治走位好的 C 位。</span></div>
@@ -3982,9 +3982,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·言灵·咒令<span class="tag">真伤</span></div><div class="desc">对同一敌人两次普攻/技能伤害间隔小于 <code>1.5秒</code> 即进入"连续攻击状态"，每积累满 <code>1.2秒</code> 额外造成 <code>100/130/160/190/220/250 + 50%法强</code> 真实伤害。</div><div class="note">持续压制型真伤——法阵里站着A人收益极高，团战越久越疼。</div></div>
-<div class="skill"><div class="name">一技能·言灵·壁垒<span class="tag">控制/封路</span></div><div class="desc">召唤法术壁垒，触碰敌人受 <code>360/400/440/480/520/560 + 75%法强</code> 法术伤害 + 眩晕 <code>0.75秒</code> + <code>25%</code> 减速 <code>0.5秒</code>；撞碎壁垒后再次触碰伤害衰减 <code>50%</code>、不再眩晕但受 <code>25%</code> 减速 <code>1.25秒</code>。CD <code>11→9秒</code>，蓝耗 <code>60</code>。</div><div class="note">四道并列壁垒可群体控制，封路/断后排追击两用。</div></div>
-<div class="skill"><div class="name">二技能·言灵·命数<span class="tag">法阵/清线</span></div><div class="desc">召唤侵蚀法阵（视野 <code>5.5秒</code>），阵内自身 <code>+60</code> 移速，每 <code>0.5秒</code> 对单一目标造成 <code>110/135/160/185/210/235 + 24%法强</code>；最多同时存在 <code>2</code> 个法阵，非英雄目标额外 <code>50%</code> 伤害；每 <code>12秒</code> 储备 <code>1</code> 次（受 CD 影响），最多存 <code>3</code> 次。CD <code>2秒</code>，蓝耗 <code>50</code>。</div><div class="note">主升。清线+叠被动层数+探视野三合一。</div></div>
-<div class="skill"><div class="name">三技能·言灵·操纵<span class="tag">压制硬控</span></div><div class="desc">抓住敌方英雄持续压制 <b>2.2秒</b>，每 <code>0.5秒</code> 造成 <code>100/130/160/190/220/250 + 18%法强</code>；完整释放后在目标身下生成法区，踏入者受 <code>240/300/360/420/480/540 + 30%法强</code> + 眩晕 <code>0.75秒</code>。CD <code>50→40秒</code>，蓝耗 <code>120</code>。</div><div class="note">压制期间目标无法净化、无视霸体；张良自身无法移动施法，放完就是活靶子。</div></div>
+<div class="skill"><div class="name">一技能·言灵·壁垒<span class="tag">控制/封路</span></div><div class="desc">召唤法术壁垒，触碰敌人受 <code>400/450/500/550/600/650 + 75%法强</code> 法术伤害 + 眩晕 <code>0.75秒</code> + <code>25%</code> 减速 <code>0.5秒</code>；撞碎壁垒后再次触碰伤害衰减 <code>50%</code>、不再眩晕但受 <code>25%</code> 减速 <code>1.25秒</code>。CD <code>11→9秒</code>，蓝耗 <code>80</code>。</div><div class="note">四道并列壁垒可群体控制，封路/断后排追击两用。</div></div>
+<div class="skill"><div class="name">二技能·言灵·命数<span class="tag">法阵/清线</span></div><div class="desc">召唤侵蚀法阵（视野 <code>5.5秒</code>），阵内自身 <code>+60</code> 移速，每 <code>0.5秒</code> 对单一目标造成 <code>120/144/168/192/216/240 + 24%法强</code>；最多同时存在 <code>2</code> 个法阵，非英雄目标额外 <code>50%</code> 伤害；每 <code>12秒</code> 储备 <code>1</code> 次（受 CD 影响），最多存 <code>3</code> 次。CD <code>2秒</code>，蓝耗 <code>80</code>。</div><div class="note">主升。清线+叠被动层数+探视野三合一。</div></div>
+<div class="skill"><div class="name">三技能·言灵·操纵<span class="tag">压制硬控</span></div><div class="desc">抓住敌方英雄持续压制 <b>2.2秒</b>，每 <code>0.5秒</code> 造成 <code>120/150/180 + 18%法强</code>；完整释放后在目标身下生成法区，踏入者受 <code>240/300/360/420/480/540 + 30%法强</code> + 眩晕 <code>0.75秒</code>。CD <code>50→40秒</code>，蓝耗 <code>130</code>。</div><div class="note">压制期间目标无法净化、无视霸体；张良自身无法移动施法，放完就是活靶子。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>定点控制链</b>：一（先手眩晕/封路）→ 二（跟技能叠被动）→ 大（按住不松，全程压制）<br><span>队友集火收割，超长控制链，控到谁谁死。</span></div>
 <div class="combo"><b>反打自保</b>：大（先按住突脸的刺客）→ 一（后撤封路）<br><span>被兰陵王/李白贴脸时先把人摁住，再封路撤退。</span></div>
@@ -4018,9 +4018,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·语·花印<span class="tag">真伤/控制</span></div><div class="desc">技能命中叠加花之印记（<code>8秒</code>，最多 <code>4层</code>），满层对周围敌人造成 <code>130/160/190/220 + 40%法强</code> 真实伤害 + <code>25%</code> 减速 <code>1秒</code>，貂蝉自身回复 <code>130 + 1.5%额外生命</code>。</div><div class="note">真伤+回血双核心——印记管理就是貂蝉的所有输出逻辑。</div></div>
-<div class="skill"><div class="name">一技能·落·红雨<span class="tag">法术</span></div><div class="desc">挥出花球（到达终点后返回），路径敌人受 <code>260/290/320/350/380/410 + 52%法强</code>。CD <code>5→4秒</code>，蓝耗 <code>50</code>。</div><div class="note">往返两段都能叠印记，远距离清线消耗。</div></div>
-<div class="skill"><div class="name">二技能·缘·心结<span class="tag">位移/核心</span></div><div class="desc">向指定方向位移，<b>期间无法选中</b>；抵达时散发 <code>3</code> 枚花球自动攻击附近敌人，每枚 <code>140/160/180/200/220/240 + 28%法强</code>（S44 回调后约 200+25/Lv 量级），每枚命中减本技能 CD <code>1秒</code>（最多 <code>3秒</code>）。CD <code>10→8.5秒</code>，蓝耗 <code>50</code>。</div><div class="note">躲塔伤/关键技能+叠印记+减CD三合一，命中越多转得越快。</div></div>
-<div class="skill"><div class="name">三技能·绽·风华<span class="tag">法阵</span></div><div class="desc">以自身为中心结成法阵（<code>12秒</code>，半径 <code>280</code>），范围内敌人每 <code>0.5秒</code> 受 <code>210/265/320 + 50%法强</code>；身处阵中时一、二技能获额外冷却缩减 <code>20%~40%</code>；法阵结束或主动关闭时再造成等量伤害。CD <code>40→30秒</code>，蓝耗 <code>100</code>。</div><div class="note">在草丛/墙边/塔下开大限制敌方走位，是大招核心思路。</div></div>
+<div class="skill"><div class="name">一技能·落·红雨<span class="tag">法术</span></div><div class="desc">挥出花球（到达终点后返回），路径敌人受 <code>180/220/260/300/340/380 + 52%法强</code>。CD <code>5→5秒</code>，蓝耗 <code>40</code>。</div><div class="note">往返两段都能叠印记，远距离清线消耗。</div></div>
+<div class="skill"><div class="name">二技能·缘·心结<span class="tag">位移/核心</span></div><div class="desc">向指定方向位移，<b>期间无法选中</b>；抵达时散发 <code>3</code> 枚花球自动攻击附近敌人，每枚 <code>140/155/170/185/200/215 + 28%法强</code>（S44 回调后约 200+25/Lv 量级），每枚命中减本技能 CD <code>10→10秒</code>（最多 <code>3秒</code>）。CD <code>10→8.5秒</code>，蓝耗 <code>45</code>。</div><div class="note">躲塔伤/关键技能+叠印记+减CD三合一，命中越多转得越快。</div></div>
+<div class="skill"><div class="name">三技能·绽·风华<span class="tag">法阵</span></div><div class="desc">以自身为中心结成法阵（<code>12秒</code>，半径 <code>280</code>），范围内敌人每 <code>0.5秒</code> 受 <code>210/245/280 + 50%法强</code>；身处阵中时一、二技能获额外冷却缩减 <code>20%~40%</code>；法阵结束或主动关闭时再造成等量伤害。CD <code>40→30秒</code>，蓝耗 <code>80</code>。</div><div class="note">在草丛/墙边/塔下开大限制敌方走位，是大招核心思路。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准团战连招</b>：大（草丛/墙边开）→ 二（贴身躲技能+叠印）→ 一（补伤）→ 二 → 一 循环<br><span>阵内CD缩减下技能无缝衔接，真伤+回血边跳边奶。</span></div>
 <div class="combo"><b>对线消耗</b>：一（远程清兵+叠印）→ 二（位移拉开/躲反打）<br><span>只用一技能远距离清兵，4级前绝不主动贴脸。</span></div>
@@ -4126,10 +4126,10 @@ window.HEROES = [
 </div>
 <div class="tip-box"><strong>版本调整（S44）：</strong>🔺 <b>新英雄</b>：王维为 S45 前瞻登场的新法师（控制 + 功能性强），跨赛季新增；当前按新英雄强度评估，机制可开发性高。</div>
 <h4>技能详解（体验服数值，待正式服校准）</h4>
-<div class="skill"><div class="name">被动·无形之雾<span class="tag">闪避</span></div><div class="desc">每 <code>7.5~6秒</code> 获得 1 格能量，满 <code>5</code> 格可自动闪避下一次伤害（含防御塔，无法闪避控制）；闪避按伤害量消耗能量，最多闪避 <code>500 + 50%法术</code> 伤害（满级满装约可闪避 <code>1300</code> 点）。</div><div class="note">满级满装约可闪避 1300 点伤害，保命核心。</div></div>
-<div class="skill"><div class="name">一技能·空山<span class="tag">区域/回复</span></div><div class="desc">召唤空山造成 <code>200/240/280/320/360/400 + 60%法术</code> 范围伤害 + <code>30%</code> 减速，<code>2秒</code> 内 4 段灼烧后引爆额外 <code>150 + 40%法术</code>；自身在范围内进"空山状态"快速回能量（约 <code>0.4秒/格</code>，是被动 15 倍效率）。CD <code>8→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">清兵 / 消耗主手段，兼回能。</div></div>
-<div class="skill"><div class="name">二技能·奔流<span class="tag">击退/牵引</span></div><div class="desc">释放水流造成 <code>150 + 40%法术</code> 击退，分叉最多两道支流追敌造成 <code>30%</code> 减速 <code>0.75秒</code>；水流经过空山则把范围内目标牵引至中心并加速引爆空山。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">12 连招加速引爆，出伤快。</div></div>
-<div class="skill"><div class="name">三技能·一念天地<span class="tag">分身/传送</span></div><div class="desc">首次施放释放灵魂形态全图穿墙（无视地形）约 <code>10秒</code>；二次施放将真身传送到灵魂位置，造成多段 <code>250 + 60%法术</code> 伤害并快速回能量。<strong>风险：真身留原地可能受击 / 控制</strong>。CD <code>50/45/40秒</code>，蓝耗 <code>120</code>。</div><div class="note">团战切入角度与时机决定上限。</div></div>
+<div class="skill"><div class="name">被动·雾我无相<span class="tag">闪避</span></div><div class="desc">每 <code>7.5~6秒</code> 获得 1 格能量，满 <code>5</code> 格可自动闪避下一次伤害（含防御塔，无法闪避控制）；闪避按伤害量消耗能量，最多闪避 <code>500 + 50%法术</code> 伤害（满级满装约可闪避 <code>1300</code> 点）。</div><div class="note">满级满装约可闪避 1300 点伤害，保命核心。</div></div>
+<div class="skill"><div class="name">一技能·空山入障<span class="tag">区域/回复</span></div><div class="desc">召唤空山造成 <code>200/240/280/320/360/400 + 60%法术</code> 范围伤害 + <code>30%</code> 减速，<code>2秒</code> 内 4 段灼烧后引爆额外 <code>150 + 40%法术</code>；自身在范围内进"空山状态"快速回能量（约 <code>0.4秒/格</code>，是被动 15 倍效率）。CD <code>8→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">清兵 / 消耗主手段，兼回能。</div></div>
+<div class="skill"><div class="name">二技能·江流渺渺<span class="tag">击退/牵引</span></div><div class="desc">释放水流造成 <code>150 + 40%法术</code> 击退，分叉最多两道支流追敌造成 <code>30%</code> 减速 <code>0.75秒</code>；水流经过空山则把范围内目标牵引至中心并加速引爆空山。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">12 连招加速引爆，出伤快。</div></div>
+<div class="skill"><div class="name">三技能·天地一念<span class="tag">分身/传送</span></div><div class="desc">首次施放释放灵魂形态全图穿墙（无视地形）约 <code>10秒</code>；二次施放将真身传送到灵魂位置，造成多段 <code>250 + 60%法术</code> 伤害并快速回能量。<strong>风险：真身留原地可能受击 / 控制</strong>。CD <code>50/45/40秒</code>，蓝耗 <code>120</code>。</div><div class="note">团战切入角度与时机决定上限。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>基础连招</b>：二（奔流干扰/重定位）→ 一（空山控场）<br><span>新手最简，控制链完整。</span></div>
 <div class="combo"><b>进阶连招</b>：一（占区）→ 二（穿空山拉人引爆）→ 大（分身传送收割）<br><span>分身骗技能或直接飞后排，能量管理决定容错。</span></div>
@@ -4234,9 +4234,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·惩戒射击<span class="tag">分裂箭</span></div><div class="desc">普攻命中提升 <code>2%</code> 攻击速度（持续 <code>3秒</code>），叠满 <code>3层</code> 进入惩戒射击：普攻射出 3 支箭矢（视为 1 次普攻）合计造成 <code>120%</code> 物伤，命中刷新持续时间。</div><div class="note">3支箭分开判定——末世被动可触发3次，打肉翻倍。</div></div>
-<div class="skill"><div class="name">一技能·多重箭矢<span class="tag">强化/溅射</span></div><div class="desc">强化攻击 <code>4秒</code>，每次造成 <code>110/135/160/185/210/235 + 75%物攻</code> 物伤，并对面前区域另外 2 名敌人造成 <code>50%</code> 伤害（不附带法球）。CD <code>10→8秒</code>，蓝耗 <code>50</code>。</div><div class="note">对线主升，分裂箭清线+团战AOE双料核心。</div></div>
-<div class="skill"><div class="name">二技能·落日余晖<span class="tag">消耗/视野</span></div><div class="desc">日之塔攻击指定区域，获得视野并造成 <code>480/560/640/720/800/880 + 110%物攻</code> 法术伤害 + <code>25%</code> 减速（持续 <code>2秒</code>），边缘伤害与减速减半。CD <code>7→5.5秒</code>，蓝耗 <code>60</code>。</div><div class="note">可隔草丛释放用特效探视野；远程消耗与留人两用。</div></div>
-<div class="skill"><div class="name">三技能·灼日之矢<span class="tag">全图先手</span></div><div class="desc">射出火焰箭并获 <code>10%</code> 移速 <code>5秒</code>，命中敌方英雄晕眩 <code>1~3秒</code>（随飞行距离提升）并爆炸：范围内 <code>800/950/1100 + 150%额外物攻</code> 物伤 + <code>30%</code> 减速 <code>1秒</code>。CD <code>45→35秒</code>，蓝耗 <code>130</code>。</div><div class="note">穿兵线不挡；飞行约 0.25秒/100码，超过 2000 码接近满晕 3 秒。</div></div>
+<div class="skill"><div class="name">一技能·多重箭矢<span class="tag">强化/溅射</span></div><div class="desc">强化攻击 <code>4秒</code>，每次造成 <code>105/130/155/180/205/230 + 75%物攻</code> 物伤，并对面前区域另外 2 名敌人造成 <code>50%</code> 伤害（不附带法球）。CD <code>10→10秒</code>，蓝耗 <code>60</code>。</div><div class="note">对线主升，分裂箭清线+团战AOE双料核心。</div></div>
+<div class="skill"><div class="name">二技能·落日余晖<span class="tag">消耗/视野</span></div><div class="desc">日之塔攻击指定区域，获得视野并造成 <code>300/350/400/450/500/550 + 110%物攻</code> 法术伤害 + <code>25%</code> 减速（持续 <code>2秒</code>），边缘伤害与减速减半。CD <code>8→5秒</code>，蓝耗 <code>60</code>。</div><div class="note">可隔草丛释放用特效探视野；远程消耗与留人两用。</div></div>
+<div class="skill"><div class="name">三技能·灼日之矢<span class="tag">全图先手</span></div><div class="desc">射出火焰箭并获 <code>10%</code> 移速 <code>5秒</code>，命中敌方英雄晕眩 <code>1~3秒</code>（随飞行距离提升）并爆炸：范围内 <code>700/1000/1300 + 150%额外物攻</code> 物伤 + <code>30%</code> 减速 <code>1秒</code>。CD <code>45→35秒</code>，蓝耗 <code>130</code>。</div><div class="note">穿兵线不挡；飞行约 0.25秒/100码，超过 2000 码接近满晕 3 秒。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>超远开团</b>：预判敌方C位走位 → 大招远距离命中（晕2~3s）→ 队友跟进集火<br><span>后羿存在的意义：团战开打前对方C位已经被控住。</span></div>
 <div class="combo"><b>团战输出</b>：普攻叠满3层被动 → 一技能 → 分裂箭输出 → 二技能减速留人<br><span>先叠被动再开一技能，分裂箭收益最大化。</span></div>
@@ -4269,9 +4269,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·破魔之箭<span class="tag">破盾</span></div><div class="desc">普攻与技能伤害会优先对目标的护盾造成额外伤害——护盾类英雄（刘邦/雅典娜/瑶/张飞/夏侯惇）在她面前盾等于没有。</div><div class="note">选她的战略理由：对面护盾多时优先级飙升。</div></div>
-<div class="skill"><div class="name">一技能·渡灵之箭<span class="tag">形态切换</span></div><div class="desc">展开长弓：<code>+125</code> 射程，攻击间隔 <code>+25%</code>，普攻消耗 <code>30</code> 法力并额外造成 <code>32/42/52/62/72/82 + 7%物攻</code> 法术伤害（<code>0.5秒</code> 1次）；关闭长弓：<code>+20</code> 移速，普攻命中回复 <code>5 + 1%物攻</code> 最大法力（英雄命中 <code>300%</code>）。CD <code>1</code>（形态切换），蓝耗 <code>30</code>。</div><div class="note">核心循环："开弓打2-3下→关弓回蓝"，无脑开会蓝条见底。</div></div>
-<div class="skill"><div class="name">二技能·静默之箭<span class="tag">沉默/爆发</span></div><div class="desc">射出破魔之箭对路径敌人造成 <code>300/360/420/480/540/600 + 60%物攻</code> 法术伤害 + 沉默 <code>0.5秒</code> + <code>25%</code> 减速 <code>1秒</code>，随后路径再爆炸对范围内敌人造成 <code>600/720/840/960/1080/1200 + 120%物攻</code> 法术伤害。每 <code>1.5%</code> 攻速提升 <code>1%</code> 施法速度（最多 <code>100%</code>）。CD <code>12→9.5秒</code>，蓝耗 <code>60</code>。</div><div class="note">全射手少见的沉默：打断婉儿/貂蝉/姜子牙蓄力一绝。</div></div>
-<div class="skill"><div class="name">三技能·纯净之域<span class="tag">法阵/增益</span></div><div class="desc">以自身为中心张开法阵 <code>8秒</code>，对范围内目标造成 <code>380/480/580 + 85%物攻</code> 法术伤害，自身在法阵中 <code>+30%</code> 暴击率 + <code>20%</code> 移速；学习后暴击对目标造成 <code>30%</code> 减速 <code>0.5秒</code>（<code>1秒</code> 内再触发升至 <code>50%</code>）；法阵关闭时造成等量伤害，自身在法阵外保留增益（减半，持续 <code>3秒</code>）。CD <code>40→30秒</code>，蓝耗 <code>100</code>。</div><div class="note">团战开在站位处；敌人踏进来的瞬间手动关闭打爆发。</div></div>
+<div class="skill"><div class="name">一技能·渡灵之箭<span class="tag">形态切换</span></div><div class="desc">展开长弓：<code>+125</code> 射程，攻击间隔 <code>+25%</code>，普攻消耗 <code>30</code> 法力并额外造成 <code>45/47/49/51/53/55 + 7%物攻</code> 法术伤害（<code>0.5秒</code> 1次）；关闭长弓：<code>+20</code> 移速，普攻命中回复 <code>5 + 1%物攻</code> 最大法力（英雄命中 <code>300%</code>）。CD <code>1</code>（形态切换），蓝耗 <code>30</code>。</div><div class="note">核心循环："开弓打2-3下→关弓回蓝"，无脑开会蓝条见底。</div></div>
+<div class="skill"><div class="name">二技能·静默之箭<span class="tag">沉默/爆发</span></div><div class="desc">射出破魔之箭对路径敌人造成 <code>250/280/310/340/370/400 + 60%物攻</code> 法术伤害 + 沉默 <code>0.5秒</code> + <code>25%</code> 减速 <code>1秒</code>，随后路径再爆炸对范围内敌人造成 <code>500/560/620/680/740/800 + 120%物攻</code> 法术伤害。每 <code>1.5%</code> 攻速提升 <code>1%</code> 施法速度（最多 <code>100%</code>）。CD <code>12→8秒</code>，蓝耗 <code>75</code>。</div><div class="note">全射手少见的沉默：打断婉儿/貂蝉/姜子牙蓄力一绝。</div></div>
+<div class="skill"><div class="name">三技能·纯净之域<span class="tag">法阵/增益</span></div><div class="desc">以自身为中心张开法阵 <code>8秒</code>，对范围内目标造成 <code>250/350/450 + 85%物攻</code> 法术伤害，自身在法阵中 <code>+30%</code> 暴击率 + <code>20%</code> 移速；学习后暴击对目标造成 <code>30%</code> 减速 <code>0.5秒</code>（<code>1秒</code> 内再触发升至 <code>50%</code>）；法阵关闭时造成等量伤害，自身在法阵外保留增益（减半，持续 <code>3秒</code>）。CD <code>40→30秒</code>，蓝耗 <code>100</code>。</div><div class="note">团战开在站位处；敌人踏进来的瞬间手动关闭打爆发。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线消耗</b>：开弓 → 普攻2-3下 → 二技能补沉默 → 关弓回蓝<br><span>法力管理是伽罗第一课，循环着打才有线权。</span></div>
 <div class="combo"><b>团战输出</b>：大招铺地 → 开弓 → 普攻风筝（暴击减速）→ 二技能二段收尾<br><span>30%暴击率+移速加持，风筝前排跑都跑不动。</span></div>
@@ -4347,9 +4347,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·火力压制<span class="tag">核心扫射</span></div><div class="desc">第五次普攻或使用技能后的下次普攻强化为扫射（<code>3次</code> 普攻伤害）：对英雄造成 <code>70/95/120/145/170 + 4.5%最大生命</code> 物理伤害（每点额外物攻提升 <code>0.01%</code>）；对非英雄造成 <code>120/160/200/240 + 50%物攻</code> 物理伤害。</div><div class="note">技能后必接扫射是核心输出循环：清线、打肉、消耗全靠它；扫射期间可用闪现调整位置。</div></div>
-<div class="skill"><div class="name">一技能·河豚手雷<span class="tag">减速/视野</span></div><div class="desc">投掷河豚手雷造成 <code>520/590/660/730/800/870 + 150%额外物攻</code> 物理伤害和 <code>25%</code> 减速（<code>2秒</code>），并获得敌人视野。CD <code>7.5→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">主升。命中即触发被动扫射，还是探草神技。</div></div>
-<div class="skill"><div class="name">二技能·无敌鲨嘴炮<span class="tag">击退/斩杀</span></div><div class="desc">发射火箭炮击退身前英雄并造成 <code>450/510/570/630/690/750 + 125%额外物攻</code> 物理伤害与 <code>5%</code> 已损生命法术伤害。CD <code>12→9秒</code>，蓝耗 <code>60</code>。</div><div class="note">贴脸反打核心：刺客近身一炮推开+触发扫射；5% 已损生命补刀收残血。</div></div>
-<div class="skill"><div class="name">三技能·空中支援<span class="tag">范围/支援</span></div><div class="desc">召唤河豚飞艇（持续 <code>14秒</code>），每秒随机对一个敌人投掷炸弹造成 <code>520/640/760 + 150%额外物攻</code> 物理伤害和 <code>25%</code> 减速（<code>1秒</code>），飞艇照亮支援范围内视野。CD <code>35→20秒</code>，蓝耗 <code>100</code>。</div><div class="note">大范围区域压制+开视野，团战前丢一个逼对面走位。</div></div>
+<div class="skill"><div class="name">一技能·河豚手雷<span class="tag">减速/视野</span></div><div class="desc">投掷河豚手雷造成 <code>450/500/550/600/650/700 + 150%额外物攻</code> 物理伤害和 <code>25%</code> 减速（<code>2秒</code>），并获得敌人视野。CD <code>7→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">主升。命中即触发被动扫射，还是探草神技。</div></div>
+<div class="skill"><div class="name">二技能·无敌鲨嘴炮<span class="tag">击退/斩杀</span></div><div class="desc">发射火箭炮击退身前英雄并造成 <code>400/450/500/550/600/650 + 125%额外物攻</code> 物理伤害与 <code>5%</code> 已损生命法术伤害。CD <code>15→9秒</code>，蓝耗 <code>70</code>。</div><div class="note">贴脸反打核心：刺客近身一炮推开+触发扫射；5% 已损生命补刀收残血。</div></div>
+<div class="skill"><div class="name">三技能·空中支援<span class="tag">范围/支援</span></div><div class="desc">召唤河豚飞艇（持续 <code>14秒</code>），每秒随机对一个敌人投掷炸弹造成 <code>500/625/750 + 150%额外物攻</code> 物理伤害和 <code>25%</code> 减速（<code>1秒</code>），飞艇照亮支援范围内视野。CD <code>40→20秒</code>，蓝耗 <code>100</code>。</div><div class="note">大范围区域压制+开视野，团战前丢一个逼对面走位。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>标准循环</b>：平A×4存被动 → 一（手雷）→ 扫射 → 二（推开/补刀）→ 扫射<br><span>口诀"扫扫扫"——每次技能后接扫射，输出提升至少20%。</span></div>
 <div class="combo"><b>团战循环</b>：三（飞艇区域压制）→ 一 → 扫射 → 走A → 技能CD好再循环<br><span>永远站在最后排，让飞艇和手雷先手。</span></div>
@@ -4383,9 +4383,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·炮手燃魂<span class="tag">叠层增益</span></div><div class="desc">每次普攻获得 <code>6</code> 额外物理攻击和 <code>0.75%</code> 暴击率（持续 <code>1.5秒</code>，最多 <code>5层</code>）；炮台形态时增益翻倍（最高 <code>+60</code> 物攻 + <code>7.5%</code> 暴击率）。</div><div class="note">架炮后先平A叠层再输出，越打越疼。</div></div>
-<div class="skill"><div class="name">一技能·追击潜能<span class="tag">加速/加攻</span></div><div class="desc">获得 <code>20</code> 额外物理攻击（开启期间翻倍至 <code>40</code>）和 <code>30%</code> 移动速度（<code>3.5秒</code> 内衰减）；炮台形态可瞬间退出。CD <code>7.5→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">撤退、追击、秒退炮台三用；开大前留一手。</div></div>
-<div class="skill"><div class="name">二技能·警戒地雷<span class="tag">减速/护盾/破甲</span></div><div class="desc">布置地雷（最多 <code>2</code> 个），触碰或飞行中碰敌方英雄爆炸：击退首个敌人（<code>0.3秒</code>）、造成 <code>360 + 80%额外物攻</code> 物理伤害、<code>25%</code> 减速和 <code>10%</code> 物防降低（<code>1.5秒</code>，最多 <code>2层</code>）；自身获得 <code>360 + 5.5%额外生命</code> 护盾（<code>3秒</code>）并获取视野（<code>3秒</code>）。CD <code>8→6.5秒</code>，蓝耗 <code>60</code>。</div><div class="note">双雷踩线防gank+反手开；两层破甲 20% 是架炮输出的前置。</div></div>
-<div class="skill"><div class="name">三技能·重装炮台<span class="tag">核心形态</span></div><div class="desc">位移一段距离并部署炮台（不可移动）：获得 <code>200/300/400</code> 双抗（<code>15秒</code>），每次普攻对中心范围内敌人额外造成 <code>300/450/600</code> 物理伤害（边缘衰减 <code>40%</code>，对防御塔衰减 <code>50%</code>）；<code>6/7/8</code> 次普攻后自动退出；进入炮台形态刷新【追击潜能】。CD <code>15→12秒</code>，蓝耗 <code>80</code>。</div><div class="note">双抗+翻倍被动=其实很肉；卡好 6 次普攻节奏，别让大招空转结束。</div></div>
+<div class="skill"><div class="name">一技能·追击潜能<span class="tag">加速/加攻</span></div><div class="desc">获得 <code>20</code> 额外物理攻击（开启期间翻倍至 <code>40</code>）和 <code>30%</code> 移动速度（<code>3.5秒</code> 内衰减）；炮台形态可瞬间退出。CD <code>9→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">撤退、追击、秒退炮台三用；开大前留一手。</div></div>
+<div class="skill"><div class="name">二技能·警戒地雷<span class="tag">减速/护盾/破甲</span></div><div class="desc">布置地雷（最多 <code>2</code> 个），触碰或飞行中碰敌方英雄爆炸：击退首个敌人（<code>0.3秒</code>）、造成 <code>360 + 80%额外物攻</code> 物理伤害、<code>25%</code> 减速和 <code>10%</code> 物防降低（<code>1.5秒</code>，最多 <code>2层</code>）；自身获得 <code>360 + 5.5%额外生命</code> 护盾（<code>3秒</code>）并获取视野（<code>3秒</code>）。CD <code>8→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">双雷踩线防gank+反手开；两层破甲 20% 是架炮输出的前置。</div></div>
+<div class="skill"><div class="name">三技能·重装炮台<span class="tag">核心形态</span></div><div class="desc">位移一段距离并部署炮台（不可移动）：获得 <code>200/300/400</code> 双抗（<code>15秒</code>），每次普攻对中心范围内敌人额外造成 <code>350/525/700</code> 物理伤害（边缘衰减 <code>40%</code>，对防御塔衰减 <code>50%</code>）；<code>6/7/8</code> 次普攻后自动退出；进入炮台形态刷新【追击潜能】。CD <code>16→12秒</code>，蓝耗 <code>80</code>。</div><div class="note">双抗+翻倍被动=其实很肉；卡好 6 次普攻节奏，别让大招空转结束。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>团战标准连</b>：二（双雷破甲+减速）→ 大（架炮）→ 平A×6 → 一（加速追击/撤退）<br><span>雷先行破甲20%，架炮输出最大化。</span></div>
 <div class="combo"><b>守塔/守高地</b>：三架在高地/塔后 → 二封入口 → 火力覆盖<br><span>守塔能力射手中最强，对面冲高地要付惨重代价。</span></div>
@@ -4418,9 +4418,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·活力迸发<span class="tag">CD循环</span></div><div class="desc">普攻命中敌人减少【翻滚突袭】 <code>10%</code> 冷却时间。</div><div class="note">翻滚→平A→翻滚的循环基础，命中越多CD转得越快。</div></div>
-<div class="skill"><div class="name">一技能·翻滚突袭<span class="tag">核心位移/爆发</span></div><div class="desc">向前翻滚并强化下次普攻（重置普攻）：提升射程并造成 <code>270/300/330/360/370 + 100%物攻</code> 物理伤害；若附近有敌方英雄额外获得 <code>80%</code> 移动速度（<code>2秒</code> 衰减）。CD <code>5→4.5秒</code>，蓝耗 <code>45</code>。</div><div class="note">80% 加速是保命/追击核心；翻滚方向决定生死——别往人堆里滚。</div></div>
-<div class="skill"><div class="name">二技能·红莲爆弹<span class="tag">破甲/增伤</span></div><div class="desc">投掷爆弹造成 <code>380/480/580/680/760 + 120%额外物攻</code> 物理伤害和极限减速（<code>1秒</code>），标记降低 <code>10%</code> 物理防御（<code>5秒</code>）；孙尚香普攻标记目标额外造成 <code>120/160/200/240 + 36%额外物攻</code> 物理伤害（非英雄翻倍）。CD <code>7.5→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">先爆弹标记者再翻滚输出，破甲+增伤叠加伤害质变。</div></div>
-<div class="skill"><div class="name">三技能·究极弩炮<span class="tag">远程爆发</span></div><div class="desc">发射弩炮，触碰首个敌人或到最远距离后爆炸：对触碰目标造成 <code>840/1080/1320/1560/1680 + 250%额外物攻</code> 物理伤害（爆炸伤害为 <code>75%</code>）。CD <code>25→15秒</code>，蓝耗 <code>100</code>。</div><div class="note">远处轰残血、开团前消耗；满级 CD 15 秒基本一波团两次。</div></div>
+<div class="skill"><div class="name">一技能·翻滚突袭<span class="tag">核心位移/爆发</span></div><div class="desc">向前翻滚并强化下次普攻（重置普攻）：提升射程并造成 <code>270/290/310/330/350/370 + 100%物攻</code> 物理伤害；若附近有敌方英雄额外获得 <code>80%</code> 移动速度（<code>2秒</code> 衰减）。CD <code>5→5秒</code>，蓝耗 <code>25</code>。</div><div class="note">80% 加速是保命/追击核心；翻滚方向决定生死——别往人堆里滚。</div></div>
+<div class="skill"><div class="name">二技能·红莲爆弹<span class="tag">破甲/增伤</span></div><div class="desc">投掷爆弹造成 <code>150/170/190/210/230/250 + 120%额外物攻</code> 物理伤害和极限减速（<code>1秒</code>），标记降低 <code>10%</code> 物理防御（<code>5秒</code>）；孙尚香普攻标记目标额外造成 <code>100/120/140/160/180/200 + 36%额外物攻</code> 物理伤害（非英雄翻倍）。CD <code>8.0→6.0秒</code>，蓝耗 <code>50</code>。</div><div class="note">先爆弹标记者再翻滚输出，破甲+增伤叠加伤害质变。</div></div>
+<div class="skill"><div class="name">三技能·究极弩炮<span class="tag">远程爆发</span></div><div class="desc">发射弩炮，触碰首个敌人或到最远距离后爆炸：对触碰目标造成 <code>500/750/1000 + 250%额外物攻</code> 物理伤害（爆炸伤害为 <code>75%</code>）。CD <code>25→15秒</code>，蓝耗 <code>100</code>。</div><div class="note">远处轰残血、开团前消耗；满级 CD 15 秒基本一波团两次。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>秒人连招</b>：二（爆弹标记者）→ 一（翻滚强化炮）→ 平A → 一（再滚）→ 大招收尾<br><span>标记者破甲+翻滚+重置普攻，脆皮两炮带走。</span></div>
 <div class="combo"><b>拉扯输出</b>：翻滚(后拉) → 炮 → 平A减CD → 再翻滚<br><span>利用80%加速不断调整位置，"存枪"连招讲究翻滚取消后摇。</span></div>
@@ -4489,8 +4489,8 @@ window.HEROES = [
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·瞄准<span class="tag">伪装/穿透</span></div><div class="desc">原地不动 <code>1秒</code> 后进入伪装（低端局可见轮廓），普攻造成 <code>190%</code> 物理攻击伤害并附加目标 <code>6%~12%最大生命</code> 物理伤害（对野怪上限 <code>200</code>）；非战斗每 <code>1秒</code> 获 1 层称号（最多 <code>5层</code>），每层 <code>+12</code> 穿透，满层 <code>+60</code> 穿透。</div><div class="note">伪装期间别乱动，贴脸输出每发都是百分比伤害，专治肉坦。</div></div>
 <div class="skill"><div class="name">一技能·静谧之眼<span class="tag">视野</span></div><div class="desc">布置视野装置，获得 <code>10秒</code> 视野（可探草丛与隐身）；被动：原地不动叠穿透（满 <code>5层</code> +<code>60</code>）。装置持续提供视野。CD <code>1.5秒</code>，蓝耗 <code>30</code>。</div><div class="note">对线放河道草、团战放龙坑，信息差就是守约的命。</div></div>
-<div class="skill"><div class="name">二技能·狂风之息<span class="tag">狙击核心</span></div><div class="desc">瞄准 <code>2.5秒</code>（可移动取消，CD 随等级 <code>25~16秒</code>），发射造成 <code>750/900/1050/1200/1350/1500 + 240%额外物攻</code> 物理伤害，命中减速 <code>50%/30%</code> 移速 <code>2秒</code> 并暴露视野。</div><div class="note">6.12 加强后前期伤害质变；狙击流堆额外 AD，暴击流靠平 A 补伤。空枪=送节奏。</div></div>
-<div class="skill"><div class="name">三技能·逃脱<span class="tag">位移/反打</span></div><div class="desc">向后跳跃并射击，造成 <code>300/400/500/600/700 + 90%额外物攻</code> 物理伤害，落地获得 <code>15%/20%</code> 移速持续 <code>2秒</code>（可接平 A）。CD <code>20→16秒</code>，蓝耗 <code>80</code>。</div><div class="note">被切时的保命 + 拉扯反打，接二技能反向狙击是守约经典反杀。</div></div>
+<div class="skill"><div class="name">二技能·狂风之息<span class="tag">狙击核心</span></div><div class="desc">瞄准 <code>2.5秒</code>（可移动取消，CD 随等级 <code>25~16秒</code>），发射造成 <code>580/700/820/940/1060/1180 + 240%额外物攻</code> 物理伤害，命中减速 <code>50%/30%</code> 移速 <code>2秒</code> 并暴露视野。</div><div class="note">6.12 加强后前期伤害质变；狙击流堆额外 AD，暴击流靠平 A 补伤。空枪=送节奏。</div></div>
+<div class="skill"><div class="name">三技能·逃脱<span class="tag">位移/反打</span></div><div class="desc">向后跳跃并射击，造成 <code>500/700/900 + 90%额外物攻</code> 物理伤害，落地获得 <code>15%/20%</code> 移速持续 <code>2秒</code>（可接平 A）。CD <code>20→10秒</code>，蓝耗 <code>100</code>。</div><div class="note">被切时的保命 + 拉扯反打，接二技能反向狙击是守约经典反杀。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>消耗连</b>：二技能（狙击消耗/压血线）→ 平 A 补伤 → 一技能布视野<br><span>对线期靠狙击把对面压出经验区，别贪平 A 破伪装。</span></div>
 <div class="combo"><b>反打连</b>：三技能（后跳）+ 二技能（反向狙击）→ 平 A<br><span>被兰陵王/李白近身时，大招拉开距离立刻狙，常能反杀。</span></div>
@@ -4521,9 +4521,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·树神护佑<span class="tag">双普攻</span></div><div class="desc">脱战后获得树神之拥，普攻有 <code>25%</code> 概率对目标施加树神之拥（强化普攻），造成 <code>100/130/160/190/220/250 + 20%物攻</code> 物理伤害并短时提升攻速 <code>30%</code>；强化普攻触发后下一次普攻造成额外伤害。</div><div class="note">双普攻是虞姬主要输出节奏，配合暴击流一发入魂。</div></div>
-<div class="skill"><div class="name">一技能·楚歌起<span class="tag">消耗</span></div><div class="desc">向前射出 tree 之矢，造成 <code>800/950/1100/1250/1400/1550 + 240%额外物攻</code> 物理伤害并减速 <code>15%</code> 移速 <code>2秒</code>。CD <code>6→4秒</code>，蓝耗 <code>50</code>。</div><div class="note">CD 短、射程长，对线消耗与探草主力；满级伤害可观。</div></div>
-<div class="skill"><div class="name">二技能·大风来<span class="tag">物免核心</span></div><div class="desc">激活后 <code>2秒</code> 物理伤害免疫，提升 <code>30%~50%</code> 移速与 <code>25%</code> 攻速 <code>2秒</code>，期间不受物理伤害（法术/真实仍吃）。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">虞姬灵魂技能：孙悟空/娜可露露/兰陵王一套全免，免疫结束反手双普攻+一技能反打。</div></div>
-<div class="skill"><div class="name">三技能·阵前舞<span class="tag">控制/爆发</span></div><div class="desc">冲向目标短暂眩晕 <code>0.5秒</code> 并造成 <code>150/250/350 + 100%物攻</code> 物理伤害，随后强化普攻（弩矢）造成额外 <code>100 + 40%物攻</code>，期间获得攻速 <code>30%~50%</code>。CD <code>18→14秒</code>，蓝耗 <code>80</code>。</div><div class="note">大招标记后接平 A 爆发，也用于越墙追击/逃生。</div></div>
+<div class="skill"><div class="name">一技能·楚歌起<span class="tag">消耗</span></div><div class="desc">向前射出 tree 之矢，造成 <code>365/540/715/890/1065/1240 + 240%额外物攻</code> 物理伤害并减速 <code>15%</code> 移速 <code>2秒</code>。CD <code>5→5秒</code>，蓝耗 <code>50</code>。</div><div class="note">CD 短、射程长，对线消耗与探草主力；满级伤害可观。</div></div>
+<div class="skill"><div class="name">二技能·大风来<span class="tag">物免核心</span></div><div class="desc">激活后 <code>2秒</code> 物理伤害免疫，提升 <code>30%~50%</code> 移速与 <code>25%</code> 攻速 <code>2秒</code>，期间不受物理伤害（法术/真实仍吃）。CD <code>12→10秒</code>，蓝耗 <code>80</code>。</div><div class="note">虞姬灵魂技能：孙悟空/娜可露露/兰陵王一套全免，免疫结束反手双普攻+一技能反打。</div></div>
+<div class="skill"><div class="name">三技能·阵前舞<span class="tag">控制/爆发</span></div><div class="desc">冲向目标短暂眩晕 <code>0.5秒</code> 并造成 <code>180/225/270 + 100%物攻</code> 物理伤害，随后强化普攻（弩矢）造成额外 <code>100 + 40%物攻</code>，期间获得攻速 <code>30%~50%</code>。CD <code>20→14秒</code>，蓝耗 <code>100</code>。</div><div class="note">大招标记后接平 A 爆发，也用于越墙追击/逃生。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>反打连</b>：二技能（物免）→ 平 A 双普攻 → 一技能 → 大招晕<br><span>被物理刺客切入时开二技能免伤，反手一套带走。</span></div>
 <div class="combo"><b>消耗连</b>：一技能（poke）→ 平 A 叠被动 → 大招补控<br><span>对线期靠一技能压血线，别过早交二技能。</span></div>
@@ -4554,9 +4554,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·迅捷<span class="tag">攻速/移速</span></div><div class="desc">每次普攻叠加 <code>1层</code> 迅捷（最多 <code>5层</code>），每层提供 <code>+6%~10%</code> 攻速与 <code>+3%~5%</code> 移速，叠满后普攻附带额外 <code>30 + 8%法术</code> 法术伤害；脱战清空。</div><div class="note">走 A 核心，叠满被动的狄仁杰攻速移速双高，拉扯极强。</div></div>
-<div class="skill"><div class="name">一技能·六令追凶<span class="tag">消耗</span></div><div class="desc">掷出 <code>6</code> 道令牌（红牌物理/蓝牌法术），造成 <code>100/110/120/130/140/150 + 25%额外物攻</code> 伤害，红牌额外 <code>30%</code> 减速、蓝牌额外法术伤害；令牌可触发普攻法球。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">清线+消耗主力；S44 红牌加强后伤害更稳。</div></div>
-<div class="skill"><div class="name">二技能·逃脱<span class="tag">解控核心</span></div><div class="desc">清除自身负面效果（控制/减益）并获得 <code>0.5秒</code> 无敌，向周围掷出 <code>8</code> 道令牌（红蓝各半）各 <code>80 + 20%额外物攻</code> 造成伤害与 <code>25%</code> 减速。CD <code>18→14秒</code>，蓝耗 <code>70</code>。</div><div class="note">狄仁杰灵魂技能：解控+无敌反打，除东皇/张良压制外几乎全解；被抓时秒解反打。</div></div>
-<div class="skill"><div class="name">三技能·王朝密令<span class="tag">控制/减抗</span></div><div class="desc">掷出金牌造成眩晕 <code>1秒</code> 并减少目标 <code>25%~40%</code> 物理/法术防御（<code>3秒</code>）；对野怪/小兵伤害 <code>150%</code>，可触发普攻法球。CD <code>18→14秒</code>，蓝耗 <code>90</code>。</div><div class="note">先手开团或大招定点控 C，减双抗让队友集火更疼。</div></div>
+<div class="skill"><div class="name">一技能·六令追凶<span class="tag">消耗</span></div><div class="desc">掷出 <code>6</code> 道令牌（红牌物理/蓝牌法术），造成 <code>155/180/205/230/255/280 + 25%额外物攻</code> 伤害，红牌额外 <code>30%</code> 减速、蓝牌额外法术伤害；令牌可触发普攻法球。CD <code>8→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">清线+消耗主力；S44 红牌加强后伤害更稳。</div></div>
+<div class="skill"><div class="name">二技能·逃脱<span class="tag">解控核心</span></div><div class="desc">清除自身负面效果（控制/减益）并获得 <code>0.5秒</code> 无敌，向周围掷出 <code>8</code> 道令牌（红蓝各半）各 <code>80 + 20%额外物攻</code> 造成伤害与 <code>25%</code> 减速。CD <code>14→12秒</code>，蓝耗 <code>70</code>。</div><div class="note">狄仁杰灵魂技能：解控+无敌反打，除东皇/张良压制外几乎全解；被抓时秒解反打。</div></div>
+<div class="skill"><div class="name">三技能·王朝密令<span class="tag">控制/减抗</span></div><div class="desc">掷出金牌造成眩晕 <code>1秒</code> 并减少目标 <code>25%~40%</code> 物理/法术防御（<code>3秒</code>）；对野怪/小兵伤害 <code>150%</code>，可触发普攻法球。CD <code>24→16秒</code>，蓝耗 <code>100</code>。</div><div class="note">先手开团或大招定点控 C，减双抗让队友集火更疼。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>反打连</b>：二技能（解控无敌）→ 平 A → 大招晕 → 一技能补伤<br><span>被抓瞬间解控反打，金牌控住让队友补输出。</span></div>
 <div class="combo"><b>消耗连</b>：一技能令牌 → 平 A 叠被动 → 走位拉扯<br><span>对线期靠令牌压血线，被动叠满拉扯无解。</span></div>
@@ -4587,9 +4587,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·晚云落<span class="tag">印记/伞位</span></div><div class="desc">普攻与技能对目标叠加枫叶印记，满 <code>4层</code> 引爆造成 <code>20/30/40/50 + 20%物攻</code> 范围法术伤害；阿离无伞时在伞处，有伞时回到伞位；每次释放技能后普攻强化 <code>40 + 15%物攻</code>。</div><div class="note">印记引爆是核心爆发，伞位往返是位移灵魂。</div></div>
-<div class="skill"><div class="name">一技能·岑中归月<span class="tag">位移</span></div><div class="desc">向指定方向位移 <code>450~600</code> 并留在伞，再次使用回到伞位；位移期间普攻造成额外 <code>30 + 10%物攻</code>。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是主要拉扯位移，留伞=留后路。</div></div>
-<div class="skill"><div class="name">二技能·霜叶舞<span class="tag">挡飞行物</span></div><div class="desc">旋转伞击退近身敌人并阻挡（击落）<b>飞行物</b>，持续 <code>0.4秒</code>（削弱后）；造成 <code>100 + 30%物攻</code>，再次使用回到伞位。CD <code>9→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">7.28 削弱后窗口 0.7→0.4 秒，挡诸葛亮大/后羿大需更精准时机。</div></div>
-<div class="skill"><div class="name">三技能·孤鹜断霞<span class="tag">击退/控制</span></div><div class="desc">击退前方敌人造成 <code>150/200/250 + 40%物攻</code> 法术伤害与短暂击退 <code>0.5秒</code>，并留下伞；再次使用回到伞位。CD <code>20→16秒</code>，蓝耗 <code>90</code>。</div><div class="note">团战先手击退刺客/分割战场，也能保命拉开。</div></div>
+<div class="skill"><div class="name">一技能·岑中归月<span class="tag">位移</span></div><div class="desc">向指定方向位移 <code>450~600</code> 并留在伞，再次使用回到伞位；位移期间普攻造成额外 <code>30 + 10%物攻</code>。CD <code>8→5.5秒</code>，蓝耗 <code>50</code>。</div><div class="note">一技能是主要拉扯位移，留伞=留后路。</div></div>
+<div class="skill"><div class="name">二技能·霜叶舞<span class="tag">挡飞行物</span></div><div class="desc">旋转伞击退近身敌人并阻挡（击落）<b>飞行物</b>，持续 <code>0.4秒</code>（削弱后）；造成 <code>100 + 30%物攻</code>，再次使用回到伞位。CD <code>11→10秒</code>，蓝耗 <code>60</code>。</div><div class="note">7.28 削弱后窗口 0.7→0.4 秒，挡诸葛亮大/后羿大需更精准时机。</div></div>
+<div class="skill"><div class="name">三技能·孤鹜断霞<span class="tag">击退/控制</span></div><div class="desc">击退前方敌人造成 <code>250/375/500 + 40%物攻</code> 法术伤害与短暂击退 <code>0.5秒</code>，并留下伞；再次使用回到伞位。CD <code>25→15秒</code>，蓝耗 <code>90</code>。</div><div class="note">团战先手击退刺客/分割战场，也能保命拉开。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>消耗连</b>：一技能（位移留伞）→ 平 A 叠印记 → 回伞<br><span>对线靠伞位拉扯消耗，别站桩。</span></div>
 <div class="combo"><b>反打连</b>：二技能（挡飞行物）→ 平 A → 一技能回伞拉开<br><span>被切时挡掉关键飞行技能再位移逃生。</span></div>
@@ -4654,9 +4654,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·精灵舞步<span class="tag">月桂印记</span></div><div class="desc">普攻与技能叠加月桂印记，满 <code>6层</code> 触发强化普攻并消耗印记；满能量（<code>100</code>）时移速提升 <code>15%~30%</code>。强化普攻造成额外 <code>80/100/120 + 20%法术</code> 法术伤害并射出 <code>3</code> 支月桂箭（各 <code>40 + 10%法术</code>）。</div><div class="note">能量管理是核心，满能量强化普攻是爆发。</div></div>
-<div class="skill"><div class="name">一技能·叶舞·致意<span class="tag">消耗</span></div><div class="desc">射出月桂叶对路径敌人造成 <code>250/290/330/370/410/450 + 50%法术</code> 法术伤害并减速 <code>30%~50%</code> 持续 <code>2秒</code>；命中叠 <code>1层</code> 印记。CD <code>8→6秒</code>，蓝耗 <code>50</code>。</div><div class="note">主要消耗与减速手段，对线压血线。</div></div>
-<div class="skill"><div class="name">二技能·旋舞·轻语<span class="tag">位移/强化</span></div><div class="desc">位移 <code>350~500</code> 并强化下次普攻（额外 <code>60 + 15%法术</code>）；满能量时使用获得强化：位移距离翻倍+射出环刃造成 <code>200 + 50%法术</code> 范围伤害。CD <code>10→8秒</code>，蓝耗 <code>70</code>。</div><div class="note">保命位移+能量转换，满能量二技能是爆发点。</div></div>
-<div class="skill"><div class="name">三技能·月桂之舞·盛放<span class="tag">大招/持续</span></div><div class="desc">化为月桂之灵飞向目标区域，持续 <code>3秒</code> 发射月桂箭雨，每波 <code>6</code> 支箭各 <code>90 + 22%法术</code>（共 <code>10波</code>），造成法术伤害（不可被致盲干扰），期间获得短暂不可选中帧。CD <code>40/35/30秒</code>，蓝耗 <code>120</code>。</div><div class="note">大招是艾琳团战核心，专治致盲射手——卢雅那/李元芳被动致盲对艾琳无效。</div></div>
+<div class="skill"><div class="name">一技能·叶舞·致意<span class="tag">消耗</span></div><div class="desc">射出月桂叶对路径敌人造成 <code>250/290/330/370/410/450 + 50%法术</code> 法术伤害并减速 <code>30%~50%</code> 持续 <code>2秒</code>；命中叠 <code>1层</code> 印记。CD <code>7→7秒</code>，蓝耗 <code>50</code>。</div><div class="note">主要消耗与减速手段，对线压血线。</div></div>
+<div class="skill"><div class="name">二技能·旋舞·轻语<span class="tag">位移/强化</span></div><div class="desc">位移 <code>350~500</code> 并强化下次普攻（额外 <code>60 + 15%法术</code>）；满能量时使用获得强化：位移距离翻倍+射出环刃造成 <code>200 + 50%法术</code> 范围伤害。CD <code>10→6秒</code>，蓝耗 <code>70</code>。</div><div class="note">保命位移+能量转换，满能量二技能是爆发点。</div></div>
+<div class="skill"><div class="name">三技能·月桂之舞·盛放<span class="tag">大招/持续</span></div><div class="desc">化为月桂之灵飞向目标区域，持续 <code>3秒</code> 发射月桂箭雨，每波 <code>6</code> 支箭各 <code>90 + 22%法术</code>（共 <code>10波</code>），造成法术伤害（不可被致盲干扰），期间获得短暂不可选中帧。CD <code>20→15秒</code>，蓝耗 <code>120</code>。</div><div class="note">大招是艾琳团战核心，专治致盲射手——卢雅那/李元芳被动致盲对艾琳无效。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>消耗连</b>：一技能（减速）→ 平 A 叠印记 → 二技能拉开<br><span>对线靠法伤消耗，不依赖物防装。</span></div>
 <div class="combo"><b>爆发连</b>：满能量 → 二技能强化 → 平 A 强化 → 大招箭雨<br><span>满能量二技能+大招是艾琳爆发窗口。</span></div>
@@ -4721,8 +4721,8 @@ window.HEROES = [
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·炽怒<span class="tag">能量/兴奋</span></div><div class="desc">攻击/受击攒炽怒值（满 <code>100</code>，脱战 <code>每秒-10</code> 自然回复），满怒进入兴奋状态：攻速 <code>+30%</code>、移速 <code>+15%</code>、每 <code>2秒</code> 回血 <code>3%~6%最大生命</code>。</div><div class="note">能量管理是核心，存怒打两套比空怒强太多。</div></div>
 <div class="skill"><div class="name">一技能·狂对<span class="tag">穿透/导弹</span></div><div class="desc">持续射击导弹，每发 <code>30/40/50/60/70/80 + 15%额外物攻</code>，后续命中衰减 <code>50%</code>；满怒触发时发射 <code>5</code> 枚飞弹（各 <code>60 + 20%额外物攻</code>）。CD <code>7.5→6秒</code>，普攻 -<code>5%</code> CD，蓝耗 <code>50</code>。</div><div class="note">主输出技能，兴奋期爆发加速边走边打。</div></div>
-<div class="skill"><div class="name">二技能·爆裂重炮<span class="tag">分裂弹</span></div><div class="desc">发射重炮+霰弹（固定 <code>7发</code>），每发 <code>60/80/100/120/140/160 + 40%额外物攻</code>，命中相同目标后续伤害衰减 <code>25%</code>。射程 <code>750</code>。CD <code>9→7秒</code>，蓝耗 <code>60</code>。</div><div class="note">清线+消耗主力，射程削弱后注意站位。</div></div>
-<div class="skill"><div class="name">三技能·飞弹援袭<span class="tag">大招/锁定</span></div><div class="desc">大招锁定目标，持续导弹轰炸 <code>4秒</code>，每波 <code>3</code> 枚（各 <code>70 + 18%额外物攻</code>），移速加成 <code>150~300</code>，导弹发射速度绑定攻速。CD <code>40/35/30秒</code>，蓝耗 <code>120</code>。</div><div class="note">团战持续火力，开大期间疯狂输出。</div></div>
+<div class="skill"><div class="name">二技能·爆裂重炮<span class="tag">分裂弹</span></div><div class="desc">发射重炮+霰弹（固定 <code>7发</code>），每发 <code>150/165/180/195/210/225 + 40%额外物攻</code>，命中相同目标后续伤害衰减 <code>25%</code>。射程 <code>750</code>。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">清线+消耗主力，射程削弱后注意站位。</div></div>
+<div class="skill"><div class="name">三技能·飞弹援袭<span class="tag">大招/锁定</span></div><div class="desc">大招锁定目标，持续导弹轰炸 <code>4秒</code>，每波 <code>3</code> 枚（各 <code>70 + 18%额外物攻</code>），移速加成 <code>150~300</code>，导弹发射速度绑定攻速。CD <code>60→50秒</code>，蓝耗 <code>120</code>。</div><div class="note">团战持续火力，开大期间疯狂输出。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>爆发连</b>：存满怒 → 一技能（清空+5导弹+加速）→ 平 A → 二技能<br><span>兴奋期爆发加速边走边打，被切也能拉扯。</span></div>
 <div class="combo"><b>消耗连</b>：二技能（分裂弹消耗）→ 平 A 攒怒 → 一技能穿透<br><span>对线靠分裂弹压血线。</span></div>
@@ -4892,9 +4892,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·长歌行<span class="tag">自保</span></div><div class="desc">受到伤害时获得 <code>35%</code> 移动速度（<code>2秒</code> 内衰减）和 <code>250/300/350/400/450/500 + 50%法术</code> 回复（每秒 <code>1</code> 次，持续 <code>2秒</code>），内置 <code>10秒</code> 冷却。</div><div class="note">被切时自带加速+回血，是软辅里自保较强的存在。</div></div>
-<div class="skill"><div class="name">一技能·思无邪<span class="tag">群体治疗</span></div><div class="desc">演奏乐曲：自身获 <code>40%</code> 移速，为最多 <code>5</code> 名友军提供 <code>60/75/90/105/120/135 + 20%法术</code> 治疗（<code>0.5秒</code> 1次，持续 <code>3秒</code>），对非英雄治疗减半。CD <code>15→12秒</code>，蓝耗 <code>80</code>。</div><div class="note">范围尽量覆盖多名队友，单人空开浪费CD。</div></div>
-<div class="skill"><div class="name">二技能·胡笳乐<span class="tag">弹射硬控</span></div><div class="desc">音波在敌人间弹射，每次造成 <code>270/310/350/390/430/470 + 48%法术</code> 法术伤害 + 晕眩 <code>0.75秒</code>；每束最多弹射 <code>6次</code>，同一目标最多 <code>2次</code>（第二次仅 <code>25%</code> 效果）。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">唯一硬控+上限所在：只打反手与预判，永不先手。</div></div>
-<div class="skill"><div class="name">三技能·忘忧曲<span class="tag">兜底大招</span></div><div class="desc">琴音为范围内血量最低的友军提供 <code>90/120/150 + 45%法术</code> 治疗（<code>0.5秒</code> 1次，持续 <code>5秒</code>），同时为其增加 <code>200/280/360 + 30%法术</code> 双抗。CD <code>60→50秒</code>，蓝耗 <code>120</code>。</div><div class="note">敌方爆发技能交出、队友被集火的瞬间开；紧贴双C释放。</div></div>
+<div class="skill"><div class="name">一技能·思无邪<span class="tag">群体治疗</span></div><div class="desc">演奏乐曲：自身获 <code>40%</code> 移速，为最多 <code>5</code> 名友军提供 <code>60/72/84/96/108/120 + 20%法术</code> 治疗（<code>0.5秒</code> 1次，持续 <code>3秒</code>），对非英雄治疗减半。CD <code>15→12秒</code>，蓝耗 <code>100</code>。</div><div class="note">范围尽量覆盖多名队友，单人空开浪费CD。</div></div>
+<div class="skill"><div class="name">二技能·胡笳乐<span class="tag">弹射硬控</span></div><div class="desc">音波在敌人间弹射，每次造成 <code>300/348/396/444/492/540 + 48%法术</code> 法术伤害 + 晕眩 <code>0.75秒</code>；每束最多弹射 <code>6次</code>，同一目标最多 <code>2次</code>（第二次仅 <code>25%</code> 效果）。CD <code>9→9秒</code>，蓝耗 <code>70</code>。</div><div class="note">唯一硬控+上限所在：只打反手与预判，永不先手。</div></div>
+<div class="skill"><div class="name">三技能·忘忧曲<span class="tag">兜底大招</span></div><div class="desc">琴音为范围内血量最低的友军提供 <code>80/120/160 + 45%法术</code> 治疗（<code>0.5秒</code> 1次，持续 <code>5秒</code>），同时为其增加 <code>300/375/450 + 30%法术</code> 双抗。CD <code>60→60秒</code>，蓝耗 <code>120</code>。</div><div class="note">敌方爆发技能交出、队友被集火的瞬间开；紧贴双C释放。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>保C连招</b>：刺客进场 → 二技能晕住突进单位 → 大招抬血+双抗 → 一技能持续奶<br><span>标准反手循环：控住切C的人比奶量更重要。</span></div>
 <div class="combo"><b>预判控场</b>：敌方多人抱团转线 → 二技能预判释放弹射群晕<br><span>弹射6次的群控是团战翻盘点，人多时价值翻倍。</span></div>
@@ -4963,9 +4963,9 @@ window.HEROES = [
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·时间沙漏<span class="tag">移速</span></div><div class="desc">使用技能后获得 <code>65</code> 点移速（持续 <code>2秒</code>）。</div><div class="note">游走转线的基础移速，出装可补充。</div></div>
-<div class="skill"><div class="name">一技能·时空爆弹<span class="tag">消耗/延迟爆炸</span></div><div class="desc">投掷炸弹附着敌人造成 <code>200 + 20%法术</code>，<code>3秒</code> 后爆炸对范围内敌人造成 <code>550 + 55%法术</code> + <code>15%</code> 减速 <code>2秒</code>；解除炸弹立即引爆。CD <code>7.5→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">清线+消耗，附着期间敌人贴队友会逼他走位。</div></div>
-<div class="skill"><div class="name">二技能·时之波动<span class="tag">核心/团队增益</span></div><div class="desc">范围内最多 <code>5</code> 名友军获 <code>130</code> 点移速（<code>2秒</code>）；结束后时光倒流，返还期间损失 <code>25%~50%</code> 生命/法力/能量。被动：孙膑获 <code>7.5%~15%</code> 冷却缩减。CD <code>12.5→10秒</code>，蓝耗 <code>80</code>。</div><div class="note">全英雄独一份的团队免伤机制：开团前提前放，打完白回血。</div></div>
-<div class="skill"><div class="name">三技能·时光流逝<span class="tag">沉默/区域爆发</span></div><div class="desc">投掷强化炸弹，命中或飞到最远展开力场：造成 <code>500 + 45%法术</code> + 极限减速 <code>1秒</code> + 强制打断并沉默 <code>1秒</code>；<code>5秒</code> 后力场爆炸造成 <code>1500 + 135%法术</code>。CD <code>45→35秒</code>，蓝耗 <code>120</code>。</div><div class="note">大闪反开团是上限操作；力场封路能拆敌方阵型。</div></div>
+<div class="skill"><div class="name">一技能·时空爆弹<span class="tag">消耗/延迟爆炸</span></div><div class="desc">投掷炸弹附着敌人造成 <code>200 + 20%法术</code>，<code>3秒</code> 后爆炸对范围内敌人造成 <code>550 + 55%法术</code> + <code>15%</code> 减速 <code>2秒</code>；解除炸弹立即引爆。CD <code>8→6秒</code>，蓝耗 <code>60</code>。</div><div class="note">清线+消耗，附着期间敌人贴队友会逼他走位。</div></div>
+<div class="skill"><div class="name">二技能·时之波动<span class="tag">核心/团队增益</span></div><div class="desc">范围内最多 <code>5</code> 名友军获 <code>130</code> 点移速（<code>2秒</code>）；结束后时光倒流，返还期间损失 <code>25%~50%</code> 生命/法力/能量。被动：孙膑获 <code>7.5%~15%</code> 冷却缩减。CD <code>13→10秒</code>，蓝耗 <code>60</code>。</div><div class="note">全英雄独一份的团队免伤机制：开团前提前放，打完白回血。</div></div>
+<div class="skill"><div class="name">三技能·时光流逝<span class="tag">沉默/区域爆发</span></div><div class="desc">投掷强化炸弹，命中或飞到最远展开力场：造成 <code>500 + 45%法术</code> + 极限减速 <code>1秒</code> + 强制打断并沉默 <code>1秒</code>；<code>5秒</code> 后力场爆炸造成 <code>1500 + 135%法术</code>。CD <code>45→35秒</code>，蓝耗 <code>100</code>。</div><div class="note">大闪反开团是上限操作；力场封路能拆敌方阵型。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>开团前摇</b>：接敌前2秒 → 二技能（加速+免伤垫底）→ 前排开团 → 大招力场封路<br><span>二技能要提前放才吃满返还，开团后放等于浪费。</span></div>
 <div class="combo"><b>撤退连招</b>：二技能加速全队 → 大招丢在追兵脚下（沉默+减速）<br><span>转线逃生成功率全辅助第一。</span></div>
@@ -5142,9 +5142,9 @@ window.HEROES = [
 <p>⚠️ 媒体榜单（搜狐 S44 辅助排行）判为 T0（巅峰 54.3% 胜率 / 67.2% Ban），与官方综合热度 T2 分歧较大，取折中 T1.5，正文以官方口径为主。</p>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·暗冕之噬<span class="tag">续航</span></div><div class="desc">黑暗能量体对敌造成 <code>100+50%法强</code> 法伤 + 目标 <code>3%最大生命</code> 法伤；命中英雄自身回 <code>100+40%法强+3%最大生命</code>，命中非英雄回 1% 最大生命。</div><div class="note">三球环绕是换血与入侵的核心。</div></div>
-<div class="skill"><div class="name">一技能·日蚀祭典<span class="tag">叠球</span></div><div class="desc">创造黑暗能量体环绕（上限3），对周围 <code>300+40%法强</code> 伤害；满 3 球额外回 <code>150+60%法强</code>。CD <code>5→4.5s</code>。</div><div class="note">主升，攒球越快吸血越强。</div></div>
+<div class="skill"><div class="name">一技能·日蚀祭典<span class="tag">叠球</span></div><div class="desc">创造黑暗能量体环绕（上限3），对周围 <code>300+40%法强</code> 伤害；满 3 球额外回 <code>150+60%法强</code>。CD <code>5→5秒</code>。</div><div class="note">主升，攒球越快吸血越强。</div></div>
 <div class="skill"><div class="name">二技能·曜龙烛兆<span class="tag">控制</span></div><div class="desc">获 30%~50% 移速（随球数），冲击 <code>500+60%法强</code>，三枚能量体分别 30%~60% 减速 / 极限减速 / 晕眩 1s。CD 6s。</div><div class="note">留作分割阵型、拉扯撤退，勿一次打空。</div></div>
-<div class="skill"><div class="name">三技能·堕神契约<span class="tag">压制</span></div><div class="desc">获 3 球 + 压制目标 <code>2s</code>，期间双方等量伤害、不可解除、净化无效、霸体无效。CD <code>60→50s</code>。</div><div class="note">全局唯一战术支点，后手进场盯刺客 / C 位。</div></div>
+<div class="skill"><div class="name">三技能·堕神契约<span class="tag">压制</span></div><div class="desc">获 3 球 + 压制目标 <code>2s</code>，期间双方等量伤害、不可解除、净化无效、霸体无效。CD <code>60→50秒</code>。</div><div class="note">全局唯一战术支点，后手进场盯刺客 / C 位。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>111 攒三球</b>：快速叠满三颗能量球，最大化吸血伤害（开局入侵 / 换血铺垫）</div>
 <div class="combo"><b>3 大招锁C</b>：直接咬住敌方射手 / 法师 / 刺客，强制压制（团战开团、反切保后排、越塔强杀）</div>
@@ -5181,9 +5181,9 @@ window.HEROES = [
 <p>🔺 <b>环境红利</b>：版本节奏加快 + 野核打法回归，使其先手开团价值放大，媒体榜判 T1（巅峰 2000+ Ban 率 38.7%）。官方综合热度仍为 T3，取归档 T2，分歧已注记。</p>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·纵横兵法<span class="tag">强化普攻</span></div><div class="desc">脱战 3s 获强化普攻，对目标周围 <code>300+55%法强</code> 法伤 + 25% 减速 1.5s；在敌方视野外使用延长至 10s。</div><div class="note">草丛 / 绕后先手触发伤害最高。</div></div>
-<div class="skill"><div class="name">一技能·先知·神隐<span class="tag">伪装</span></div><div class="desc">玄微子包裹自身获伪装 + 40% 移速 4s，触碰敌 <code>450+60%法强</code> 伤害 + 降低双防 <code>25%~40%</code> 4s。CD <code>10→8s</code>。</div><div class="note">开团前先减敌方双防，提升集火效率。</div></div>
-<div class="skill"><div class="name">二技能·万物有灵<span class="tag">聚人</span></div><div class="desc">聚集玄微子对周围 <code>100+15%法强</code>（0.5s 一次，持续2s），结束拉敌至身旁 <code>400+60%法强</code> + 晕 1s，并为范围内队友提供 <code>500+100%法强</code> 护盾 3s。CD <code>10→8s</code>。</div><div class="note">核心技能，优先升级。</div></div>
-<div class="skill"><div class="name">三技能·先知·雾隐<span class="tag">群体隐身</span></div><div class="desc">包裹 1500 距离友军获伪装 + 30% 移速（延迟1s，持续4s），期间获最近敌方视野。CD <code>35→25s</code>。</div><div class="note">大招 + 奔狼实现 5 人超高速突袭。</div></div>
+<div class="skill"><div class="name">一技能·先知·神隐<span class="tag">伪装</span></div><div class="desc">玄微子包裹自身获伪装 + 40% 移速 4s，触碰敌 <code>450+60%法强</code> 伤害 + 降低双防 <code>25%~40%</code> 4s。CD <code>10→10秒</code>。</div><div class="note">开团前先减敌方双防，提升集火效率。</div></div>
+<div class="skill"><div class="name">二技能·万物有灵<span class="tag">聚人</span></div><div class="desc">聚集玄微子对周围 <code>100+15%法强</code>（0.5s 一次，持续2s），结束拉敌至身旁 <code>400+60%法强</code> + 晕 1s，并为范围内队友提供 <code>500+100%法强</code> 护盾 3s。CD <code>10→9秒</code>。</div><div class="note">核心技能，优先升级。</div></div>
+<div class="skill"><div class="name">三技能·先知·雾隐<span class="tag">群体隐身</span></div><div class="desc">包裹 1500 距离友军获伪装 + 30% 移速（延迟1s，持续4s），期间获最近敌方视野。CD <code>35→25秒</code>。</div><div class="note">大招 + 奔狼实现 5 人超高速突袭。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>1→2→A</b>：隐身接近 → 二技能蓄力 → 普攻触发被动减速（抓单 / 消耗）</div>
 <div class="combo"><b>2→闪现→A</b>：二技能蓄力 → 闪现拉人 → 普攻补控（提升二技能命中率）</div>
@@ -5220,7 +5220,7 @@ window.HEROES = [
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·一夫当关<span class="tag">普攻强化</span></div><div class="desc">普攻额外 <code>135+2.7%额外生命</code> 物伤；盾甲庇护期间普攻切换远程范围 + 10% 减速 0.5s。</div><div class="note">附身队友后输出显著提升。</div></div>
 <div class="skill"><div class="name">一技能·盾甲庇护<span class="tag">附身</span></div><div class="desc">冲向友军庇护双方共 <code>900+18%额外生命</code> 护盾 6s（移速取双方均值）；或化身炮台 6s 不可选中 + 每秒 <code>125+2.5%额外生命</code> 回血，塔获等量回复 + <code>600+12%额外生命</code> 护盾。CD <code>10→8s</code>。</div><div class="note">附身塔可无伤守塔，配合二技能抱摔入塔。</div></div>
-<div class="skill"><div class="name">二技能·万夫莫开<span class="tag">抱摔</span></div><div class="desc">冲锋抱起扔回身前范围敌 <code>300+90%额外物攻</code> 伤 + 晕 0.5s + 5% 最大生命撞击。CD <code>10→8s</code>。</div><div class="note">先手开团 / 保后排都好用。</div></div>
+<div class="skill"><div class="name">二技能·万夫莫开<span class="tag">抱摔</span></div><div class="desc">冲锋抱起扔回身前范围敌 <code>300+90%额外物攻</code> 伤 + 晕 0.5s + 5% 最大生命撞击。CD <code>10→8秒</code>。</div><div class="note">先手开团 / 保后排都好用。</div></div>
 <div class="skill"><div class="name">三技能·天地化盾<span class="tag">格挡</span></div><div class="desc">霸体 + 范围 <code>170+55%额外物攻</code> 伤 + 击退 + 25%~50% 减速，巨盾前移击飞 0.5s 并击落飞行物。CD <code>40→32s</code>。</div><div class="note">架盾挡关键飞行技能是核心价值。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>2 抱摔 → 1 附身塔</b>：二技能把敌抱入塔范围 → 一技能附身塔变炮台，塔 + 盾山双重输出</div>
@@ -5256,8 +5256,8 @@ window.HEROES = [
 <p>⚠️ 高端局（巅峰 / 顶端）表现回落至 T2 / T1.5——单排容错偏低、怕东皇 / 张良硬控，组排保核体系强度更高。</p>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·山鬼·白鹿<span class="tag">解控</span></div><div class="desc">受非压制硬控立即净化变鹿 4s 无敌 + 失去攻击，灵鹿静怡减速敌 15%；每 60s（随等级）最多触发一次，变鹿时刷新技能 CD。</div><div class="note">主动吃控变鹿骗技能是高端瑶的核心。</div></div>
-<div class="skill"><div class="name">一技能·若有人兮<span class="tag">控制</span></div><div class="desc">举杖 <code>250+30%法强</code> 伤 + 击退，飞行检测追踪 <code>250+30%法强</code> + 击飞 0.5s + 视野 5s。CD <code>10→8s</code>。</div><div class="note">探草、打断突进、探测隐身（兰陵王 / 阿轲）。</div></div>
-<div class="skill"><div class="name">二技能·风飒木萧<span class="tag">伤害</span></div><div class="desc">持续打击身边敌（最多3名）<code>200+30%法强</code> / 0.5s，持续 5s。CD <code>12→10s</code>。</div><div class="note">附身状态提升 20% 攻击距离。</div></div>
+<div class="skill"><div class="name">一技能·若有人兮<span class="tag">控制</span></div><div class="desc">举杖 <code>250+30%法强</code> 伤 + 击退，飞行检测追踪 <code>250+30%法强</code> + 击飞 0.5s + 视野 5s。CD <code>10→8秒</code>。</div><div class="note">探草、打断突进、探测隐身（兰陵王 / 阿轲）。</div></div>
+<div class="skill"><div class="name">二技能·风飒木萧<span class="tag">伤害</span></div><div class="desc">持续打击身边敌（最多3名）<code>200+30%法强</code> / 0.5s，持续 5s。CD <code>12→10秒</code>。</div><div class="note">附身状态提升 20% 攻击距离。</div></div>
 <div class="skill"><div class="name">三技能·独立兮山之上<span class="tag">护盾</span></div><div class="desc">附身友军提供 <code>1000+60%法强+8%目标额外生命</code> 真实护盾，增强技能并 -30% CD；盾破被击落，主动脱离返 50%。CD 15s。</div><div class="note">队友血线掉一半就开，提前触发回春比残血急救容错高。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>附身 → 大招护盾</b>：跟紧大腿，护盾快破时主动下马骗控，变鹿后再次附身刷新</div>
@@ -5329,9 +5329,9 @@ window.HEROES = [
 <p>⚠️ 官方综合热度 T3（单排乏力、极度依赖队友），归档 T2，媒体 T1 分歧已注记。</p>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·大吉大利<span class="tag">强化普攻</span></div><div class="desc">强化普攻 5s，额外 <code>70+20%法强</code> 法伤，从敌身激发血球为己 + 连接友 <code>225+40%法强</code> 治疗，自身额外 4% 额外生命回复。</div><div class="note">连着 C 位一直 A 即可持续奶。</div></div>
-<div class="skill"><div class="name">一技能·临卦·无忧<span class="tag">增益链</span></div><div class="desc">连友提供 <code>25+12.5%法强</code> 主攻击属性 + 12.5% 攻速（4s 衰减），触碰链敌 <code>30+25%法强</code> / 0.5s；自身获 30 物攻 / 65 法强 / 7.5% 移速。CD <code>5→4s</code>。</div><div class="note">紫链牵 C 位增伤。</div></div>
-<div class="skill"><div class="name">二技能·师卦·飞翼<span class="tag">减防链</span></div><div class="desc">连敌降 <code>12.5%~25%</code> 双防（4s 衰减），触碰 <code>30+25%法强</code>，自身 +15%~30% 双防。CD <code>5→4s</code>。</div><div class="note">黄链给敌减防，配合己方输出。</div></div>
-<div class="skill"><div class="name">三技能·泰卦·长生<span class="tag">真伤</span></div><div class="desc">抽取一方生命转另一方，对敌 <code>600+125%法强</code> 真伤 + 为友等量治疗；只连一目标耗自身等量（5s 恢复）；目标全死返 70%。CD <code>40→30s</code>。</div><div class="note">保 C 或收割残血，吟唱期间目标全死返还冷却。</div></div>
+<div class="skill"><div class="name">一技能·临卦·无忧<span class="tag">增益链</span></div><div class="desc">连友提供 <code>25+12.5%法强</code> 主攻击属性 + 12.5% 攻速（4s 衰减），触碰链敌 <code>30+25%法强</code> / 0.5s；自身获 30 物攻 / 65 法强 / 7.5% 移速。CD <code>3→3秒</code>。</div><div class="note">紫链牵 C 位增伤。</div></div>
+<div class="skill"><div class="name">二技能·师卦·飞翼<span class="tag">减防链</span></div><div class="desc">连敌降 <code>12.5%~25%</code> 双防（4s 衰减），触碰 <code>30+25%法强</code>，自身 +15%~30% 双防。CD <code>3→3秒</code>。</div><div class="note">黄链给敌减防，配合己方输出。</div></div>
+<div class="skill"><div class="name">三技能·泰卦·长生<span class="tag">真伤</span></div><div class="desc">抽取一方生命转另一方，对敌 <code>600+125%法强</code> 真伤 + 为友等量治疗；只连一目标耗自身等量（5s 恢复）；目标全死返 70%。CD <code>40→30秒</code>。</div><div class="note">保 C 或收割残血，吟唱期间目标全死返还冷却。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>1 牵C</b>：紫链永远连己方输出最高的人，黄链给敌减防</div>
 <div class="combo"><b>大招保C / 收残血</b>：队友残血放大招换血，或敌残血拉近真伤收割</div>
@@ -5367,8 +5367,8 @@ window.HEROES = [
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·稷下科技<span class="tag">护盾</span></div><div class="desc">技能命中叠护盾最多 <code>5层</code>（每层 <code>50 + 8%额外物攻</code>，持续 <code>5秒</code>）；每 <code>5秒</code> 机械臂充能，下普攻附带额外物伤 <code>40 + 10%额外物攻</code>。</div><div class="note">极限叠盾反打是区别于软辅的核心生存。</div></div>
 <div class="skill"><div class="name">一技能·立即清扫<span class="tag">击退</span></div><div class="desc">获 <code>30%</code> 移速，挥臂击退身前单位，撞击造成 <code>200/240/280/320/360/400 + 60%额外物攻</code> 伤害 + 短暂晕 <code>0.5秒</code>；可贴墙翻越墙体。可主动取消缩短 CD。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">推开切入刺客保后排，或推兵线远程消耗。</div></div>
-<div class="skill"><div class="name">二技能·助手驰援<span class="tag">位移链接</span></div><div class="desc">向友磁力链接 <code>6秒</code>，友点交互瞬移到身边，路径伤 <code>150 + 40%额外物攻</code> + 晕 <code>0.5秒</code>，双方获护盾 <code>200 + 10%额外物攻</code>，鲁班 <code>+50%</code> 移速；不点返 <code>70%</code> CD。CD <code>10→8秒</code>，蓝耗 <code>80</code>。</div><div class="note">拉回被突袭后排 / 带动队友绕后突袭；离开链接范围链断。</div></div>
-<div class="skill"><div class="name">三技能·强力收纳<span class="tag">群体牵引</span></div><div class="desc">扇形锁链最多连 <code>6</code> 敌，<code>1.25秒</code> 后拉至身边（各 <code>250 + 50%额外物攻</code>）；怕净化/韧性/位移挣脱，需一技能+闪现配合预判。CD <code>40/35/30秒</code>，蓝耗 <code>120</code>。</div><div class="note">群体开团关键，切忌空大。</div></div>
+<div class="skill"><div class="name">二技能·助手驰援<span class="tag">位移链接</span></div><div class="desc">向友磁力链接 <code>6秒</code>，友点交互瞬移到身边，路径伤 <code>150 + 40%额外物攻</code> + 晕 <code>0.5秒</code>，双方获护盾 <code>200 + 10%额外物攻</code>，鲁班 <code>+50%</code> 移速；不点返 <code>70%</code> CD。CD <code>10→9秒</code>，蓝耗 <code>45</code>。</div><div class="note">拉回被突袭后排 / 带动队友绕后突袭；离开链接范围链断。</div></div>
+<div class="skill"><div class="name">三技能·强力收纳<span class="tag">群体牵引</span></div><div class="desc">扇形锁链最多连 <code>6</code> 敌，<code>1.25秒</code> 后拉至身边（各 <code>250 + 50%额外物攻</code>）；怕净化/韧性/位移挣脱，需一技能+闪现配合预判。CD <code>40→30秒</code>，蓝耗 <code>60</code>。</div><div class="note">群体开团关键，切忌空大。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>1A + 二</b>：一技能推刺客 + 普攻触发护盾 + 二技能预留给射手后撤（保C最常用）</div>
 <div class="combo"><b>闪 + 大 + 1</b>：闪现近身开大拉多人 + 一技能收尾分割（先手多打少）</div>
