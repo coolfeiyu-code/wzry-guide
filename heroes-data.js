@@ -11,7 +11,7 @@
 window.GUIDE_META = {
   season: "S44「不拘命格」",
   seasonStart: "2026-06-25",
-  version: "2.1.8",
+  version: "2.1.9",
   patch: "截至 S44 赛季末（2026-09-03 含 9.3 英雄平衡）",
   note: "全英雄摘要版先行，详细攻略持续更新中",
   source: "综合搜狐/抖音精选/百度百科等 2026-08 公开榜单，以正式服为准",
@@ -3503,20 +3503,20 @@ window.HEROES = [
 <span>梯度：综合T0 / 巅峰T1 / 顶端T1（S44 增强后的全分段热门法师）</span>
 </div>
 <h4>核心机制一句话</h4>
-<p>回旋扇消耗+旋风击飞+流星雨覆盖：被动全技能自带25%加速，无位移但有全法师顶级拉扯能力；S44 一技能数值+二技能距离+大招范围三连增强后，清线、爆发、自保全面回暖。</p>
+<p>回旋扇消耗+旋风击飞+流星雨覆盖：被动全技能自带25%加速，无位移但有全法师顶级拉扯能力；S44 一技能数值+二技能距离+大招范围多方位增强后，清线、爆发、自保全面回暖。</p>
 <div class="tip-box">
 <strong>S44 版本关键（调整汇总）：</strong><br>
-🔺 <strong>增强①</strong>：一技能扇子伤害 <code>420(+60/Lv)(+0.8Ap)→450(+70/Lv)(+0.85Ap)</code>，清线与爆发同步提升。<br>
+🔺 <strong>增强①</strong>：一技能扇子伤害上调，清线与爆发同步提升。<br>
 🔺 <strong>增强②</strong>：二技能施法距离 <code>+50码</code>，自保与先手控制距离大增。<br>
-🔺 <strong>增强③</strong>：大招新增<strong>范围减速</strong>效果，风筝近身敌人的能力质变。<br>
+
 🔺 <strong>装备联动</strong>：S44 回响之杖被动响应优化，清线效率进一步提升；秘法之靴前期法穿超模。<br>
 <strong>结论</strong>：中幅度增强，胜率提升约4%，媒体榜从T1.5升至T0；中低分段容错率最高的上分法师之一。
 </div>
 <h4>技能详解（含数值）</h4>
 <div class="skill"><div class="name">被动·治愈微笑<span class="tag">加速</span></div><div class="desc">技能命中敌人时获得 <code>25%</code> 移动速度（持续 <code>2秒</code>）。</div><div class="note">全技能生效——清线、拉扯、逃生都靠它，命中就有加速，走A手感极好。</div></div>
-<div class="skill"><div class="name">一技能·绽放之舞<span class="tag">消耗/清线</span></div><div class="desc">扔出回旋飞行的扇子，对首个命中的敌人造成 <code>585/650/715/780/845/910 + 80%法强</code> 法术伤害（每次命中衰减 <code>20%</code>，最低衰减至初始的 <code>50%</code>）。CD <code>5→4秒</code>，蓝耗 <code>60</code>。</div><div class="note">S44 伤害上调；务必让扇子飞出+折返两段都命中，贴脸只打一段亏一半伤害。</div></div>
-<div class="skill"><div class="name">二技能·甜蜜恋风<span class="tag">击飞</span></div><div class="desc">召唤旋风造成 <code>300/350/400/450/500/550 + 50%法强</code> 法术伤害和击飞 <code>1.5秒</code>。CD <code>10→8秒</code>，蓝耗 <code>60</code>。</div><div class="note">S44 施法距离 +<code>50</code> 码。铁律：不先手交二技能，留给突进刺客，贴身时放脚下 100% 命中自保。</div></div>
-<div class="skill"><div class="name">三技能·星华缭乱<span class="tag">范围爆发</span></div><div class="desc">召唤流星坠落 <code>6秒</code> 并持续获得被动加速，每颗流星 <code>400/450/500/550/600/650 + 100%法强</code>（同一目标后续流星只造成 <code>50%</code> 伤害，每目标最多承受 <code>4次</code>）。CD <code>35→28秒</code>，蓝耗 <code>120</code>。</div><div class="note">S44 新增范围减速+覆盖提升；开大不仅是输出，更是拉扯走位的加速器，辉月不会打断大招。</div></div>
+<div class="skill"><div class="name">一技能·绽放之舞<span class="tag">消耗/清线</span></div><div class="desc">扔出回旋飞行的扇子，对首个命中的敌人造成 <code>585/635/685/735/785/835 + 80%法强</code> 法术伤害（每次命中衰减 <code>20%</code>，最低衰减至初始的 <code>50%</code>）。CD <code>5→4秒</code>，蓝耗 <code>60</code>。</div><div class="note">S44 伤害上调；务必让扇子飞出+折返两段都命中，贴脸只打一段亏一半伤害。</div></div>
+<div class="skill"><div class="name">二技能·甜蜜恋风<span class="tag">击飞</span></div><div class="desc">召唤旋风造成 <code>300/340/380/420/460/500 + 50%法强</code> 法术伤害和击飞 <code>1.5秒</code>。CD <code>10→8秒</code>，蓝耗 <code>70</code>。</div><div class="note">S44 施法距离 +<code>50</code> 码。铁律：不先手交二技能，留给突进刺客，贴身时放脚下 100% 命中自保。</div></div>
+<div class="skill"><div class="name">三技能·星华缭乱<span class="tag">范围爆发</span></div><div class="desc">召唤流星坠落 <code>6秒</code> 并持续获得被动加速，每颗流星 <code>400/450/500/550/600/650 + 100%法强</code>（同一目标后续流星只造成 <code>50%</code> 伤害，每目标最多承受 <code>4次</code>）。CD <code>35→28秒</code>，蓝耗 <code>120</code>。</div><div class="note">S44 覆盖提升；开大不仅是输出，更是拉扯走位的加速器，辉月不会打断大招。</div></div>
 <h4>连招</h4>
 <div class="combo"><b>对线消耗</b>：2（预判击飞）→ 1（打满两段）<br><span>21连招，前期稳定消耗、秒杀残血。</span></div>
 <div class="combo"><b>团战拉扯</b>：3（开大加速+减速场）→ 走位调整 → 2 控场 → 1 补爆发<br><span>321顺序，先开大拿移速再进场，避免被秒。</span></div>
