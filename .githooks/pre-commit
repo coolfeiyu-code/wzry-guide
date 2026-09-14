@@ -1,7 +1,6 @@
 #!/bin/sh
 # pre-commit: 攻略内容有改动时自动递增版本号（三级语义化）
-# 触发条件：本次提交包含 heroes-data.js 或 index.html（内容/界面更新）
-# 档位（通过环境变量 VERSION_BUMP 指定，缺省=patch）：
+# 触发条件：本次提交包含 heroes-data.js / index.html / 万象棋板块 等站点文件（内容或界面更新）# 档位（通过环境变量 VERSION_BUMP 指定，缺省=patch）：
 #   major -> +1.0.0（大更新）   minor -> +0.1（中更新）   patch -> +0.0.1（小更新，默认）
 set -e
 
@@ -9,7 +8,8 @@ ROOT=$(git rev-parse --show-toplevel)
 FILE="heroes-data.js"
 
 # 攻略内容、界面、图标、装备库或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
-changed=$(git diff --cached --name-only -- "$FILE" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/")
+# 攻略内容、界面、图标、装备库、万象棋板块或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
+changed=$(git diff --cached --name-only -- "$FILE" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/" "wanxiangqi.html" "wanxiangqi-data.js" "wanxiangqi-guide.js")
 if [ -z "$changed" ]; then
   exit 0
 fi
