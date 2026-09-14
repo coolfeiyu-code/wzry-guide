@@ -159,8 +159,11 @@
     h += '</div>';
 
     var list = filtered({ state: state });
-    h += '<div class="chcount">命中的牌 <b>' + list.length + '</b> 张' +
-      (list.length ? '<span class="chs">（含装备 / 天赋，但只有英雄牌与效果牌能上场）</span>' : '') + '</div>';
+    var noFilter = !sb.kw.length && !sb.deriv.length && !state.q && !state.fac && !state.qual;
+    h += '<div class="chcount">' + (noFilter ? '全部牌' : '命中的牌') + ' <b>' + list.length + '</b> 张' +
+      (noFilter
+        ? '<span class="chs">（含装备 / 天赋；只有英雄牌与效果牌能上场 —— 点上面的词条开始筛）</span>'
+        : (list.length ? '<span class="chs">（含装备 / 天赋，但只有英雄牌与效果牌能上场）</span>' : '')) + '</div>';
     h += '<div class="grid chain-grid" id="chGrid">' + (list.length
       ? list.map(function (it) { return cardHtml(it); }).join('')
       : '<div class="empty">没有同时满足这些词条的牌 —— 放宽一个条件试试</div>') + '</div>';
