@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>王者万象棋 · 图鉴 | 王者荣耀攻略总集</title>
+<meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
+<meta name="description" content="王者万象棋全图鉴：18 位棋手、85 英雄牌、98 效果牌、73 装备牌、255 天赋牌，真实卡面 + 官方数值，按阵营流派检索。">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --paper:#F7F8F4; --paper-2:#EEF1EA; --card:#FFFFFF;
+    --ink:#1E2A24; --ink-soft:#5C6B62; --line:#E3E7DF;
+    --celadon:#6E8B7B; --celadon-deep:#3C5A4E; --celadon-soft:#A9C2B4;
+    --cinnabar:#BE5A45; --gold:#B6904E;
+    --shadow:0 1px 2px rgba(30,42,36,.04), 0 8px 24px rgba(30,42,36,.06);
+    --shadow-lift:0 2px 6px rgba(30,42,36,.07), 0 14px 34px rgba(30,42,36,.10);
+    --font-sans:"PingFang SC","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+    --font-kai:"Kaiti SC","STKaiti","KaiTi",serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);line-height:1.7;font-size:15px;
+    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s;-webkit-tap-highlight-color:transparent;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(120% 70% at 82% -8%, rgba(110,139,123,.16), transparent 55%),
+              radial-gradient(80% 50% at 10% 0%, rgba(182,144,78,.07), transparent 50%);transition:background .3s;}
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 24px 96px;}
+
+  .appbar{position:sticky;top:0;z-index:40;background:rgba(247,248,244,.82);backdrop-filter:blur(14px) saturate(1.1);
+    border-bottom:1px solid var(--line);transition:background .3s,border-color .3s;padding-top:env(safe-area-inset-top);}
+  .topbar .inner{max-width:1120px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;gap:11px;}
+  .brand{display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;color:var(--ink);letter-spacing:.02em;}
+  .brand .mark{width:22px;height:22px;border-radius:7px;flex:none;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:#fff;}
+  .brand .mark span{font-family:var(--font-kai);font-size:14px;font-weight:700;}
+  .back-link{font-size:13px;color:var(--ink-soft);text-decoration:none;border:1px solid var(--line);background:var(--card);
+    padding:6px 13px;border-radius:10px;transition:.16s;white-space:nowrap;}
+  .back-link:hover{color:var(--celadon-deep);border-color:var(--celadon-soft);}
+  .topbar .meta{margin-left:auto;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .theme-toggle{margin-left:10px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:.18s;flex:none;}
+  .theme-toggle:hover{border-color:var(--celadon-soft);color:var(--celadon-deep);}
+  .theme-toggle svg{width:17px;height:17px;}
+  .theme-toggle .i-moon{display:none;}
+  [data-theme="dark"] .theme-toggle .i-sun{display:none;}
+  [data-theme="dark"] .theme-toggle .i-moon{display:block;}
+
+  .hero{padding:40px 0 22px;position:relative;}
+  .hero-card{position:relative;overflow:hidden;border-radius:20px;padding:38px 44px 36px;
+    background:radial-gradient(140% 100% at 84% -20%, rgba(110,139,123,.20), transparent 52%),
+              radial-gradient(60% 60% at 14% 4%, rgba(182,144,78,.10), transparent 50%),
+              linear-gradient(180deg,#EEF2EC 0%, #F6F8F4 62%);
+    border:1px solid var(--line);box-shadow:var(--shadow);}
+  .hero-card::after{content:"";position:absolute;inset:0;border-radius:20px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);}
+  .hero .kicker{margin:0 0 12px;font-size:12px;letter-spacing:.32em;color:var(--celadon-deep);font-weight:600;}
+  .hero h1{position:relative;margin:0;font-family:var(--font-kai);font-weight:700;font-size:46px;line-height:1.1;letter-spacing:.05em;color:var(--ink);}
+  .hero h1 .accent{color:var(--cinnabar);}
+  .hero .sub{position:relative;margin:16px 0 0;font-size:14.5px;color:var(--ink-soft);max-width:62ch;line-height:1.75;}
+  .hero .chips{position:relative;margin-top:22px;display:flex;flex-wrap:wrap;gap:9px;}
+  .hero .chip{font-size:12px;color:var(--celadon-deep);background:rgba(110,139,123,.12);border:1px solid rgba(60,90,78,.20);border-radius:999px;padding:4px 13px;}
+
+  .toolbar{padding:14px 4px 12px;}
+  .toolbar .row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;}
+  .seg{display:inline-flex;background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:3px;flex-wrap:wrap;}
+  .seg .tab{border:none;background:transparent;font-family:inherit;font-size:13.5px;color:var(--ink-soft);padding:7px 15px;border-radius:9px;transition:.18s;cursor:pointer;white-space:nowrap;letter-spacing:.02em;}
+  .seg .tab:hover{color:var(--celadon-deep);}
+  .seg .tab.active{background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-weight:600;}
+  .search{font-size:14px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 13px 8px 34px;min-width:200px;
+    font-family:inherit;transition:.18s;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%235C6B62' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='M21 21l-4.3-4.3'/></svg>");background-repeat:no-repeat;background-position:11px center;}
+  .search:focus{outline:none;border-color:var(--celadon-soft);}
+  select.filter{font-size:13.5px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-family:inherit;cursor:pointer;transition:.18s;}
+  select.filter:focus{outline:none;border-color:var(--celadon-soft);}
+  .count{font-size:12.5px;color:var(--ink-soft);margin-left:auto;font-variant-numeric:tabular-nums;}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;margin-top:8px;}
+  .ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.16s;display:flex;flex-direction:column;}
+  .ccard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
+  .ccard .img{width:100%;aspect-ratio:1/1;background:var(--paper-2);object-fit:contain;display:block;}
+  .ccard .meta{padding:9px 11px;border-top:1px solid var(--line);}
+  .ccard .nm{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ccard .bd{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+  .badge{font-size:11px;padding:1px 7px;border-radius:6px;background:var(--paper-2);color:var(--ink-soft);border:1px solid var(--line);white-space:nowrap;}
+
+  .fcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;cursor:pointer;transition:.16s;position:relative;overflow:hidden;}
+  .fcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
+  .fcard .fname{font-family:var(--font-kai);font-size:22px;font-weight:700;color:var(--ink);letter-spacing:.04em;}
+  .fcard .fcount{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+  .fcard .fdot{font-size:11.5px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:2px 9px;}
+  .fcard .fbar{height:4px;border-radius:4px;margin-top:14px;background:linear-gradient(90deg,var(--celadon),var(--celadon-deep));opacity:.7;}
+
+  .empty{text-align:center;color:var(--ink-soft);padding:60px 20px;font-size:14px;}
+
+  .modal{position:fixed;inset:0;background:rgba(20,26,23,.52);display:none;z-index:60;backdrop-filter:blur(3px);padding:5vh 12px;}
+  .modal.open{display:block;}
+  .modal-box{position:relative;width:min(600px,96vw);max-height:90vh;margin:0 auto;background:var(--paper);border-radius:18px;
+    box-shadow:var(--shadow-lift);overflow:hidden;display:flex;flex-direction:column;animation:pop .18s ease;}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.99);}to{opacity:1;transform:none;}}
+  .m-head{position:sticky;top:0;display:flex;align-items:center;gap:13px;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--paper);z-index:2;}
+  .m-head .m-thumb{width:52px;height:52px;border-radius:12px;object-fit:cover;background:var(--paper-2);border:1px solid var(--line);flex:none;}
+  .m-head .m-thumb.contain{object-fit:contain;}
+  .m-head .m-tit{font-size:19px;font-weight:700;color:var(--ink);font-family:var(--font-kai);letter-spacing:.03em;}
+  .m-head .m-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .modal-close{margin-left:auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    cursor:pointer;color:var(--ink-soft);font-size:18px;line-height:1;flex:none;transition:.16s;}
+  .modal-close:hover{background:var(--paper-2);color:var(--ink);}
+  .m-scroll{overflow-y:auto;padding:18px 20px 24px;-webkit-overflow-scrolling:touch;}
+  .m-scroll h4{font-size:14px;margin:20px 0 9px;color:var(--celadon-deep);font-family:var(--font-kai);letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+  .m-scroll h4:first-child{margin-top:0;}
+  .m-scroll h4 .tag{font-family:var(--font-sans);font-size:11px;color:#fff;background:var(--celadon);border-radius:6px;padding:1px 8px;font-weight:500;letter-spacing:0;}
+  .skill{border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin:11px 0;background:var(--card);}
+  .skill .s-name{font-weight:700;color:var(--celadon-deep);font-size:15.5px;font-family:var(--font-kai);}
+  .skill .s-kind{font-size:11.5px;color:#fff;background:var(--gold);border-radius:6px;padding:1px 8px;margin-left:8px;}
+  .skill .s-desc{margin-top:7px;color:var(--ink-soft);font-size:13.5px;line-height:1.75;}
+  .desc-box{border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:var(--card);color:var(--ink-soft);font-size:14px;line-height:1.8;}
+  .m-badges{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 4px;}
+  .m-badges .badge{font-size:12px;padding:3px 10px;}
+  .m-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:10px;}
+  .m-grid .mini{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;transition:.15s;}
+  .m-grid .mini:hover{border-color:var(--celadon-soft);transform:translateY(-2px);}
+  .m-grid .mini img{width:100%;aspect-ratio:1/1;object-fit:contain;background:var(--paper-2);display:block;}
+  .m-grid .mini .mn{font-size:11px;color:var(--ink-soft);padding:4px 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .foot{margin-top:52px;font-size:12px;color:var(--ink-soft);text-align:center;line-height:1.9;}
+  .foot b{color:var(--ink);font-weight:600;}
+  .foot a{color:var(--celadon-deep);text-decoration:none;}
+
+  [data-theme="dark"]{--paper:#141A17;--paper-2:#1E2622;--card:#1F2723;--ink:#E9EEE9;--ink-soft:#9FB0A6;
+    --line:#2E3833;--celadon:#84A594;--celadon-deep:#AECBBB;--celadon-soft:#3C5247;--cinnabar:#D9745E;--gold:#CBA867;
+    --shadow:0 1px 2px rgba(0,0,0,.30),0 8px 24px rgba(0,0,0,.35);--shadow-lift:0 2px 6px rgba(0,0,0,.35),0 14px 34px rgba(0,0,0,.45);}
+  [data-theme="dark"] body::before{background:radial-gradient(120% 70% at 82% -8%, rgba(132,165,148,.13), transparent 55%),radial-gradient(80% 50% at 10% 0%, rgba(203,168,103,.06), transparent 50%);}
+  [data-theme="dark"] .appbar{background:rgba(20,26,23,.82);}
+  [data-theme="dark"] .hero-card{background:radial-gradient(140% 100% at 84% -20%, rgba(132,165,148,.16), transparent 52%),radial-gradient(60% 60% at 14% 4%, rgba(203,168,103,.08), transparent 50%),linear-gradient(180deg,#1B221F,#161D19);}
+  [data-theme="dark"] .hero-card::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
+  [data-theme="dark"] .hero .kicker{color:var(--celadon);}
+  [data-theme="dark"] .hero .chip{color:var(--celadon);background:rgba(132,165,148,.14);border-color:rgba(174,203,187,.25);}
+  [data-theme="dark"] .seg .tab.active{background:var(--card);}
+  [data-theme="dark"] .skill{background:var(--card);}
+  [data-theme="dark"] .desc-box{background:var(--card);}
+
+  @media (max-width:640px){
+    .wrap{padding:0 15px 72px;}
+    .topbar .inner{padding:11px 15px;gap:8px;}
+    .back-link{padding:5px 10px;font-size:12px;}
+    .hero{padding:26px 0 16px;}
+    .hero-card{padding:28px 22px 26px;border-radius:16px;}
+    .hero h1{font-size:34px;}
+    .toolbar .row{gap:9px;}
+    .search{min-width:0;flex:1 1 140px;padding:8px 12px 8px 32px;background-position:10px center;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;}
+    .modal{padding:0;}
+    .modal-box{width:100vw;max-height:100vh;height:100vh;border-radius:0;margin:0;}
+  }
+</style>
+</head>
+<body>
+  <div class="appbar"><div class="topbar"><div class="inner">
+    <div class="brand"><span class="mark"><span>象</span></span>王者万象棋</div>
+    <a class="back-link" href="index.html">← 返回总攻略</a>
+    <span class="meta" id="metaLine"></span>
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div></div></div>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-card">
+        <p class="kicker">WÀNXIÀNGQÍ · 万象棋局</p>
+        <h1>王者<span class="accent">万象棋</span>图鉴</h1>
+        <p class="sub">收录官方公开数据的全部棋手与卡牌：真实卡面 + 技能 / 数值 / 阵营流派。点开任意一张卡即可查看详情，链接可分享直达。</p>
+        <div class="chips" id="heroChips"></div>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <div class="row">
+        <div class="seg" id="tabs">
+          <button class="tab active" data-type="players">棋手</button>
+          <button class="tab" data-type="hero">英雄牌</button>
+          <button class="tab" data-type="effect">效果牌</button>
+          <button class="tab" data-type="equip">装备牌</button>
+          <button class="tab" data-type="talent">天赋牌</button>
+          <button class="tab" data-type="faction">流派</button>
+        </div>
+        <input class="search" id="q" placeholder="搜索名称…" autocomplete="off">
+        <select class="filter" id="fac"><option value="">全部阵营</option></select>
+        <select class="filter" id="qual"><option value="">全部阶位</option></select>
+        <span class="count" id="count"></span>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="foot">
+      数据来源：<b>王者万象棋官方</b>（wxq.qq.com 公开数据快照）· 抓取于 <b id="capDate"></b><br>
+      卡面与数值均来自官方公开数据；「流派」对应游戏内阵营体系。本页为静态图鉴，随官方更新另行同步。
+    </div>
+  </div>
+
+  <div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
+
+  <script src="wanxiangqi-data.js"></script>
+  <script>
+  (function(){
+    var M=window.WXQ_META, FACS=window.WXQ_FACTIONS,
+        PLAYERS=window.WXQ_PLAYERS, HEROES=window.WXQ_HEROES,
+        EFFECTS=window.WXQ_EFFECTS, EQUIPS=window.WXQ_EQUIPS, TALENTS=window.WXQ_TALENTS;
+    var TYPE={hero:HEROES, effect:EFFECTS, equip:EQUIPS, talent:TALENTS};
+    var TYPE_LABEL={hero:'英雄', effect:'效果', equip:'装备', talent:'天赋'};
+    var QCOLOR={1:'#8a9a8f',2:'#6E8B7B',3:'#5C8AA0',4:'#B6904E',5:'#C77B45',6:'#BE5A45'};
+
+    // theme
+    try{var t=localStorage.getItem('wzry-theme');if(!t){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}
+    document.getElementById('themeToggle').onclick=function(){
+      var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('wzry-theme',c);}catch(e){}
+    };
+
+    // header
+    document.getElementById('metaLine').textContent='v'+M.version;
+    document.getElementById('capDate').textContent=M.capturedAt;
+    document.getElementById('heroChips').innerHTML=[
+      '棋手 '+M.counts.players, '英雄 '+M.counts.heroes, '效果 '+M.counts.effects,
+      '装备 '+M.counts.equips, '天赋 '+M.counts.talents, '流派 '+M.counts.factions
+    ].map(function(s){return '<span class="chip">'+s+'</span>';}).join('');
+
+    // populate faction + quality filters
+    var facSel=document.getElementById('fac');
+    FACS.forEach(function(f){var o=document.createElement('option');o.value=f.name;o.textContent=f.name;facSel.appendChild(o);});
+    var qualSel=document.getElementById('qual');
+    for(var q=1;q<=6;q++){var o=document.createElement('option');o.value=q;o.textContent=q+' 阶';qualSel.appendChild(o);}
+
+    var state={type:'players', q:'', fac:'', qual:''};
+
+    function fmt(d){return (d||'').replace(/<color=([^>]+)>/g,'<span style="color:$1">').replace(/<\/color>/g,'</span>').replace(/\n/g,'<br>');}
+    function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    function qBadge(q){var c=QCOLOR[q]||'#8a9a8f';return '<span class="badge" style="color:'+c+';border-color:'+c+'55;background:'+c+'14">'+q+'阶</span>';}
+
+    var grid=document.getElementById('grid');
+    function render(){
+      document.getElementById('q').style.display = (state.type==='faction')?'none':'block';
+      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction')?'none':'inline-block';
+      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction')?'none':'inline-block';
+      if(state.type==='players') return renderPlayers();
+      if(state.type==='faction') return renderFactions();
+      return renderCards(state.type);
+    }
+
+    function renderPlayers(){
+      var arr=PLAYERS.filter(function(p){return !state.q || p.name.indexOf(state.q)>=0;});
+      document.getElementById('count').textContent=arr.length+' 位棋手';
+      if(!arr.length){grid.innerHTML='<div class="empty">未找到匹配的棋手</div>';return;}
+      grid.className='grid';
+      grid.innerHTML=arr.map(function(p){
+        return '<div class="ccard player" data-p="'+esc(p.name)+'">'
+          +'<img class="img" loading="lazy" src="'+p.icon+'" alt="'+esc(p.name)+'" onerror="this.src=\''+p.portrait+'\'">'
+          +'<div class="meta"><div class="nm">'+esc(p.name)+'</div>'
+          +'<div class="bd">'+(p.skills||[]).map(function(s){return '<span class="badge">'+esc(s.kind)+'</span>';}).join('')+'</div></div></div>';
+      }).join('');
+    }
+
+    function renderCards(type){
+      var arr=TYPE[type].filter(function(c){
+        if(state.q && c.name.indexOf(state.q)<0) return false;
+        if(state.fac && (c.faction||'无阵营')!==state.fac) return false;
+        if(state.qual && String(c.quality)!==state.qual) return false;
+        return true;
+      });
+      document.getElementById('count').textContent=arr.length+' 张'+TYPE_LABEL[type]+'牌';
+      if(!arr.length){grid.innerHTML='<div class="empty">未找到匹配的卡牌，换个筛选试试</div>';return;}
+      grid.className='grid';
+      grid.innerHTML=arr.map(function(c){
+        return '<div class="ccard" data-type="'+type+'" data-id="'+c.id+'">'
+          +'<img class="img" loading="lazy" src="'+c.img+'" alt="'+esc(c.name)+'">'
+          +'<div class="meta"><div class="nm">'+esc(c.name)+'</div>'
+          +'<div class="bd">'+qBadge(c.quality)+'<span class="badge">'+esc(c.faction||'无阵营')+'</span></div></div></div>';
+      }).join('');
+    }
+
+    function renderFactions(){
+      document.getElementById('count').textContent=FACS.length+' 大流派';
+      grid.className='grid';
+      grid.style.gridTemplateColumns='repeat(auto-fill,minmax(200px,1fr))';
+      grid.innerHTML=FACS.map(function(f){
+        var tot=f.heroes+f.effects+f.equips+f.talents;
+        var dots=[];
+        if(f.heroes)dots.push(f.heroes+' 英雄');
+        if(f.effects)dots.push(f.effects+' 效果');
+        if(f.equips)dots.push(f.equips+' 装备');
+        if(f.talents)dots.push(f.talents+' 天赋');
+        return '<div class="fcard" data-f="'+esc(f.name)+'">'
+          +'<div class="fname">'+esc(f.name)+'</div>'
+          +'<div class="fcount">'+dots.map(function(d){return '<span class="fdot">'+d+'</span>';}).join('')+'</div>'
+          +'<div class="fbar" style="width:'+Math.max(8,Math.min(100,tot/4))+'%"></div></div>';
+      }).join('');
+      setTimeout(function(){grid.style.gridTemplateColumns='';},0);
+    }
+
+    // modal
+    var modal=document.getElementById('modal'), modalBox=document.getElementById('modalBox');
+    function setHash(h){try{history.replaceState(null,'',h||location.pathname+location.search);}catch(e){}}
+    function openModal(html,hash){modalBox.innerHTML=html;modal.classList.add('open');document.body.style.overflow='hidden';if(hash)setHash(hash);}
+    function closeModal(){modal.classList.remove('open');document.body.style.overflow='';setHash('');}
+    modal.onclick=function(e){if(e.target===modal)closeModal();};
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
+
+    function openPlayer(name){
+      var p=PLAYERS.find(function(x){return x.name===name;});if(!p)return;
+      var skills=(p.skills||[]).map(function(s){
+        return '<div class="skill"><span class="s-name">'+esc(s.name)+'</span><span class="s-kind">'+esc(s.kind)+'</span>'
+          +'<div class="s-desc">'+fmt(s.desc)+'</div></div>';
+      }).join('');
+      var html='<div class="m-head"><img class="m-thumb" src="'+p.icon+'" alt="'+esc(p.name)+'" onerror="this.src=\''+p.portrait+'\'">'
+        +'<div><div class="m-tit">'+esc(p.name)+'</div><div class="m-sub">棋手 · 共 '+(p.skills?p.skills.length:0)+' 项能力</div></div>'
+        +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
+        +'<div class="m-scroll"><h4>技能 / 秘技 / 专属</h4>'+skills+'</div>';
+      openModal(html,'#p-'+encodeURIComponent(name));
+    }
+
+    function openCard(type,id){
+      var c=TYPE[type].find(function(x){return x.id===id;});if(!c)return;
+      var html='<div class="m-head"><img class="m-thumb contain" src="'+c.img+'" alt="'+esc(c.name)+'">'
+        +'<div><div class="m-tit">'+esc(c.name)+'</div><div class="m-sub">'+TYPE_LABEL[type]+'牌</div></div>'
+        +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
+        +'<div class="m-scroll"><div class="m-badges">'+qBadge(c.quality)+'<span class="badge">阵营 · '+esc(c.faction||'无阵营')+'</span></div>'
+        +'<h4>效果描述</h4><div class="desc-box">'+fmt(c.desc)+'</div></div>';
+      openModal(html,'#c-'+type+'-'+id);
+    }
+
+    function openFaction(name){
+      var f=FACS.find(function(x){return x.name===name;});if(!f)return;
+      var members=[].concat(
+        HEROES.filter(function(c){return c.faction===name;}).map(function(c){return {t:'hero',c:c};}),
+        EFFECTS.filter(function(c){return c.faction===name;}).map(function(c){return {t:'effect',c:c};}),
+        EQUIPS.filter(function(c){return c.faction===name;}).map(function(c){return {t:'equip',c:c};}),
+        TALENTS.filter(function(c){return c.faction===name;}).map(function(c){return {t:'talent',c:c};})
+      );
+      var mini=members.map(function(m){return '<div class="mini" data-type="'+m.t+'" data-id="'+m.c.id+'"><img loading="lazy" src="'+m.c.img+'" alt="'+esc(m.c.name)+'"><div class="mn">'+esc(m.c.name)+'</div></div>';}).join('');
+      var dots=[];if(f.heroes)dots.push(f.heroes+' 英雄');if(f.effects)dots.push(f.effects+' 效果');if(f.equips)dots.push(f.equips+' 装备');if(f.talents)dots.push(f.talents+' 天赋');
+      var html='<div class="m-head"><div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-kai);font-size:22px;font-weight:700;">'+esc(name.slice(0,1))+'</div>'
+        +'<div><div class="m-tit">'+esc(name)+'</div><div class="m-sub">流派 · '+dots.join(' · ')+'</div></div>'
+        +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
+        +'<div class="m-scroll"><h4>阵营成员 <span class="tag">'+members.length+'</span></h4><div class="m-grid">'+mini+'</div></div>';
+      openModal(html,'#f-'+encodeURIComponent(name));
+    }
+
+    window.__wxq={close:closeModal, openPlayer:openPlayer, openCard:openCard, openFaction:openFaction};
+
+    // events
+    document.getElementById('tabs').addEventListener('click',function(e){
+      var b=e.target.closest('.tab');if(!b)return;
+      [].forEach.call(this.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
+      b.classList.add('active');state.type=b.getAttribute('data-type');state.q='';state.fac='';state.qual='';
+      document.getElementById('q').value='';document.getElementById('fac').value='';document.getElementById('qual').value='';
+      render();
+    });
+    document.getElementById('q').addEventListener('input',function(){state.q=this.value.trim();render();});
+    document.getElementById('fac').addEventListener('change',function(){state.fac=this.value;render();});
+    document.getElementById('qual').addEventListener('change',function(){state.qual=this.value;render();});
+    grid.addEventListener('click',function(e){
+      var f=e.target.closest('.ccard');if(f){if(f.dataset.p)return openPlayer(f.dataset.p);if(f.dataset.type)return openCard(f.dataset.type,+f.dataset.id);}
+      var fc=e.target.closest('.fcard');if(fc)return openFaction(fc.dataset.f);
+      var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
+    });
+
+    function route(){
+      var h=location.hash;
+      if(h.indexOf('#p-')===0)return openPlayer(decodeURIComponent(h.slice(3)));
+      if(h.indexOf('#c-')===0){var s=h.slice(3).split('-');var id=+s.pop();return openCard(s.join('-'),id);}
+      if(h.indexOf('#f-')===0)return openFaction(decodeURIComponent(h.slice(3)));
+    }
+    window.addEventListener('hashchange',route);
+
+    render();
+    if(location.hash)route();
+  })();
+  </script>
+</body>
+</html>
