@@ -11,7 +11,7 @@
 window.GUIDE_META = {
   season: "S44「不拘命格」",
   seasonStart: "2026-06-25",
-  version: "2.1.12",
+  version: "2.1.13",
   patch: "截至 S44 赛季末（2026-09-09 含 9.9 英雄平衡）",
   note: "全英雄摘要版先行，详细攻略持续更新中",
   source: "综合搜狐/抖音精选/百度百科等 2026-08 公开榜单，以正式服为准",
@@ -25,6 +25,8 @@ window.GUIDE_META = {
     "移动端（iPhone 等）显示优化：双列卡片、触控目标加大、安全区适配、关闭输入聚焦缩放"
   ],
   updateLog: [
+    "2026-09-14 装备数据每周同步：0 件数值/被动更新，0 件新增，0 件价格调整（官方 item.json 与 9.2 快照一致，121 件装备/108 张图标无变动，仅刷新同步日期）",
+    "2026-09-14 每周校准：对抗路关羽↑T0、元歌/影↑T0.5、马超/狂铁/老夫子/猪八戒/芈月/蒙恬/曹操↑T1、六耳↓T1；打野韩信/百里玄策/露娜/云缨↑T1；发育路戈娅↓T0.5、元流之子(射手)↑T1（据 9.12-9.13 营地/头条梯度榜单）。中路与游走榜单分歧大，本次保持原值；王维仍为 S45 前瞻占位(—)",
     "v2.1.12 9.9 正式服英雄平衡同步：赵云🔻T0→T0.5（三技能基础伤害-15%、额外AD-0.05，整体爆发下降）；元流之子(辅助)🔻T0→T0.5（二技能施法台视野范围下调约1/4，探草能力减弱）；鲁班七号/伽罗/狄仁杰/马可波罗🔺基础攻速 10%→13.5%（+3.5%）；黄忠🔺基础攻速+2%（9.9 五射手加强）",
     "v2.1.6 9.3 正式服英雄平衡同步：影🔻T0→T1（二技能飞刃弹射间隔增加，转攻速流补偿）；少司缘(辅助)🔻T0→T0.5（被动减强普CD 30~60%→25~50%、二技能基础伤害-20%、一技能回血+5%补偿）；敖隐🔻T0→T1（S44第二次削弱：三技能击退80~160→80~120、二三技能基础伤害-10%）；苍🔺T1.5→T1（S45前瞻重做9.3提前实装：全域草丛+空中二连射+被动对小兵/塔增伤）；刘备🔺T1.5→T1（9.3 Bug修复=实质增强：强普衔接三技能双喷第二段不再丢失，巅峰53.4%）；少司缘(中路)维持T1仅补调整块",
     "v2.0.0 装备库上线：① 新增独立页面 items.html（121 件官方装备图鉴，含 S44 改动板块、分类筛选、搜索、详情弹窗）；② 英雄详情页出装文本自动转为带官方图标的可点 chip（仅在含 → 的出装行注入，不影响连招/正文，零数据改动覆盖 137 英雄出装），含 12 条高频简称别名（破晓/复活甲/名刀/黑切/电刀/破败/无尽/饮血/金身/不详/苍穹/面具）；③ 新增 scripts/sync-items.py 抓取 pvp.qq.com 官方 item.json 自动同步装备数据/图标/价格/被动（赛季更新重跑即可）；④ 手工改动档 scripts/item-changes.json 与自动数据分离（当前 4 条：新增无象神器 6 变体 / 法球流 0.15s 内置CD 削弱 / 暴击三件加强 / 幽影袖箭加强）；⑤ 顶栏新增「装备库」入口；⑥ 108 张官方图标已下载到本地 items-icon/，13 件无图装备（多为新装备）用分类色块占位",
@@ -39,7 +41,7 @@ window.GUIDE_META = {
 window.HEROES = [
 
 /* ========================= 对抗路 ========================= */
-{id:'liuermihou',name:'心魔六耳',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/549/549.jpg',role:'top',tier:'T0',tags:['战士','刺客','不可选中'],core:'浮空躲伤+大招不可选中+自带暴击，无象神器版本红利，击杀可刷新连续收割',build:'打野暴击流 / 半肉容错流',good:['脆皮后排'],bad:['妲己','盘古','宫本武藏','虞姬'],detailed:`
+{id:'liuermihou',name:'心魔六耳',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/549/549.jpg',role:'top',tier:'T1',tags:['战士','刺客','不可选中'],core:'浮空躲伤+大招不可选中+自带暴击，无象神器版本红利，击杀可刷新连续收割',build:'打野暴击流 / 半肉容错流',good:['脆皮后排'],bad:['妲己','盘古','宫本武藏','虞姬'],detailed:`
 <div class="meta">
 <span>定位：打野/对抗路 战士刺客（S44命格首发·真假美猴王）</span><span>分路：jungle / top</span>
 <span>基础：天生20%暴击率 + 150%暴击效果 ｜ 心能上限60 ｜ 定位战士/刺客双职业</span>
@@ -114,7 +116,7 @@ window.HEROES = [
 <strong>中期：</strong>跟团打小规模遭遇战，组合技在野区窄地形命中率更高；大招开启后抓单秒落单C位。<br>
 <strong>后期：</strong>定位"搅局+收割"，从侧翼进团切后排，2技能霸体躲关键控制；伤害不足时靠强攻代守的斩杀线（15%已损）收人头。</p>
 `},
-{id:'yuange',name:'元歌',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/125/125.jpg',role:'top',tier:'T2',tags:['刺客','傀儡'],core:'手长数值高+变身复制敌方机制，上限极高，高分段非ban必选',build:'穿透爆发装，靠傀儡打拉扯',good:['多数传统战边'],bad:['赵怀真','东皇太一'],detailed:`
+{id:'yuange',name:'元歌',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/125/125.jpg',role:'top',tier:'T0.5',tags:['刺客','傀儡'],core:'手长数值高+变身复制敌方机制，上限极高，高分段非ban必选',build:'穿透爆发装，靠傀儡打拉扯',good:['多数传统战边'],bad:['赵怀真','东皇太一'],detailed:`
 <div class="meta">
 <span>定位：对抗路刺客 / 傀儡师</span><span>分路：top（可打野）</span>
 <span>基础：生命3001 / 物攻165 / 移速375 / 攻击范围远程（傀儡）</span>
@@ -195,7 +197,7 @@ window.HEROES = [
 <strong>中期：</strong>半肉成型后是团战发动机，一技能卷C位转向接控制链；大招留到敌方爆发交出后再开，吸收满再反打。<br>
 <strong>后期：</strong>定位"开团手+副坦"，一技能1秒控制在窄地形是团控；注意别被真伤英雄针对，气旋吸收对真伤无效。</p>
 `},
-{id:'kuangtie',name:'狂铁',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/503/503.jpg',role:'top',tier:'T2',tags:['战士','护盾续航'],core:'四级后压制力极强，护盾+回血续航，线上单杀能力强',build:'暗影战斧 + 冰痕之握 + 半肉',good:['脆皮战边'],bad:['长手风筝','真伤(吕布)'],detailed:`
+{id:'kuangtie',name:'狂铁',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/503/503.jpg',role:'top',tier:'T1',tags:['战士','护盾续航'],core:'四级后压制力极强，护盾+回血续航，线上单杀能力强',build:'暗影战斧 + 冰痕之握 + 半肉',good:['脆皮战边'],bad:['长手风筝','真伤(吕布)'],detailed:`
 <div class="meta">
 <span>定位：对抗路战士 / 能量换血王</span><span>分路：top</span>
 <span>基础：生命3508 / 物攻175 / 移速380 / 无蓝条（能量制）</span>
@@ -434,7 +436,7 @@ window.HEROES = [
   <div class="counter"><div class="good">好打：牛魔、兰陵王、莱西奥（全图锁定克制无位移后排）</div><div class="bad">怕：芈月、嫦娥、貂蝉（灵活/法术真伤拉扯）</div></div>
   <div class="tip-box">打法总纲：4级前猥琐补刀，4级后强度骤升——大招CD好就飞边路/野区找机会。团战前可多清一波兵线再飞，弥补支援意识差。核心是叠火种打真伤+重伤，专治回复阵容；锁定C位轻松打乱阵型，操作简单强度高。S44顶端 Ban率30%+，梯度已升至 T0.5。</div>
 `},
-{id:'mengting',name:'蒙恬',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/527/527.jpg',role:'top',tier:'T1.5',tags:['坦克','正面团','兵势'],core:'蓄力猛击+兵势回血，正面团坦度压制力拉满；S44纯肉趋势、强度一般',build:'影忍之足 → 冰痕之握 → 怒龙剑盾 → 魔女斗篷 → 不死鸟之眼 → 血魔之怒',good:['站桩阵容','平推体系'],bad:['吕布','芈月','貂蝉','强开'],detailed:`
+{id:'mengting',name:'蒙恬',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/527/527.jpg',role:'top',tier:'T1',tags:['坦克','正面团','兵势'],core:'蓄力猛击+兵势回血，正面团坦度压制力拉满；S44纯肉趋势、强度一般',build:'影忍之足 → 冰痕之握 → 怒龙剑盾 → 魔女斗篷 → 不死鸟之眼 → 血魔之怒',good:['站桩阵容','平推体系'],bad:['吕布','芈月','貂蝉','强开'],detailed:`
 <div class="meta">
 <span>定位：坦克/战士（蓄力防线）</span><span>分路：top（对抗路）</span>
 <span>基础：生命 3600 · 法力 1000 · 移速 375 · 近程</span>
@@ -630,7 +632,7 @@ window.HEROES = [
   <p><b>中期（最强期）</b>：带传送优先推掉对抗路一塔，然后转线刷钱——中路蹭线、偷对面野区、传送回线继续吃。装备成型后<b>10分钟就是Boss级，1v3不是梦</b>。</p>
   <p><b>团战</b>：<b>绝对不能第一个进场</b>。等对手交完关键控制，开大越过后排，落地二技能把近战推开保持距离持续输出。<b>你的目标永远是脆皮，不是前排坦克</b>。</p>
 `},
-{id:'ying',name:'影',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/558/558.jpg',role:'top',tier:'T1',tags:['战士','远近双形态','两条命'],core:'三分段胜率全>52%，抗压界王者+大招自带复活甲；S44二技能真空期-2秒后崛起',build:'抵抗之靴 → 暗影战斧 → 寒霜侵袭 → 反伤刺甲 → 破军 → 名刀司命',good:['刘备','心魔六耳','东皇太一','吕布','张良'],bad:['蒙恬','典韦','铠'],detailed:`
+{id:'ying',name:'影',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/558/558.jpg',role:'top',tier:'T0.5',tags:['战士','远近双形态','两条命'],core:'三分段胜率全>52%，抗压界王者+大招自带复活甲；S44二技能真空期-2秒后崛起',build:'抵抗之靴 → 暗影战斧 → 寒霜侵袭 → 反伤刺甲 → 破军 → 名刀司命',good:['刘备','心魔六耳','东皇太一','吕布','张良'],bad:['蒙恬','典韦','铠'],detailed:`
   <div class="meta">
     <div><b>定位</b>：战士（刺客型）</div><div><b>推荐分路</b>：对抗路（低分可打野）</div>
     <div><b>基础生命</b>：3415　<b>物理攻击</b>：170</div><div><b>双抗</b>：150 / 75　<b>移速</b>：375</div>
@@ -681,7 +683,7 @@ window.HEROES = [
   <p><b>后期</b>：略显乏力，尽量在中期结束战斗。残局利用大招刷新机制打完一套就撤退等CD，<b>不要贪输出</b>。</p>
   <div class="tip-box"><b>分路选择建议</b>：低分段可以打野，但<b>段位越高打野性价比越低</b>——到尖端局，打野的影已经是非主流，坚持走对抗路。</div>
 `},
-{id:'guanyu',name:'关羽',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/140/140.jpg',role:'top',tier:'T0.5',tags:['战士','坦克','冲锋'],core:'移动即输出、冲锋即质变，大招分割战场全图支援切后排',build:'抵抗之靴 → 暗影战斧 → 纯净苍穹 → 不祥征兆 → 碎星锤 → 魔女斗篷',good:['芈月','阿古朵','蔡文姬'],bad:['嫦娥','元流之子(坦克)','海月'],detailed:`
+{id:'guanyu',name:'关羽',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/140/140.jpg',role:'top',tier:'T0',tags:['战士','坦克','冲锋'],core:'移动即输出、冲锋即质变，大招分割战场全图支援切后排',build:'抵抗之靴 → 暗影战斧 → 纯净苍穹 → 不祥征兆 → 碎星锤 → 魔女斗篷',good:['芈月','阿古朵','蔡文姬'],bad:['嫦娥','元流之子(坦克)','海月'],detailed:`
   <div class="meta">
     <div><b>定位</b>：战士 / 坦克（对抗路）</div><div><b>推荐分路</b>：对抗路</div>
     <div><b>基础生命</b>：3547　<b>物理攻击</b>：176</div><div><b>双抗</b>：150 / 75　<b>移速</b>：380</div>
@@ -719,7 +721,7 @@ window.HEROES = [
   <div class="counter"><div class="good">好打：芈月、阿古朵、蔡文姬（冲锋分割+切后排）；站桩、后排</div><div class="bad">怕：嫦娥、元流之子(坦克)、海月（强控/减速链限制冲锋）；减速链、强控</div></div>
   <div class="tip-box">打法总纲：前期（1-4级）弱势，不恋战、游走三路用冲锋poke压血线；4级后进入强势期，大招冲锋领域让你小规模团战近乎无敌。团战侧翼进场、绕后切C，等敌方射手交完关键技能再进；用二技能解控、维持冲锋持续输出。核心属性优先级：移速 > 冷却缩减 > 物理穿透 > 生命值。S44 纯净苍穹加强+站桩射手崛起，关羽切后价值大增，梯度 T0.5。</div>
 `},
-{id:'feiyue',name:'芈月',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/121/121.jpg',role:'top',tier:'T1.5',tags:['法师','续航'],core:'链子吸血赖线，单挑强但团战偏弱',build:'噬神之书 + 痛苦面具',good:['单挑'],bad:['真伤爆发','强开'],detailed:`<div class="meta">
+{id:'feiyue',name:'芈月',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/121/121.jpg',role:'top',tier:'T1',tags:['法师','续航'],core:'链子吸血赖线，单挑强但团战偏弱',build:'噬神之书 + 痛苦面具',good:['单挑'],bad:['真伤爆发','强开'],detailed:`<div class="meta">
 <p><b>定位：</b>对抗路法坦 / 单挑续航型</p>
 <p><b>分路：</b>对抗路（可打野）</p>
 <p><b>基础数值：</b>生存 A / 伤害 B / 机动 B / 控制 C / 难度 ★★☆</p>
@@ -797,7 +799,7 @@ window.HEROES = [
   <div class="counter"><div class="good">好打：脆皮、残血（标记斩杀刷新链）、墨子/妲己/达摩</div><div class="bad">怕：东皇太一、张良（压制断连招）、海诺、沈梦溪（消耗）</div></div>
   <div class="tip-box">打法总纲：杨戬很吃冷却缩减（蓝buff/极寒风暴解决），主升一技能。被动韧性+二技能血量判定晕眩是核心，配合无象神器开大回血成"不死战神"。连招1标记→2晕→大招回血→击杀刷新1。团战攒被动层数进场（避免刚进被风筝掉法天象地）；贴脸拉扯多触发天眼激光回血。S44抢先服冲分首选之一，但综合热度仅T2~T3，属"轮椅"型上分边。</div>
 `},
-{id:'laofuzi',name:'老夫子',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/139/139.jpg',role:'top',tier:'T1.5',tags:['战士','单带','免伤'],core:'二技能免伤+反弹单挑无解，大招捆绑锁C；S44回归T1的单带质检员',build:'抵抗之靴 → 暗影战斧 → 暴烈之甲 → 冰霜冲击 → 不祥征兆 → 魔女斗篷',good:['单挑','无位移射手','坦克'],bad:['东皇','张良','盘古','蒙恬','群控'],detailed:`
+{id:'laofuzi',name:'老夫子',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/139/139.jpg',role:'top',tier:'T1',tags:['战士','单带','免伤'],core:'二技能免伤+反弹单挑无解，大招捆绑锁C；S44回归T1的单带质检员',build:'抵抗之靴 → 暗影战斧 → 暴烈之甲 → 冰霜冲击 → 不祥征兆 → 魔女斗篷',good:['单挑','无位移射手','坦克'],bad:['东皇','张良','盘古','蒙恬','群控'],detailed:`
   <div class="meta">
     <div><b>定位</b>：战士（对抗路，单带）</div><div><b>推荐分路</b>：对抗路</div>
     <div><b>基础生命</b>：3432　<b>物理攻击</b>：176</div><div><b>双抗</b>：150 / 75　<b>移速</b>：385</div>
@@ -1059,7 +1061,7 @@ window.HEROES = [
 
 <h4>打法节奏</h4>
 <p>前期对线靠二技能护盾 + 一技能贴脸换血，石化触发即压血；中期单带牵制，利用石化单挑恶霸属性 1v1 无解；团战侧翼切入旋转锤击，配合大招减 CD 持续黏住对方核心。钟无艳最大弱点是手短，怕吕布真伤与远程消耗（大司命、不知火舞），对线注意走位规避消耗。8.20 加强让其从 T2 一跃成为 T1.5 单挑标杆。</p>`},
-{id:'caocao',name:'曹操',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/128/128.jpg',role:'top',tier:'T1.5',tags:['战士','吸血'],core:'大招吸血续航，单挑赖线强',build:'暗影战斧 + 反伤刺甲 + 肉',good:['单挑'],bad:['真伤','强控'],detailed:`<div class="meta">
+{id:'caocao',name:'曹操',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/128/128.jpg',role:'top',tier:'T1',tags:['战士','吸血'],core:'大招吸血续航，单挑赖线强',build:'暗影战斧 + 反伤刺甲 + 肉',good:['单挑'],bad:['真伤','强控'],detailed:`<div class="meta">
 <p><b>定位：</b>对抗路战士 / 吸血续航型</p>
 <p><b>分路：</b>对抗路（可打野）</p>
 <p><b>基础数值：</b>生存 B / 伤害 B / 机动 B / 控制 C / 难度 ★★☆</p>
@@ -1100,7 +1102,7 @@ window.HEROES = [
 
 <h4>打法节奏</h4>
 <p>前期对线靠一技能三段 + 二技能减速换血，大招捏在残血反杀；中期单带牵制，利用吸血续航 1v1 赖线；团战侧翼切入，大招开启后持续吸血搅局。曹操怕被宫本强控锁大、老夫子捆住集火，以及司空震远程消耗。S44 大招续航优化 + 无象神器让其从 T2 回升 T1.5，是低出场高胜率的隐藏强势对抗路。</p>`},
-{id:'machao',name:'马超',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/518/518.jpg',role:'top',tier:'T1.5',tags:['战士','枪','机动'],core:'收枪戳枪高机动拉扯，吃操作与节奏；高分段版本之子、低分易暴毙',build:'冷静之靴 → 暗影战斧 → 冰痕之握 → 暴烈之甲 → 碎星锤 → 魔女斗篷',good:['拉扯','无位移脆皮'],bad:['东皇','张良','老夫子','芈月'],detailed:`
+{id:'machao',name:'马超',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/518/518.jpg',role:'top',tier:'T1',tags:['战士','枪','机动'],core:'收枪戳枪高机动拉扯，吃操作与节奏；高分段版本之子、低分易暴毙',build:'冷静之靴 → 暗影战斧 → 冰痕之握 → 暴烈之甲 → 碎星锤 → 魔女斗篷',good:['拉扯','无位移脆皮'],bad:['东皇','张良','老夫子','芈月'],detailed:`
   <div class="meta">
     <div><b>定位</b>：战士（对抗路 / 打野）</div><div><b>推荐分路</b>：对抗路（可打野）</div>
     <div><b>基础生命</b>：3482　<b>物理攻击</b>：172</div><div><b>双抗</b>：150 / 75　<b>移速</b>：375</div>
@@ -1643,7 +1645,7 @@ window.HEROES = [
 
 <h4>打法节奏</h4>
 <p>前期对线靠被动回血+二技能清线稳压，一级即可压人；中期多游走支援，一技能沉默先手帮打野 gank；团战不要先手开，等敌方输出露头后一技能沉默断其节奏，大招斩杀收尾。亚瑟强在零门槛+沉默机制，但后期伤害成长不足，综合胜率 49.73% 未破 50%，取 T2。新手牢记：大招优先斩杀已损生命的残血，沉默永远留给敌方 C 位。</p>`},
-{id:'zhubajie',name:'猪八戒',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/511/511.jpg',role:'top',tier:'T2',tags:['坦克','回血'],core:'残血回血赖线，但怕制裁',build:'红莲 + 反伤 + 不死鸟',good:['消耗'],bad:['制裁','真伤'],detailed:`<div class="meta">
+{id:'zhubajie',name:'猪八戒',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/511/511.jpg',role:'top',tier:'T1',tags:['坦克','回血'],core:'残血回血赖线，但怕制裁',build:'红莲 + 反伤 + 不死鸟',good:['消耗'],bad:['制裁','真伤'],detailed:`<div class="meta">
 <p><b>定位：</b>对抗路坦克 / 赖线回血型</p>
 <p><b>分路：</b>对抗路</p>
 <p><b>基础数值：</b>生存 A / 伤害 B / 机动 B / 控制 B / 难度 ★★☆</p>
@@ -2207,7 +2209,7 @@ window.HEROES = [
 
 <h4>打法节奏</h4>
 <p>兰陵王是前中期英雄：前期（0-8 分钟）胜率 58.2%，靠隐身入侵野区、针对无位移射手建立优势；中期多游走抓单，二技能标记+晕一套带走；后期（15 分钟+）胜率仅 41.6%，伤害真空期长，需速战速决别拖大后期。出装优先暗影战斧+破军，名刀保命换装。S44 隐身机制改动后秒杀流依旧 T0 级针对性强度，但综合胜率偏低、吃阵容，综合取 T1.5。新手牢记：隐身是绕后工具不是贴脸用，1500 码内自动现形；标记+普攻触发晕是秒人核心。</p>`},
-{id:'hanxin',name:'韩信',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/150/150.jpg',role:'jungle',tier:'T2',tags:['刺客','位移'],core:'多段位移偷塔带线牵制，S44肉装流崛起成中分段版本答案，吃操作与意识',build:'追击刀锋 + 暗影战斧 + 冰痕之握',good:['带线'],bad:['被控','真伤'],detailed:`
+{id:'hanxin',name:'韩信',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/150/150.jpg',role:'jungle',tier:'T1',tags:['刺客','位移'],core:'多段位移偷塔带线牵制，S44肉装流崛起成中分段版本答案，吃操作与意识',build:'追击刀锋 + 暗影战斧 + 冰痕之握',good:['带线'],bad:['被控','真伤'],detailed:`
 <div class="meta">
 <span>定位：打野刺客（多段位移/牵制）</span><span>分路：jungle</span>
 <span>基础：生命3232 / 法力560 / 移速385 / 攻击范围近程</span>
@@ -2325,7 +2327,7 @@ window.HEROES = [
 <h4>打法节奏</h4>
 <p>前期弱势（优先发育），红蓝buff顺序按对面打野动向灵活调整，没机会就速4；四级后靠"刷大"gank：野怪兵线攒被动再进场，永远留一技能三段撤退；中期大招是节奏开关——刷出来帮队友，没刷出来别硬上；后期侧翼绕后，二技能留作躲关键控制的保险而非先手。</p>
 `},
-{id:'xuance',name:'百里玄策',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/195/195.jpg',role:'jungle',tier:'T1.5',tags:['刺客','钩'],core:'钩中后爆发拉满，操作上限高需大量练习',build:'贪婪之噬 + 暗影战斧 + 破军',good:['脆皮'],bad:['空钩','强控'],detailed:`<div class="meta">
+{id:'xuance',name:'百里玄策',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/195/195.jpg',role:'jungle',tier:'T1',tags:['刺客','钩'],core:'钩中后爆发拉满，操作上限高需大量练习',build:'贪婪之噬 + 暗影战斧 + 破军',good:['脆皮'],bad:['空钩','强控'],detailed:`<div class="meta">
 <p><b>定位：</b>打野刺客 / 钩镰收割型</p>
 <p><b>分路：</b>打野（高操作上限，野核）</p>
 <p><b>基础数值：</b>生存 C / 伤害 A / 机动 A / 控制 A / 难度 ★★★</p>
@@ -2496,7 +2498,7 @@ window.HEROES = [
 
 <h4>打法节奏</h4>
 <p>云中君重做后前期作战能力全英雄第一，4 级永久飞行+撕裂让入侵反野无解，快速拉开经济差；中期利用飞行走 A 反复拉扯消耗，大招不可选中中心开花；团战等敌方交完位移再进场，三技能击飞后排。S44 重做封神（巅峰 54.3%、国服战力打野第 1），但综合出场仅 1.1% 冷门，综合取 T1.5。新手练好飞行状态走 A 节奏即可上手；气息管理是关键，一技能打伤害、二技能续气、三技能收尾。</p>`},
-{id:'luna',name:'露娜',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/146/146.jpg',role:'jungle',tier:'T1.5',tags:['战士','法师','月下'],core:'月下无限连上限极高，极度吃操作',build:'符文大剑 + 噬神之书 + 极寒',good:['拉扯'],bad:['断大','强控'],detailed:`<div class="meta">
+{id:'luna',name:'露娜',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/146/146.jpg',role:'jungle',tier:'T1',tags:['战士','法师','月下'],core:'月下无限连上限极高，极度吃操作',build:'符文大剑 + 噬神之书 + 极寒',good:['拉扯'],bad:['断大','强控'],detailed:`<div class="meta">
 <p><b>定位：</b>打野法刺 / 月下无限连</p>
 <p><b>分路：</b>打野（操作上限极高，绝活型）</p>
 <p><b>基础数值：</b>生存 C / 伤害 A / 机动 S / 控制 B / 难度 ★★★</p>
@@ -2611,7 +2613,7 @@ window.HEROES = [
 
 <h4>打法节奏</h4>
 <p>刘备是典型前期英雄，S44 加强后二技能穿墙+被动物穿让他野区转线、突袭灵活性拉满，8 分钟经济领先 2000+ 胜率高达 78%。前期疯狂反野滚雪球，中期开大免控贴脸射手/法师，二技能击退+一技能两连射打出爆发。肉装流（巨人之握+红莲+反伤）胜率 56.8% 登 T0，但综合热度 T2、字段取 T1.5。新手牢记：开大后先贴脸射手再用一技能追击，别第一时间交大；二技能穿墙是新版逃生/突袭神技。</p>`},
-{id:'yunying',name:'云缨',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/538/538.jpg',role:'jungle',tier:'T1.5',tags:['战士','枪'],core:'多层枪意续航输出，机制有趣',build:'追击刀锋 + 暗影战斧 + 暴烈',good:[''],bad:[''],detailed:`<div class="meta">
+{id:'yunying',name:'云缨',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/538/538.jpg',role:'jungle',tier:'T1',tags:['战士','枪'],core:'多层枪意续航输出，机制有趣',build:'追击刀锋 + 暗影战斧 + 暴烈',good:[''],bad:[''],detailed:`<div class="meta">
 <p><b>定位：</b>打野战士 / 枪意续航型</p>
 <p><b>分路：</b>打野（可边路，操作门槛适中）</p>
 <p><b>基础数值：</b>生存 B / 伤害 A / 机动 B / 控制 B / 难度 ★★☆</p>
@@ -4119,7 +4121,7 @@ window.HEROES = [
 <h4>打法节奏</h4>
 <p>前期偏弱：技能CD长（12.5s起步）、龙魂未成型，主二技能水龙魂补刀回血稳发育，4分钟前不主动换血。中期龙魂循环成型+无尽影刃两件套后战力剧增，跟团用"技能→强化普攻"打输出，注意强化普攻别浪费在小兵身上。后期三火龙魂秒C、大招躲关键技能，Ban率51.96%说明放出来就是赢一半——但要先手抢，别让对面辅助明世隐连体针对。巅峰赛1350+数据里他的胜率在52%以上档位，练熟一周即可上分。</p>
 `},
-{id:'geya',name:'戈娅',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/548/548.jpg',role:'adc',tier:'T0',tags:['射手','机动'],core:'机动拉扯顶尖，契合暴击版本；S45将升级（翻墙+六发贯穿）',build:'暴击流（无尽 + 影刃 + 破晓）',good:['站桩射手'],bad:['强控链','东皇'],detailed:`
+{id:'geya',name:'戈娅',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/548/548.jpg',role:'adc',tier:'T0.5',tags:['射手','机动'],core:'机动拉扯顶尖，契合暴击版本；S45将升级（翻墙+六发贯穿）',build:'暴击流（无尽 + 影刃 + 破晓）',good:['站桩射手'],bad:['强控链','东皇'],detailed:`
 <div class="meta">
 <span>定位：发育路射手（沙舟漂移拉扯）</span><span>分路：adc</span>
 <span>基础：生命3238 / 物攻165 / 移速360 / 攻击范围远程</span>
@@ -4678,7 +4680,7 @@ window.HEROES = [
 <p><strong>克制：</strong>消耗型阵容、无位移射手/法师、依赖锁定的阵容（烟雾规避）。<br><strong>被克：</strong>强开/突进刺客（兰陵王贴脸）、硬控链、盾山（格挡）。</p>
 <h4>打法节奏</h4>
 <p><strong>对线期：</strong>被动烟雾拉扯消耗压血线，一技能强化普攻换血，二技能保命。<br><strong>中期：</strong>跟团靠烟雾隐身消耗，大招收割残血。<br><strong>后期：</strong>团战侧翼烟雾输出，S44 加强后大招爆发足以秒 C。莱西奥是 S44 6.12 加强最实在的射手——更新即登顶巅峰榜，综合 T1.5（高端局 T0 级存在感），机制友好适合上分。</p>`},
-{id:'yuanliu-adc',name:'元流之子(射手)',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/584/584.jpg',role:'adc',tier:'T1.5',tags:['射手','多变'],core:'可切换职业，射手形态输出',build:'暴击流',good:[''],bad:[''],detailed:`<div class="meta">
+{id:'yuanliu-adc',name:'元流之子(射手)',avatar:'https://game.gtimg.cn/images/yxzj/img201606/heroimg/584/584.jpg',role:'adc',tier:'T1',tags:['射手','多变'],core:'可切换职业，射手形态输出',build:'暴击流',good:[''],bad:[''],detailed:`<div class="meta">
 <span>定位：发育路 射手 / 多形态（射手形态·远程消耗）</span><span>分路：adc</span>
 <span>基础：生命3159 / 物攻165 / 移速360 / 远程 / 无蓝条（流/全流强度）</span>
 <span>上手：3/5（射手形态直白，多形态切换吃理解）</span>
