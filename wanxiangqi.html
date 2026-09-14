@@ -115,6 +115,12 @@
   .skill .s-kind{font-size:11.5px;color:#fff;background:var(--gold);border-radius:6px;padding:1px 8px;margin-left:8px;}
   .skill .s-desc{margin-top:7px;color:var(--ink-soft);font-size:13.5px;line-height:1.75;}
   .desc-box{border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:var(--card);color:var(--ink-soft);font-size:14px;line-height:1.8;}
+  /* 官方卡面文案的重点色是为「深色底」设计的（#ffffff 白 / #FFE897 淡金），
+     在本页浅色主题下会变成白底白字（表现为"少字/缺字"）。
+     这里改为按主题语义上色：词条名词→墨色，条件/关键短语→朱砂。 */
+  .hl-term{color:var(--ink);font-weight:600;}
+  .hl-gold{color:#B3523F;font-weight:600;}                      /* 浅色主题：略深于 --cinnabar，保证 ≥4.5:1 */
+  [data-theme="dark"] .hl-gold{color:var(--cinnabar);}          /* 暗色主题：用主题朱砂即可（4.8:1） */
   .m-badges{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 4px;}
   .m-badges .badge{font-size:12px;padding:3px 10px;}
   .m-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:10px;}
@@ -341,7 +347,31 @@
 
     var state={type:'players', q:'', fac:'', qual:''};
 
-    function fmt(d){return (d||'').replace(/<color=([^>]+)>/g,'<span style="color:$1">').replace(/<\/color>/g,'</span>').replace(/\n/g,'<br>');}
+    // 官方文案格式化。
+    // 1) 先整体转义，再只还原 <b> / <color>，避免数据里任何意外标签破坏结构；
+    // 2) 官方重点色 <color=#ffffff> / <color=#FFE897> 是给深色卡面设计的，
+    //    照搬会在浅色主题下"隐形"（表现为缺字）→ 映射为 .hl-term / .hl-gold；
+    // 3) 官方 <a href=...> 锚点指向游戏内详情，页面无对应页 → 只去掉标签、保留文字。
+    function _lum(hex){
+      var h=String(hex||'').replace('#','');
+      if(h.length===3)h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2);
+      if(!/^[0-9a-f]{6}$/i.test(h))return -1;
+      var f=function(i){var v=parseInt(h.substr(i,2),16)/255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};
+      return 0.2126*f(0)+0.7152*f(2)+0.0722*f(4);
+    }
+    function fmt(d){
+      var s=(d||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      s=s.replace(/&lt;b&gt;/gi,'<b>').replace(/&lt;\/b&gt;/gi,'</b>');
+      s=s.replace(/&lt;color=([^&]*)&gt;/gi,function(m,c){
+        var v=String(c||'').trim().toLowerCase(), lum=_lum(v);
+        if(lum<0)return '<span class="hl-term">';                                  // 命名色等无法解析 → 当强调处理
+        if(lum<=0.55)return '<span style="color:'+v.replace(/[^#0-9a-z(),.%\s-]/g,'')+'">'; // 足够深，保留原色
+        return (v==='#ffe897'||v==='#ff9'||v==='#ffe')?'<span class="hl-gold">':'<span class="hl-term">';
+      });
+      s=s.replace(/&lt;\/color&gt;/gi,'</span>');
+      s=s.replace(/&lt;a\s*href=[^&]*&gt;/gi,'').replace(/&lt;a&gt;/gi,'').replace(/&lt;\/a&gt;/gi,'');
+      return s.replace(/\n/g,'<br>');
+    }
     function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
     function qBadge(q){var c=QCOLOR[q]||'#8a9a8f';return '<span class="badge" style="color:'+c+';border-color:'+c+'55;background:'+c+'14">'+q+'阶</span>';}
 
