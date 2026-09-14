@@ -104,8 +104,10 @@
   .m-head .m-tit{font-size:19px;font-weight:700;color:var(--ink);font-family:var(--font-kai);letter-spacing:.03em;}
   .m-head .m-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
   .modal-close{margin-left:auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);
-    cursor:pointer;color:var(--ink-soft);font-size:18px;line-height:1;flex:none;transition:.16s;}
+    cursor:pointer;color:var(--ink-soft);font-size:18px;line-height:1;flex:none;transition:.16s;
+    display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-sans);-webkit-tap-highlight-color:transparent;}
   .modal-close:hover{background:var(--paper-2);color:var(--ink);}
+  .modal-close .mc-back{display:none;}
   .m-scroll{overflow-y:auto;padding:18px 20px 24px;-webkit-overflow-scrolling:touch;}
   .m-scroll h4{font-size:14px;margin:20px 0 9px;color:var(--celadon-deep);font-family:var(--font-kai);letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
   .m-scroll h4:first-child{margin-top:0;}
@@ -245,7 +247,7 @@
   @media (max-width:640px){
     .wrap{padding:0 15px 72px;}
     .topbar .inner{padding:11px 15px;gap:8px;}
-    .back-link{padding:5px 10px;font-size:12px;}
+    .back-link{padding:8px 11px;font-size:12.5px;}
     .hero{padding:26px 0 16px;}
     .hero-card{padding:28px 22px 26px;border-radius:16px;}
     .hero h1{font-size:34px;}
@@ -253,7 +255,17 @@
     .search{min-width:0;flex:1 1 140px;padding:8px 12px 8px 32px;background-position:10px center;}
     .grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;}
     .modal{padding:0;}
-    .modal-box{width:100vw;max-height:100vh;height:100vh;border-radius:0;margin:0;}
+    /* iOS Safari 的 100vh 会被地址栏/工具栏盖住 → 用 dvh，底部再让出安全区 */
+    .modal-box{width:100%;max-height:100vh;max-height:100dvh;height:100vh;height:100dvh;border-radius:0;margin:0;}
+    /* 全屏弹窗里原来的小 × 不显眼、也不像「返回」→ 换成左侧明确的「← 返回」，并避开刘海 */
+    .m-head{gap:11px;padding:11px 14px;padding-top:calc(11px + env(safe-area-inset-top));}
+    .m-head .m-thumb{width:44px;height:44px;border-radius:10px;}
+    .m-head .m-tit{font-size:17.5px;}
+    .m-head .m-sub{font-size:12px;}
+    .modal-close{order:-1;margin-left:0;margin-right:1px;width:auto;min-width:44px;height:44px;padding:0 14px;border-radius:11px;font-size:14px;gap:5px;}
+    .modal-close .mc-x{display:none;}
+    .modal-close .mc-back{display:inline-flex;align-items:center;gap:5px;}
+    .m-scroll{padding:16px 15px calc(26px + env(safe-area-inset-bottom));overscroll-behavior:contain;}
   }
 </style>
 </head>
@@ -552,10 +564,48 @@
 
     // modal
     var modal=document.getElementById('modal'), modalBox=document.getElementById('modalBox');
-    function setHash(h){try{history.replaceState(null,'',h||location.pathname+location.search);}catch(e){}}
-    function openModal(html,hash){modalBox.innerHTML=html;modal.classList.add('open');document.body.style.overflow='hidden';if(hash)setHash(hash);}
-    function closeModal(){modal.classList.remove('open');document.body.style.overflow='';setHash('');}
-    modal.onclick=function(e){if(e.target===modal)closeModal();};
+    // 弹窗历史栈：每开一层弹窗就压入一条 history 记录。
+    // 这样手机端「左滑返回 / 系统返回键 / 浏览器返回」只会关掉弹窗，
+    // 而不会再像以前那样直接把用户带出整个页面（回到上一页）。
+    var mstack=[];
+    function paintModal(){
+      var top=mstack[mstack.length-1];
+      if(top){
+        modalBox.innerHTML=top.html;
+        modal.classList.add('open');document.body.style.overflow='hidden';
+      }else{
+        modalBox.innerHTML='';
+        modal.classList.remove('open');document.body.style.overflow='';
+      }
+    }
+    function openModal(html,hash){
+      mstack.push({html:html,hash:hash||''});
+      paintModal();
+      try{history.pushState({wxq:mstack.length},'',hash||location.pathname+location.search);}catch(e){}
+    }
+    // 回退后地址栏可能残留 #p-/ #c-/ #f-，清掉它，免得刷新时又弹出弹窗
+    function cleanModalHash(){
+      if(/^#(p|c|f)-/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+    }
+    // 点 × / 返回 / Esc / 点遮罩：统一交给系统回退处理，保证和手势返回行为一致
+    function closeModal(){
+      if(mstack.length){try{history.back();return;}catch(e){}}
+      mstack.length=0;paintModal();
+    }
+    window.addEventListener('popstate',function(){
+      if(mstack.length>0){
+        mstack.pop();paintModal();
+        if(!mstack.length)cleanModalHash();
+      }else{
+        route();
+      }
+    });
+    // 弹窗内点击：点遮罩关闭；点阵营成员卡进入该卡详情（此前只有 #grid 上绑了 .mini，
+    // 而 .mini 只出现在弹窗里，导致「阵营成员」看着可点其实没反应）
+    modal.addEventListener('click',function(e){
+      if(e.target===modal)return closeModal();
+      var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
+    });
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
 
     function openPlayer(name){
@@ -579,7 +629,7 @@
       var sub='棋手 · 共 '+(p.skills?p.skills.length:0)+' 项能力'+(g?(' · 上手难度 '+g.stars):'');
       var html='<div class="m-head"><img class="m-thumb" src="'+p.icon+'" alt="'+esc(p.name)+'" onerror="this.src=\''+p.portrait+'\'">'
         +'<div><div class="m-tit">'+esc(p.name)+'</div><div class="m-sub">'+esc(sub)+'</div></div>'
-        +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
+        +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
         +'<div class="m-scroll">'+ghtml+'<h4>技能 / 秘技 / 专属</h4>'+skills+'</div>';
       openModal(html,'#p-'+encodeURIComponent(name));
     }
@@ -588,7 +638,7 @@
       var c=TYPE[type].find(function(x){return x.id===id;});if(!c)return;
       var html='<div class="m-head"><img class="m-thumb contain" src="'+c.img+'" alt="'+esc(c.name)+'">'
         +'<div><div class="m-tit">'+esc(c.name)+'</div><div class="m-sub">'+TYPE_LABEL[type]+'牌</div></div>'
-        +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
+        +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
         +'<div class="m-scroll"><div class="m-badges">'+qBadge(c.quality)+'<span class="badge">阵营 · '+esc(c.faction||'无阵营')+'</span></div>'
         +'<h4>效果描述</h4><div class="desc-box">'+fmt(c.desc)+'</div></div>';
       openModal(html,'#c-'+type+'-'+id);
@@ -623,7 +673,7 @@
       }
       var html='<div class="m-head"><div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-kai);font-size:22px;font-weight:700;">'+esc(name.slice(0,1))+'</div>'
         +'<div><div class="m-tit">'+esc(name)+'</div><div class="m-sub">流派 · '+dots.join(' · ')+'</div></div>'
-        +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
+        +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
         +'<div class="m-scroll">'+ghtml+'<h4>阵营成员 <span class="tag">'+members.length+'</span></h4><div class="m-grid">'+mini+'</div></div>';
       openModal(html,'#f-'+encodeURIComponent(name));
     }
@@ -648,17 +698,20 @@
       var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
     });
 
-    function route(){
-      var h=location.hash;
+    function route(h){
+      if(h===undefined)h=location.hash;
       if(h==='#g'||h==='#guide'){var gt=document.querySelector('.tab[data-type="guide"]');if(gt)gt.click();return;}
       if(h.indexOf('#p-')===0)return openPlayer(decodeURIComponent(h.slice(3)));
       if(h.indexOf('#c-')===0){var s=h.slice(3).split('-');var id=+s.pop();return openCard(s.join('-'),id);}
       if(h.indexOf('#f-')===0)return openFaction(decodeURIComponent(h.slice(3)));
     }
-    window.addEventListener('hashchange',route);
 
     render();
-    if(location.hash)route();
+    var _initHash=location.hash;
+    // 深链进入弹窗时，先把基础 URL 上的 hash 抹掉，之后弹窗再压入属于自己的历史记录。
+    // 于是「返回 / 左滑」只关弹窗，不会把用户带出本站。
+    if(/^#(p|c|f)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+    route(_initHash);
   })();
   </script>
 </body>

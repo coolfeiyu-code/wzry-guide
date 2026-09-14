@@ -170,8 +170,8 @@
   .m-hd{position:sticky;top:0;z-index:2;background:#1E2A24;color:#F2F5F1;
     padding:12px 16px;border-radius:16px 16px 0 0;}
   .m-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
-  .m-back{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);
-    color:#F2F5F1;border:none;border-radius:999px;padding:6px 13px;font-size:13.5px;
+  .m-back{display:inline-flex;align-items:center;justify-content:center;gap:4px;background:rgba(255,255,255,.12);
+    color:#F2F5F1;border:none;border-radius:999px;padding:0 14px;min-height:44px;min-width:44px;font-size:13.5px;
     cursor:pointer;font-family:inherit;transition:.16s;white-space:nowrap;}
   .m-back:hover{background:rgba(255,255,255,.22);}
   .m-close{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.14);
@@ -517,11 +517,27 @@
     document.getElementById('modal').classList.add('open');
     document.body.style.overflow = 'hidden';
     var box = document.querySelector('.m-box'); if(box) box.scrollTop = 0;
+    pushLayer();
   }
-  function closeModal(){
+  /* 弹窗历史层：手机端「左滑返回 / 系统返回键」只关弹窗，不再直接退出整个页面 */
+  var layerPushed = false;
+  function pushLayer(){
+    if(layerPushed) return;
+    try{ history.pushState({wzryLayer:1}, '', location.href); layerPushed = true; }catch(e){}
+  }
+  function closeModalRaw(){
     document.getElementById('modal').classList.remove('open');
     document.body.style.overflow = '';
   }
+  // ← 返回 / × / Esc / 点遮罩：统一走系统返回，与手机左滑手势行为一致
+  function closeModal(){
+    if(layerPushed){ layerPushed = false; try{ history.back(); return; }catch(e){} }
+    closeModalRaw();
+  }
+  window.addEventListener('popstate', function(){
+    layerPushed = false;
+    if(document.getElementById('modal').classList.contains('open')) closeModalRaw();
+  });
   document.getElementById('mClose').addEventListener('click', closeModal);
   document.getElementById('mBack').addEventListener('click', closeModal);
   document.getElementById('modal').addEventListener('click', function(e){

@@ -319,6 +319,12 @@
     font-size:17px;cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);
     display:flex;align-items:center;justify-content:center;transition:.16s;}
   .m-share:hover,.m-share:active{background:rgba(255,255,255,.20);}
+  /* 手机端专用「← 返回」：桌面端隐藏（用右上角 ×），移动端由它接管关闭 */
+  .m-back{display:none;align-items:center;gap:5px;align-self:flex-start;
+    height:44px;min-width:44px;padding:0 14px;margin:0 0 5px;
+    border:none;border-radius:11px;background:rgba(255,255,255,.14);color:#F2F5F1;
+    font-size:14px;font-family:inherit;cursor:pointer;transition:.16s;white-space:nowrap;}
+  .m-back:hover,.m-back:active{background:rgba(255,255,255,.26);}
   .m-head h2{margin:0;font-size:23px;color:#fff;letter-spacing:.01em;display:flex;align-items:center;gap:14px;font-family:var(--font-kai);}
   .m-head h2 .ava-lg{width:54px;height:54px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);}
   .m-head h2 .m-t{line-height:1.1;}
@@ -473,10 +479,13 @@
     [data-theme="dark"]{--ink-soft-mobile:#B8C9BE;}
     .wrap{padding:0 14px calc(64px + env(safe-area-inset-bottom));}
     /* 顶部应用栏改为完全不透明：移动端滚动时内容不再透出，文字清晰可读 */
-    .appbar{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line);}
+    /* 移动端不再吸顶：顶栏+工具栏在窄屏会换行到 ~490px（占满 844px 屏幕的 59%），
+       把英雄列表挤没了；改为随页面滚动，把整屏还给内容。 */
+    .appbar{position:static;background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line);}
     body{font-size:17px;line-height:1.75;}
-    .topbar .inner{padding:11px 14px;gap:9px;}
-    .brand{font-size:13.5px;gap:8px;}
+    /* 顶栏允许换行，品牌名不再被挤成竖排单字 */
+    .topbar .inner{padding:11px 14px;gap:9px;flex-wrap:wrap;row-gap:7px;}
+    .brand{font-size:13.5px;gap:8px;flex:0 0 auto;white-space:nowrap;}
     .hero{padding:26px 0 18px;}
     .hero h1{font-size:32px;}
     .hero-card{padding:26px 20px 28px;border-radius:16px;}
@@ -485,7 +494,7 @@
     .toolbar{padding:8px 2px 10px;}
     .toolbar .row{gap:9px;}
     /* 触控目标加大（iOS HIG 建议 ≥ 40px） */
-    .seg .tab,.tier-btn,.toggle-pill{min-height:37px;padding:7px 14px;font-size:13.5px;}
+    .seg .tab,.tier-btn,.toggle-pill{min-height:37px;padding:7px 14px;font-size:13.5px;white-space:nowrap;}
     .toggle-pill{padding:7px 14px;}
     /* 移动端：分路 / 梯度胶囊改为横向滚动，避免堆叠过高 */
     .seg,.tiers{max-width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -514,7 +523,9 @@
     .m-head{padding:calc(16px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-top));gap:4px;}
     .m-head h2{font-size:20px;gap:11px;}
     .m-head h2 .ava-lg{width:46px;height:46px;}
-    .modal-close{width:36px;height:36px;font-size:22px;top:calc(14px + env(safe-area-inset-top));right:14px;}
+    /* 手机端：右上角小「×」太隐蔽（用户找不到关闭键），改为左上角明确的「← 返回」 */
+    .modal-close{display:none;}
+    .m-back{display:inline-flex;}
     .m-head-actions{top:calc(10px + env(safe-area-inset-top));right:12px;}
     .m-share{width:34px;height:34px;font-size:15px;}
     .m-body{font-size:15px;line-height:1.85;padding:22px 16px calc(40px + env(safe-area-inset-bottom));max-width:none;background:var(--paper);}
@@ -682,6 +693,7 @@
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
   <div class="modal-box">
     <div class="m-head">
+      <button class="m-back" id="mBack" aria-label="返回">← 返回</button>
       <div class="m-head-actions">
         <button class="m-share" id="mShare" title="分享链接">⤴</button>
         <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
@@ -1109,21 +1121,25 @@
     html += '<a class="im-goto" href="items.html">→ 打开完整装备库</a>';
     document.getElementById('imBd').innerHTML = html;
     document.getElementById('itemModal').classList.add('open');
+    layerPush(closeItemModalRaw, '');          // 同样压一层，手机返回只关装备弹窗
   }
-  function closeItemModal(){ document.getElementById('itemModal').classList.remove('open'); }
+  function closeItemModalRaw(){ document.getElementById('itemModal').classList.remove('open'); syncBodyLock(); }
+  // ← 返回 / × / 点遮罩：走系统返回，和左滑手势一致
+  function closeItemModal(){ if(layerStack.length){ try{ history.back(); return; }catch(e){} } closeItemModalRaw(); }
   document.getElementById('imClose').addEventListener('click', closeItemModal);
   document.getElementById('imBack').addEventListener('click', closeItemModal);
   document.getElementById('itemModal').addEventListener('click', function(e){
     if(e.target === this) closeItemModal();
   });
-  // 装备弹窗里的英雄名 -> 关闭装备弹窗并打开该英雄详情
+  // 装备弹窗里的英雄名 -> 换成该英雄详情（替换当前层，不额外增加返回层级）
   document.getElementById('imBd').addEventListener('click', function(e){
     var a = e.target.closest && e.target.closest('.hchip[data-hero]');
     if(a){
       e.preventDefault();
       var h = HEROES.find(function(x){ return x.id === a.getAttribute('data-hero'); });
-      closeItemModal();
-      if(h) openModal(h);
+      if(!h) return;
+      closeItemModalRaw();
+      openModal(h, true);      // 替换装备弹窗那一层，不额外增加返回层级
     }
   });
 
@@ -1138,6 +1154,39 @@
     });
   }
 
+  // ===== 弹窗历史层（手机端「左滑返回」不再直接退出页面）=====
+  // 此前打开弹窗不往 history 压记录，手机左滑/系统返回 = 浏览器返回 = 直接离开本站。
+  // 现在每开一层弹窗压一条 history，返回手势只消费栈顶那一层（先关弹窗，再退页面）。
+  var layerStack = [];
+  function layerPush(closeFn, hash){
+    layerStack.push(closeFn);
+    try{ history.pushState({ wzryLayer: layerStack.length }, '', hash || location.href); }catch(e){}
+  }
+  // 用新弹窗替换当前层（不增加返回层级），如「装备弹窗 → 点英雄名 → 英雄详情」
+  function layerReplaceTop(closeFn, hash){
+    if(!layerStack.length){ layerPush(closeFn, hash); return; }
+    layerStack[layerStack.length - 1] = closeFn;
+    try{ history.replaceState({ wzryLayer: layerStack.length }, '', hash || location.href); }catch(e){}
+  }
+  function syncBodyLock(){
+    var any = document.getElementById('modal').classList.contains('open')
+           || document.getElementById('itemModal').classList.contains('open');
+    document.body.style.overflow = any ? 'hidden' : '';
+  }
+  // 回退后地址栏可能残留 #hero-xxx，清掉，免得刷新时又弹出弹窗
+  function cleanModalHash(){
+    if(/^#hero-/.test(location.hash)){
+      try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
+    }
+  }
+  window.addEventListener('popstate', function(){
+    if(layerStack.length){
+      layerStack.pop()();
+      if(!layerStack.length) cleanModalHash();
+    }
+    syncBodyLock();
+  });
+
   function bindMatchChips(root){
     Array.prototype.forEach.call(root.querySelectorAll('.cchip[data-name]'), function(el){
       el.addEventListener('click', function(){
@@ -1147,7 +1196,7 @@
     });
   }
 
-  function openModal(h){
+  function openModal(h, replaceTop){
     currentHero = h;
     var ch = (h.name||'?').charAt(0);
     var av = h.avatar ? '<img class="ava ava-lg" alt="" loading="lazy" src="'+h.avatar+'" onerror="avaFail(this,\''+ch+'\')">' : '<span class="ava ava-lg ava-fallback">'+ch+'</span>';
@@ -1172,12 +1221,17 @@
     var box = document.querySelector('.modal-box'); if(box) box.scrollTop = 0;
     document.getElementById('modal').classList.add('open');
     document.body.style.overflow='hidden';
+    var hh = (h && h.id) ? '#hero-' + h.id : '';
+    if(replaceTop) layerReplaceTop(closeModalRaw, hh); else layerPush(closeModalRaw, hh);
   }
-  function closeModal(){
+  function closeModalRaw(){
     document.getElementById('modal').classList.remove('open');
-    document.body.style.overflow='';
+    syncBodyLock();
   }
+  // × / ← 返回 / Esc / 点遮罩：统一走系统返回，保证与手机左滑手势行为一致
+  function closeModal(){ if(layerStack.length){ try{ history.back(); return; }catch(e){} } closeModalRaw(); }
   document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('mBack').addEventListener('click', closeModal);
 
   // ===== 分享：即时深链 + 系统面板 / 复制链接兜底（无 PDF 导出）=====
   function toast(msg){
@@ -1278,16 +1332,25 @@
   });
 
   // 深链：从装备库（items.html#hero-xxx）或分享链接直达某英雄详情
-  function openHeroFromHash(){
-    var m = (location.hash || '').match(/^#hero-([\w-]+)$/);
+  // 注意：初始化时会先把基础 URL 的 hash 抹掉，所以支持显式传入待解析的 hash
+  function openHeroFromHash(hs){
+    var m = ((hs === undefined ? location.hash : hs) || '').match(/^#hero-([\w-]+)$/);
     if(!m) return;
     var h = HEROES.find(function(x){ return x.id === m[1]; });
-    if(h){ closeItemModal(); openModal(h); }
+    if(!h) return;
+    // 已经是这个英雄就不要再压一层（hashchange 可能被重复触发）
+    if(document.getElementById('modal').classList.contains('open') && currentHero && currentHero.id === h.id) return;
+    closeItemModalRaw();
+    openModal(h, layerStack.length > 0);   // 已有弹窗层则替换，否则新压一层
   }
-  window.addEventListener('hashchange', openHeroFromHash);
+  window.addEventListener('hashchange', function(){ openHeroFromHash(); });
 
   render();
-  openHeroFromHash();
+  // 深链进入时先把基础 URL 的 hash 抹掉，之后弹窗再压入属于自己的历史记录。
+  // 于是「返回 / 左滑」只关弹窗，不会把用户带出本站。
+  var _initHash = location.hash;
+  if(/^#hero-/.test(_initHash)){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
+  openHeroFromHash(_initHash);
 })();
 </script>
 </body>
