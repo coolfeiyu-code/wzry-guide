@@ -90,6 +90,22 @@
 .nav-link:hover{color:var(--celadon-deep);border-color:var(--celadon-soft);}
 [data-theme="dark"] .nav-link{color:var(--ink-soft);border-color:var(--line);}
 [data-theme="dark"] .nav-link:hover{color:var(--celadon);border-color:var(--celadon-soft);}
+
+/* 首页「功能板块」显眼入口 */
+.feature-strip{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 26px;}
+.feat-card{position:relative;display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:16px;border:1px solid var(--line);background:var(--card);text-decoration:none;color:var(--ink);transition:.18s;box-shadow:var(--shadow);overflow:hidden;}
+.feat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
+.feat-ico{width:46px;height:46px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:var(--font-kai);background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);}
+.feat-tx{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.feat-tx b{font-size:16px;letter-spacing:.02em;}
+.feat-tx i{font-style:normal;font-size:12.5px;color:var(--ink-soft);}
+.feat-go{margin-left:auto;font-size:22px;color:var(--ink-soft);transition:.18s;}
+.feat-card:hover .feat-go{color:var(--celadon-deep);}
+.feat-card.hot{border-color:var(--cinnabar);background:linear-gradient(180deg,rgba(190,90,69,.10),var(--card));}
+.feat-card.hot .feat-ico{background:linear-gradient(140deg,var(--cinnabar),#9c4636);}
+.feat-card.hot .feat-go{color:var(--cinnabar);}
+.feat-tag{position:absolute;top:10px;right:14px;font-size:10.5px;letter-spacing:.14em;color:#fff;background:var(--cinnabar);border-radius:999px;padding:2px 9px;font-weight:600;}
+@media(max-width:640px){.feature-strip{grid-template-columns:1fr;}}
 .badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600;
   letter-spacing:.3px;display:inline-block;flex-shrink:0;}
 .b-new{background:rgba(110,139,123,.15);color:var(--celadon-deep);border:1px solid var(--celadon-soft);}
@@ -636,6 +652,20 @@
     <div class="chips" id="metaBadges"></div>
   </div>
 </header>
+
+<section class="feature-strip" aria-label="功能板块">
+  <a class="feat-card hot" href="wanxiangqi.html" title="王者万象棋全图鉴 + 详细攻略">
+    <span class="feat-tag">新板块</span>
+    <span class="feat-ico">象</span>
+    <span class="feat-tx"><b>王者万象棋</b><i>18 棋手 · 85 英雄牌 · 547 张真实卡面 + 保姆级攻略</i></span>
+    <span class="feat-go">›</span>
+  </a>
+  <a class="feat-card" href="items.html" title="S44 全装备图鉴">
+    <span class="feat-ico">装</span>
+    <span class="feat-tx"><b>装备库</b><i>S44 全装备图鉴 · 属性 / 被动 / 改动</i></span>
+    <span class="feat-go">›</span>
+  </a>
+</section>
 
 <main id="list"></main>
 

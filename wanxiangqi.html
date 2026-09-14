@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>王者万象棋 · 图鉴 | 王者荣耀攻略总集</title>
+<title>王者万象棋 · 图鉴与攻略 | 王者荣耀攻略总集</title>
 <meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
-<meta name="description" content="王者万象棋全图鉴：18 位棋手、85 英雄牌、98 效果牌、73 装备牌、255 天赋牌，真实卡面 + 官方数值，按阵营流派检索。">
+<meta name="description" content="王者万象棋全图鉴 + 保姆级攻略：18 位棋手、85 英雄牌、98 效果牌、73 装备牌、255 天赋牌，真实卡面 + 官方数值；含新手开局三选一、核心机制、T0/T0.5/T1 阵容推荐、分职业出装与 18 棋手逐人攻略。">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -127,6 +127,66 @@
   .foot b{color:var(--ink);font-weight:600;}
   .foot a{color:var(--celadon-deep);text-decoration:none;}
 
+  /* ===== 攻略板块 ===== */
+  .seg .tab.gtab{color:var(--cinnabar);font-weight:600;}
+  .seg .tab.gtab.active{color:var(--cinnabar);}
+  .guide-root{display:block;}
+  .gsec{margin:0 0 32px;}
+  .gsec-h{font-family:var(--font-kai);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:.04em;display:flex;align-items:center;gap:9px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line);}
+  .gsec-h .gn{font-family:var(--font-sans);font-size:11.5px;color:#fff;background:var(--celadon);border-radius:6px;padding:1px 8px;font-weight:600;letter-spacing:.04em;}
+  .gsec-h .gh{font-family:var(--font-sans);font-size:12px;color:var(--ink-soft);font-weight:400;letter-spacing:0;margin-left:auto;}
+  .gnote{font-size:13px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--celadon);border-radius:10px;padding:12px 14px;margin:0 0 14px;line-height:1.78;}
+  .bp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .bp-card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;}
+  .bp-card .bp-nm{font-family:var(--font-kai);font-size:19px;font-weight:700;color:var(--ink);}
+  .bp-card .bp-tag{font-size:11px;color:#fff;background:var(--celadon);border-radius:6px;padding:1px 8px;margin-left:8px;vertical-align:2px;}
+  .bp-card .bp-tag.warn{background:var(--cinnabar);}
+  .bp-card .bp-rk{font-size:12.5px;color:var(--gold);margin-top:5px;letter-spacing:.08em;}
+  .bp-card .bp-rs{font-size:13px;color:var(--ink-soft);margin-top:8px;line-height:1.76;}
+  .glist{margin:0;padding:0;list-style:none;}
+  .glist li{position:relative;padding:7px 0 7px 20px;font-size:13.5px;color:var(--ink-soft);line-height:1.72;border-bottom:1px dashed var(--line);}
+  .glist li:last-child{border-bottom:none;}
+  .glist li::before{content:"·";position:absolute;left:5px;top:4px;color:var(--celadon);font-weight:700;font-size:17px;}
+  .tl{position:relative;margin:2px 0 14px;padding-left:18px;border-left:2px solid var(--line);}
+  .tl .tl-i{position:relative;padding:0 0 15px 12px;}
+  .tl .tl-i:last-child{padding-bottom:2px;}
+  .tl .tl-i::before{content:"";position:absolute;left:-26px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--celadon);box-shadow:0 0 0 3px var(--paper);}
+  .tl .tl-p{font-size:13.5px;font-weight:700;color:var(--celadon-deep);}
+  .tl .tl-t{font-size:13px;color:var(--ink-soft);margin-top:3px;line-height:1.72;}
+  .gmotto{font-family:var(--font-kai);font-size:14px;color:var(--cinnabar);text-align:center;margin:14px 0 0;letter-spacing:.06em;}
+  .lu{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px 18px;margin:0 0 13px;}
+  .lu .lu-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .lu .lu-tier{font-size:12px;font-weight:700;color:#fff;border-radius:7px;padding:2px 10px;letter-spacing:.03em;}
+  .lu .lu-tier.t0{background:var(--cinnabar);} .lu .lu-tier.t05{background:var(--gold);} .lu .lu-tier.t1{background:var(--celadon);}
+  .lu .lu-nm{font-family:var(--font-kai);font-size:18px;font-weight:700;color:var(--ink);}
+  .lu .lu-row{margin-top:10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;}
+  .lu .lu-k{font-size:12px;color:var(--ink-soft);letter-spacing:.06em;flex:none;}
+  .chips{display:inline-flex;flex-wrap:wrap;gap:5px;}
+  .hchip{font-size:12px;color:var(--celadon-deep);background:rgba(110,139,123,.12);border:1px solid rgba(60,90,78,.20);border-radius:7px;padding:2px 9px;}
+  .hchip.p{color:var(--cinnabar);background:rgba(190,90,69,.10);border-color:rgba(190,90,69,.28);}
+  .lu .lu-tx{font-size:13px;color:var(--ink-soft);line-height:1.74;margin-top:9px;}
+  .lu .lu-eq{font-size:12.5px;color:var(--ink-soft);margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);line-height:1.72;}
+  .eq-row{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:15px 17px;margin:0 0 11px;}
+  .eq-role{font-family:var(--font-kai);font-size:16.5px;font-weight:700;color:var(--celadon-deep);}
+  .eq-role .eq-hs{font-family:var(--font-sans);font-size:12px;color:var(--ink-soft);font-weight:400;margin-left:8px;}
+  .eq-std{margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.72;}
+  .eq-swap{font-size:12.5px;color:var(--ink-soft);margin-top:6px;line-height:1.7;}
+  .eq-note{font-size:12.5px;color:var(--ink-soft);margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);line-height:1.72;}
+  .fac-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:12px;}
+  .fac-g{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:15px 16px;cursor:pointer;transition:.16s;}
+  .fac-g:hover{border-color:var(--celadon-soft);transform:translateY(-2px);box-shadow:var(--shadow-lift);}
+  .fac-g .fn{font-family:var(--font-kai);font-size:18px;font-weight:700;color:var(--ink);}
+  .fac-g .fs{font-size:12px;color:var(--cinnabar);margin-top:4px;font-weight:600;}
+  .fac-g .fm{font-size:12.5px;color:var(--ink-soft);margin-top:7px;line-height:1.7;}
+  .fac-g .fc{margin-top:9px;display:flex;flex-wrap:wrap;gap:5px;}
+  /* 棋手弹窗内的攻略块 */
+  .pguide{border:1px solid var(--line);border-radius:13px;padding:6px 16px;background:var(--card);}
+  .pguide .pg-row{display:flex;gap:9px;font-size:13.5px;color:var(--ink-soft);padding:9px 0;border-bottom:1px dashed var(--line);line-height:1.72;}
+  .pguide .pg-row:last-child{border-bottom:none;}
+  .pguide .pg-k{color:var(--celadon-deep);font-weight:600;flex:none;width:5.4em;}
+  .pguide .pg-stars{color:var(--gold);letter-spacing:.12em;}
+  [data-theme="dark"] .bp-card,[data-theme="dark"] .lu,[data-theme="dark"] .eq-row,[data-theme="dark"] .fac-g,[data-theme="dark"] .pguide{background:var(--card);}
+
   [data-theme="dark"]{--paper:#141A17;--paper-2:#1E2622;--card:#1F2723;--ink:#E9EEE9;--ink-soft:#9FB0A6;
     --line:#2E3833;--celadon:#84A594;--celadon-deep:#AECBBB;--celadon-soft:#3C5247;--cinnabar:#D9745E;--gold:#CBA867;
     --shadow:0 1px 2px rgba(0,0,0,.30),0 8px 24px rgba(0,0,0,.35);--shadow-lift:0 2px 6px rgba(0,0,0,.35),0 14px 34px rgba(0,0,0,.45);}
@@ -170,8 +230,8 @@
     <section class="hero">
       <div class="hero-card">
         <p class="kicker">WÀNXIÀNGQÍ · 万象棋局</p>
-        <h1>王者<span class="accent">万象棋</span>图鉴</h1>
-        <p class="sub">收录官方公开数据的全部棋手与卡牌：真实卡面 + 技能 / 数值 / 阵营流派。点开任意一张卡即可查看详情，链接可分享直达。</p>
+        <h1>王者<span class="accent">万象棋</span>图鉴与攻略</h1>
+        <p class="sub">收录官方公开数据的全部棋手与卡牌（真实卡面 + 技能 / 数值 / 阵营流派），并附<b>保姆级攻略</b>：新手开局三选一、核心机制与运营节奏、T0/T0.5/T1 阵容推荐、分职业出装、18 棋手逐人打法。点开任意一张卡查看详情，链接可分享直达。</p>
         <div class="chips" id="heroChips"></div>
       </div>
     </section>
@@ -185,6 +245,7 @@
           <button class="tab" data-type="equip">装备牌</button>
           <button class="tab" data-type="talent">天赋牌</button>
           <button class="tab" data-type="faction">流派</button>
+          <button class="tab gtab" data-type="guide">攻略 ★</button>
         </div>
         <input class="search" id="q" placeholder="搜索名称…" autocomplete="off">
         <select class="filter" id="fac"><option value="">全部阵营</option></select>
@@ -204,11 +265,13 @@
   <div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
 
   <script src="wanxiangqi-data.js"></script>
+  <script src="wanxiangqi-guide.js"></script>
   <script>
   (function(){
     var M=window.WXQ_META, FACS=window.WXQ_FACTIONS,
         PLAYERS=window.WXQ_PLAYERS, HEROES=window.WXQ_HEROES,
-        EFFECTS=window.WXQ_EFFECTS, EQUIPS=window.WXQ_EQUIPS, TALENTS=window.WXQ_TALENTS;
+        EFFECTS=window.WXQ_EFFECTS, EQUIPS=window.WXQ_EQUIPS, TALENTS=window.WXQ_TALENTS,
+        GUIDE=window.WXQ_GUIDE;
     var TYPE={hero:HEROES, effect:EFFECTS, equip:EQUIPS, talent:TALENTS};
     var TYPE_LABEL={hero:'英雄', effect:'效果', equip:'装备', talent:'天赋'};
     var QCOLOR={1:'#8a9a8f',2:'#6E8B7B',3:'#5C8AA0',4:'#B6904E',5:'#C77B45',6:'#BE5A45'};
@@ -223,10 +286,12 @@
     // header
     document.getElementById('metaLine').textContent='v'+M.version;
     document.getElementById('capDate').textContent=M.capturedAt;
-    document.getElementById('heroChips').innerHTML=[
+    var heroChips=[
       '棋手 '+M.counts.players, '英雄 '+M.counts.heroes, '效果 '+M.counts.effects,
       '装备 '+M.counts.equips, '天赋 '+M.counts.talents, '流派 '+M.counts.factions
-    ].map(function(s){return '<span class="chip">'+s+'</span>';}).join('');
+    ];
+    if(GUIDE) heroChips.push('攻略 '+GUIDE.lineups.length+' 套阵容');
+    document.getElementById('heroChips').innerHTML=heroChips.map(function(s){return '<span class="chip">'+s+'</span>';}).join('');
 
     // populate faction + quality filters
     var facSel=document.getElementById('fac');
@@ -242,9 +307,11 @@
 
     var grid=document.getElementById('grid');
     function render(){
-      document.getElementById('q').style.display = (state.type==='faction')?'none':'block';
-      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction')?'none':'inline-block';
-      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction')?'none':'inline-block';
+      var isGuide=state.type==='guide';
+      document.getElementById('q').style.display = (state.type==='faction'||isGuide)?'none':'block';
+      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isGuide)?'none':'inline-block';
+      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isGuide)?'none':'inline-block';
+      if(isGuide) return renderGuide();
       if(state.type==='players') return renderPlayers();
       if(state.type==='faction') return renderFactions();
       return renderCards(state.type);
@@ -300,6 +367,69 @@
       setTimeout(function(){grid.style.gridTemplateColumns='';},0);
     }
 
+    function renderGuide(){
+      grid.className='guide-root';grid.style.gridTemplateColumns='';
+      if(!GUIDE){grid.innerHTML='<div class="empty">攻略数据未加载</div>';return;}
+      document.getElementById('count').textContent='保姆级攻略';
+      var h='';
+
+      // 01 新手开局
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">01</span>新手开局 · 棋手三选一<span class="gh">'+esc(GUIDE.beginner.sub)+'</span></h2>';
+      h+='<div class="gnote">'+esc(GUIDE.beginner.order)+'</div>';
+      h+='<div class="bp-grid">'+GUIDE.beginner.picks.map(function(p){
+        var warn=(p.tag==='暂不推荐')?' warn':'';
+        return '<div class="bp-card"><div class="bp-nm">'+esc(p.name)+'<span class="bp-tag'+warn+'">'+esc(p.tag)+'</span></div>'
+          +'<div class="bp-rk">上手难度 '+esc(p.rank)+'</div><div class="bp-rs">'+esc(p.reason)+'</div></div>';
+      }).join('')+'</div></section>';
+
+      // 02 核心机制
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">02</span>核心机制 · 通用运营<span class="gh">所有棋手通用</span></h2>';
+      h+='<ul class="glist">'+GUIDE.mechanics.core.map(function(t){return '<li>'+esc(t)+'</li>';}).join('')+'</ul>';
+      h+='<div class="gsec-h" style="font-size:15px;border:none;padding:14px 0 2px;">运营节奏</div>';
+      h+='<div class="tl">'+GUIDE.mechanics.rhythm.map(function(r){return '<div class="tl-i"><div class="tl-p">'+esc(r.phase)+'</div><div class="tl-t">'+esc(r.text)+'</div></div>';}).join('')+'</div>';
+      h+='<div class="gnote" style="border-left-color:var(--cinnabar)"><b>新手三大死因：</b>'+GUIDE.mechanics.deaths.map(function(d,i){return (i+1)+'、'+esc(d);}).join('；')+'</div>';
+      h+='<div class="gmotto">'+esc(GUIDE.mechanics.motto)+'</div></section>';
+
+      // 03 阵容推荐
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">03</span>阵容推荐<span class="gh">T0 / T0.5 / T1 · 共 '+GUIDE.lineups.length+' 套</span></h2>';
+      h+=GUIDE.lineups.map(function(l){
+        var tc=l.tier==='T0'?'t0':(l.tier==='T0.5'?'t05':'t1');
+        var chips=function(arr,cls){return (arr||[]).map(function(x){return '<span class="hchip'+(cls||'')+'">'+esc(x)+'</span>';}).join('');};
+        var s='<div class="lu"><div class="lu-top"><span class="lu-tier '+tc+'">'+esc(l.tier)+'</span><span class="lu-nm">'+esc(l.name)+'</span></div>';
+        s+='<div class="lu-row"><span class="lu-k">核心</span><span class="chips">'+chips(l.core)+'</span></div>';
+        if(l.extra&&l.extra.length)s+='<div class="lu-row"><span class="lu-k">可补</span><span class="chips">'+chips(l.extra)+'</span></div>';
+        s+='<div class="lu-row"><span class="lu-k">推荐棋手</span><span class="chips">'+chips(l.players,' p')+'</span></div>';
+        if(l.rhythm)s+='<div class="lu-row"><span class="lu-k">节奏</span><span style="font-size:13px;color:var(--ink-soft)">'+esc(l.rhythm)+'</span></div>';
+        if(l.position)s+='<div class="lu-row"><span class="lu-k">站位</span><span style="font-size:13px;color:var(--ink-soft)">'+esc(l.position)+'</span></div>';
+        if(l.mech)s+='<div class="lu-tx">'+esc(l.mech)+'</div>';
+        if(l.equip)s+='<div class="lu-eq"><b style="color:var(--ink)">装备</b> · '+esc(l.equip)+'</div>';
+        return s+'</div>';
+      }).join('')+'</section>';
+
+      // 04 出装
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">04</span>出装思路 · 按定位<span class="gh">'+GUIDE.equip.roles.length+' 类定位</span></h2>';
+      h+='<div class="gnote">'+esc(GUIDE.equip.rule)+'</div>';
+      h+=GUIDE.equip.roles.map(function(r){
+        var s='<div class="eq-row"><div class="eq-role">'+esc(r.role)+'<span class="eq-hs">'+(r.heroes||[]).map(esc).join(' / ')+'</span></div>';
+        s+='<div class="eq-std"><span class="hchip" style="margin-right:6px">标配</span>'+(r.std||[]).map(esc).join(' ＋ ')+'</div>';
+        if(r.swap)s+='<div class="eq-swap"><b style="color:var(--ink)">替换</b> · '+esc(r.swap)+'</div>';
+        if(r.note)s+='<div class="eq-note">'+esc(r.note)+'</div>';
+        return s+'</div>';
+      }).join('')+'</section>';
+
+      // 05 阵营强度
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">05</span>六大阵营 · 强度<span class="gh">阵营只是「词条产地」</span></h2>';
+      h+='<div class="fac-grid">'+GUIDE.factions.map(function(f){
+        var chips=function(arr,cls){return (arr||[]).map(function(x){return '<span class="hchip'+(cls||'')+'">'+esc(x)+'</span>';}).join('');};
+        return '<div class="fac-g" data-guide-fac="'+esc(f.name)+'"><div class="fn">'+esc(f.name)+'<span style="font-size:12px;color:var(--ink-soft);font-weight:400;margin-left:8px">'+(f.count?f.count+' 张':'')+'</span></div>'
+          +'<div class="fs">'+esc(f.strength)+'</div><div class="fm">'+esc(f.mech)+'</div>'
+          +'<div class="fc">'+chips(f.cores)+chips(f.lineups,' p')+'</div></div>';
+      }).join('')+'</div></section>';
+
+      h+='<div class="foot" style="margin-top:8px">攻略来源：'+esc((GUIDE.meta.sources||[]).join(' ｜ '))+' · 整理于 '+esc(GUIDE.meta.capturedAt)+'<br>'+esc(GUIDE.meta.note)+'</div>';
+      grid.innerHTML=h;
+    }
+
     // modal
     var modal=document.getElementById('modal'), modalBox=document.getElementById('modalBox');
     function setHash(h){try{history.replaceState(null,'',h||location.pathname+location.search);}catch(e){}}
@@ -314,10 +444,23 @@
         return '<div class="skill"><span class="s-name">'+esc(s.name)+'</span><span class="s-kind">'+esc(s.kind)+'</span>'
           +'<div class="s-desc">'+fmt(s.desc)+'</div></div>';
       }).join('');
+      var g=(GUIDE&&GUIDE.players)?GUIDE.players[name]:null;
+      var ghtml='';
+      if(g){
+        var lu=(g.lineups||[]).map(function(x){return '<span class="hchip p">'+esc(x)+'</span>';}).join('');
+        ghtml='<h4>攻略 · 上手指引 <span class="tag">新</span></h4><div class="pguide">'
+          +'<div class="pg-row"><span class="pg-k">上手难度</span><span><span class="pg-stars">'+esc(g.stars)+'</span> · '+esc(g.diff)+'</span></div>'
+          +'<div class="pg-row"><span class="pg-k">定位</span><span>'+esc(g.role)+'</span></div>'
+          +'<div class="pg-row"><span class="pg-k">技能要点</span><span>'+esc(g.skill)+'</span></div>'
+          +'<div class="pg-row"><span class="pg-k">推荐阵容</span><span class="chips">'+lu+'</span></div>'
+          +'<div class="pg-row"><span class="pg-k">适用分段</span><span>'+esc(g.ranks)+'</span></div>'
+          +'</div>';
+      }
+      var sub='棋手 · 共 '+(p.skills?p.skills.length:0)+' 项能力'+(g?(' · 上手难度 '+g.stars):'');
       var html='<div class="m-head"><img class="m-thumb" src="'+p.icon+'" alt="'+esc(p.name)+'" onerror="this.src=\''+p.portrait+'\'">'
-        +'<div><div class="m-tit">'+esc(p.name)+'</div><div class="m-sub">棋手 · 共 '+(p.skills?p.skills.length:0)+' 项能力</div></div>'
+        +'<div><div class="m-tit">'+esc(p.name)+'</div><div class="m-sub">'+esc(sub)+'</div></div>'
         +'<button class="modal-close" onclick="__wxq.close()">×</button></div>'
-        +'<div class="m-scroll"><h4>技能 / 秘技 / 专属</h4>'+skills+'</div>';
+        +'<div class="m-scroll">'+ghtml+'<h4>技能 / 秘技 / 专属</h4>'+skills+'</div>';
       openModal(html,'#p-'+encodeURIComponent(name));
     }
 
@@ -364,11 +507,13 @@
     grid.addEventListener('click',function(e){
       var f=e.target.closest('.ccard');if(f){if(f.dataset.p)return openPlayer(f.dataset.p);if(f.dataset.type)return openCard(f.dataset.type,+f.dataset.id);}
       var fc=e.target.closest('.fcard');if(fc)return openFaction(fc.dataset.f);
+      var gf=e.target.closest('.fac-g');if(gf&&gf.dataset.guideFac)return openFaction(gf.dataset.guideFac);
       var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
     });
 
     function route(){
       var h=location.hash;
+      if(h==='#g'||h==='#guide'){var gt=document.querySelector('.tab[data-type="guide"]');if(gt)gt.click();return;}
       if(h.indexOf('#p-')===0)return openPlayer(decodeURIComponent(h.slice(3)));
       if(h.indexOf('#c-')===0){var s=h.slice(3).split('-');var id=+s.pop();return openCard(s.join('-'),id);}
       if(h.indexOf('#f-')===0)return openFaction(decodeURIComponent(h.slice(3)));
