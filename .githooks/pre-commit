@@ -9,7 +9,8 @@ FILE="heroes-data.js"
 
 # 攻略内容、界面、图标、装备库或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
 # 攻略内容、界面、图标、装备库、万象棋板块或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
-changed=$(git diff --cached --name-only -- "$FILE" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/" "wanxiangqi.html" "wanxiangqi-data.js" "wanxiangqi-guide.js")
+# wanxiangqi* 覆盖：wanxiangqi.html / -data.js / -guide.js / -rules.js / -engine.js / -chain.js
+changed=$(git diff --cached --name-only -- "$FILE" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/" "wanxiangqi*")
 if [ -z "$changed" ]; then
   exit 0
 fi
