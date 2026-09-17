@@ -450,6 +450,22 @@
     .preset{min-height:44px;padding:10px 12px;}
     .chj{min-height:34px;}
   }
+  /* ===== 词条悬停浮层 ===== */
+  .wxq-term{cursor:help;border-bottom:1px dotted var(--celadon);color:var(--ink);transition:background .12s;padding:0 1px;border-radius:3px;}
+  .wxq-term:hover{background:var(--celadon-soft);}
+  #wxqTip{position:fixed;z-index:1200;max-width:300px;width:max-content;display:none;pointer-events:none;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(20,30,24,.18);
+    padding:12px 13px;color:var(--ink);font-size:13px;line-height:1.7;}
+  #wxqTip .tip-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;}
+  #wxqTip .tip-img{width:54px;height:54px;border-radius:10px;object-fit:cover;background:var(--paper-2);flex:0 0 auto;}
+  #wxqTip .tip-grad{width:54px;height:54px;border-radius:10px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));color:#fff;font-family:var(--font-kai);font-size:24px;font-weight:700;}
+  #wxqTip .tip-name{font-size:15px;font-weight:700;color:var(--ink);}
+  #wxqTip .tip-sub{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+  #wxqTip .tip-badges{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap;}
+  #wxqTip .tip-badges .badge{font-size:11px;padding:1px 7px;}
+  #wxqTip .desc-box{margin-top:2px;font-size:13px;padding:10px 12px;line-height:1.75;}
+  [data-theme="dark"] #wxqTip{box-shadow:0 10px 30px rgba(0,0,0,.5);}
 </style>
 </head>
 <body>
@@ -759,6 +775,7 @@
 
       h+='<div class="foot" style="margin-top:8px">攻略来源：'+esc((GUIDE.meta.sources||[]).join(' ｜ '))+' · 整理于 '+esc(GUIDE.meta.capturedAt)+'<br>'+esc(GUIDE.meta.note)+'</div>';
       grid.innerHTML=h;
+      linkifyTerms(grid);
     }
 
     // modal
@@ -886,6 +903,100 @@
       PLAYERS:PLAYERS, HEROES:HEROES, EFFECTS:EFFECTS
     };
 
+    // ===== 词条悬停浮层：把攻略正文中的英雄/装备/效果/天赋/棋手/流派名自动包成可悬停项 =====
+    var REG={};
+    function regAdd(name,kind,img,desc,quality,faction,sub){
+      if(!name||REG[name])return;
+      REG[name]={kind:kind,name:name,img:img,desc:desc,quality:quality,faction:faction,sub:sub};
+    }
+    function buildRegistry(){
+      REG={};
+      (HEROES||[]).forEach(function(c){ if(c.name&&c.name.length>=2) regAdd(c.name,'hero',c.img,c.desc,c.quality,c.faction,''); });
+      (EFFECTS||[]).forEach(function(c){ if(c.name&&c.name.length>=2) regAdd(c.name,'effect',c.img,c.desc,c.quality,c.faction,''); });
+      (EQUIPS||[]).forEach(function(c){ if(c.name&&c.name.length>=2) regAdd(c.name,'equip',c.img,c.desc,c.quality,c.faction,''); });
+      (TALENTS||[]).forEach(function(c){ if(c.name&&c.name.length>=2) regAdd(c.name,'talent',c.img,c.desc,c.quality,c.faction,''); });
+      (PLAYERS||[]).forEach(function(p){
+        var g=(GUIDE&&GUIDE.players)?GUIDE.players[p.name]:null;
+        var d=(g&&g.skill)?g.skill:(p.skills&&p.skills[0]?p.skills[0].desc:'');
+        var sub=(g&&g.stars)?('上手难度 '+g.stars):'';
+        regAdd(p.name,'player',p.icon,d,'','',sub);
+      });
+      (FACS||[]).forEach(function(f){
+        var gf=(GUIDE&&GUIDE.factions)?GUIDE.factions.find(function(x){return x.name===f.name;}):null;
+        var d=gf?(gf.mech+(gf.idea?'；'+gf.idea:'')):(f.note||'');
+        var sub=f.heroes?(f.heroes+' 英雄 · '+(f.effects||0)+' 效果 · '+(f.equips||0)+' 装备 · '+(f.talents||0)+' 天赋'):'';
+        regAdd(f.name,'faction',null,d,'','',sub);
+      });
+      if(GUIDE&&GUIDE.keywords&&GUIDE.keywords.list){
+        GUIDE.keywords.list.forEach(function(kw){
+          if(!kw||!kw.key)return;
+          var d=kw.desc||'';
+          if(kw.ex&&kw.ex.length){ d+='　示例：'+kw.ex.slice(0,3).map(function(e){return e.hero+'·'+e.text;}).join('；'); }
+          regAdd(kw.key,'keyword',null,d,'','',(kw.hits?('出现 '+kw.hits+' 次'):'词条'));
+        });
+      }
+    }
+    var TERM_RE=null;
+    function buildTermRe(){
+      var names=Object.keys(REG).sort(function(a,b){return b.length-a.length;});
+      var body=names.map(function(n){return n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|');
+      return body?new RegExp('('+body+')','g'):null;
+    }
+    function linkifyTerms(root){
+      if(!TERM_RE)TERM_RE=buildTermRe();
+      if(!TERM_RE||!root)return;
+      var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null,false);
+      var tns=[]; var tn;
+      while(tn=walker.nextNode()){
+        if(!tn.nodeValue||!tn.nodeValue.trim())continue;
+        if(tn.parentNode&&tn.parentNode.nodeType===1&&tn.parentNode.closest&&tn.parentNode.closest('.wxq-term'))continue;
+        if(tn.parentNode&&tn.parentNode.closest&&tn.parentNode.closest('#wxqTip'))continue;
+        tns.push(tn);
+      }
+      tns.forEach(function(t){
+        var txt=t.nodeValue;
+        TERM_RE.lastIndex=0;
+        if(!TERM_RE.test(txt))return;
+        TERM_RE.lastIndex=0;
+        var html=txt.replace(TERM_RE,function(m){return '<span class="wxq-term" data-k="'+esc(m)+'">'+esc(m)+'</span>';});
+        if(html===txt)return;
+        var sp=document.createElement('span'); sp.innerHTML=html;
+        if(t.parentNode)t.parentNode.replaceChild(sp,t);
+      });
+    }
+    var tip=document.createElement('div'); tip.id='wxqTip'; document.body.appendChild(tip);
+    function tipHTML(en){
+      var img = en.img ? '<img class="tip-img" src="'+en.img+'" alt="'+esc(en.name)+'" onerror="this.style.display=\'none\'">' : '<div class="tip-grad">'+esc(en.name.slice(0,1))+'</div>';
+      var badge='';
+      if(en.quality)badge+=qBadge(en.quality);
+      if(en.faction)badge+='<span class="badge">'+esc(en.faction)+'</span>';
+      var sub=en.sub?'<div class="tip-sub">'+esc(en.sub)+'</div>':'';
+      return '<div class="tip-head">'+img+'<div class="tip-meta"><div class="tip-name">'+esc(en.name)+'</div>'+sub+(badge?'<div class="tip-badges">'+badge+'</div>':'')+'</div></div>'+(en.desc?'<div class="desc-box">'+fmt(en.desc)+'</div>':'');
+    }
+    function showTip(el){
+      var name=el.getAttribute('data-k'); var en=REG[name]; if(!en)return;
+      tip.innerHTML=tipHTML(en);
+      tip.style.display='block';
+      var r=el.getBoundingClientRect();
+      var tw=tip.offsetWidth, th=tip.offsetHeight;
+      var vw=window.innerWidth, vh=window.innerHeight;
+      var left=r.left+r.width/2-tw/2;
+      left=Math.max(8,Math.min(left,vw-tw-8));
+      var top=r.top-th-8;
+      if(top<8)top=r.bottom+8;
+      tip.style.left=Math.round(left)+'px';
+      tip.style.top=Math.round(top)+'px';
+    }
+    function hideTip(){tip.style.display='none';}
+    // 只在真正支持悬停的设备上绑 hover：触屏端浏览器会补发 mouseover/mouseout，
+    // 会让「点一下」弹出的浮层立刻被 mouseout 收走，所以触屏端只走 click。
+    var CANHOVER=window.matchMedia?window.matchMedia('(hover: hover)').matches:true;
+    if(CANHOVER){
+      grid.addEventListener('mouseover',function(e){var t=e.target.closest&&e.target.closest('.wxq-term');if(t)showTip(t);});
+      grid.addEventListener('mouseout',function(e){var t=e.target.closest&&e.target.closest('.wxq-term');if(t&&!(e.relatedTarget&&t.contains(e.relatedTarget)))hideTip();});
+    }
+    buildRegistry();
+
     // events
     document.getElementById('tabs').addEventListener('click',function(e){
       var b=e.target.closest('.tab');if(!b)return;
@@ -898,6 +1009,8 @@
     document.getElementById('fac').addEventListener('change',function(){state.fac=this.value;render();});
     document.getElementById('qual').addEventListener('change',function(){state.qual=this.value;render();});
     grid.addEventListener('click',function(e){
+      hideTip();
+      var wt=e.target.closest('.wxq-term'); if(wt){ showTip(wt); return; }
       var gc=e.target.closest('.gochain[data-preset]');
       if(gc){if(window.WXQ_CHAIN)window.WXQ_CHAIN.openPreset(+gc.getAttribute('data-preset'));return;}
       var f=e.target.closest('.ccard');if(f){if(f.dataset.p)return openPlayer(f.dataset.p);if(f.dataset.type)return openCard(f.dataset.type,+f.dataset.id);}
