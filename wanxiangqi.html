@@ -721,7 +721,10 @@
         if(l.rhythm)s+='<div class="lu-row"><span class="lu-k">节奏</span><span style="font-size:13px;color:var(--ink-soft)">'+esc(l.rhythm)+'</span></div>';
         if(l.position)s+='<div class="lu-row"><span class="lu-k">站位</span><span style="font-size:13px;color:var(--ink-soft)">'+esc(l.position)+'</span></div>';
         if(l.mech)s+='<div class="lu-tx">'+esc(l.mech)+'</div>';
+        if(l.ops&&l.ops.length){l.ops.forEach(function(o){s+='<div class="lu-tx"><b style="color:var(--ink)">'+esc(o.t)+'</b> · '+esc(o.x)+'</div>';});}
+        if(l.pick)s+='<div class="lu-tx"><b style="color:var(--ink)">英雄选择</b> · '+esc(l.pick)+'</div>';
         if(l.equip)s+='<div class="lu-eq"><b style="color:var(--ink)">装备</b> · '+esc(l.equip)+'</div>';
+        if(l.build)s+='<div class="lu-eq"><b style="color:var(--ink)">出装详解</b> · '+esc(l.build)+'</div>';
         return s+'</div>';
       }).join('')+'</section>';
 
