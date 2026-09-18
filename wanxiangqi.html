@@ -6,7 +6,7 @@
 <title>王者万象棋 · 图鉴与攻略 | 王者荣耀攻略总集</title>
 <meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
-<meta name="description" content="王者万象棋全图鉴 + 保姆级攻略：18 位棋手、85 英雄牌、98 效果牌、73 装备牌、255 天赋牌，真实卡面 + 官方数值；攻略含新手开局三选一、核心机制与六大系统、12 个词条详解、12 组英雄搭配联动、T0/T0.5/T1 阵容推荐、分职业出装、六大流派详解与 18 棋手逐人攻略。">
+<meta name="description" content="王者万象棋全图鉴 + 保姆级攻略 + 官方推荐库主播作业：18 位棋手、85 英雄牌、真实卡面；攻略含词条/阵容/出装，作业页可复制阵容码并查看官方棋盘摆法。">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -97,6 +97,7 @@
   .modal.open{display:block;}
   .modal-box{position:relative;width:min(600px,96vw);max-height:90vh;margin:0 auto;background:var(--paper);border-radius:18px;
     box-shadow:var(--shadow-lift);overflow:hidden;display:flex;flex-direction:column;animation:pop .18s ease;}
+  .modal-box.wide{width:min(760px,96vw);}
   @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.99);}to{opacity:1;transform:none;}}
   .m-head{position:sticky;top:0;display:flex;align-items:center;gap:13px;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--paper);z-index:2;}
   .m-head .m-thumb{width:52px;height:52px;border-radius:12px;object-fit:cover;background:var(--paper-2);border:1px solid var(--line);flex:none;}
@@ -450,6 +451,64 @@
     .preset{min-height:44px;padding:10px 12px;}
     .chj{min-height:34px;}
   }
+  /* ===== 作业 tab · 官方推荐库 ===== */
+  .tab.jtab{color:var(--gold);font-weight:600;}
+  .tab.jtab.active{color:var(--ink);}
+  .jobs-root{display:block;}
+  .jobs-head{border:1px solid var(--line);border-radius:16px;padding:18px 20px;background:var(--card);margin:0 0 14px;}
+  .jbar{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+  .jbar-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .jchip{border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-family:inherit;cursor:pointer;min-height:36px;line-height:1;}
+  .jchip.on{background:var(--card);color:var(--ink);border-color:var(--celadon-soft);font-weight:600;box-shadow:var(--shadow);}
+  .jlord{margin-left:auto;}
+  .jgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  .jcard{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:15px 16px;cursor:pointer;transition:.16s;text-align:left;}
+  .jcard:hover{border-color:var(--celadon-soft);transform:translateY(-2px);box-shadow:var(--shadow-lift);}
+  .jcard-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;}
+  .jtag{font-size:11px;color:#fff;border-radius:6px;padding:1px 8px;}
+  .jtag.hot{background:var(--cinnabar);} .jtag.god{background:var(--gold);} .jtag.beg{background:var(--celadon);}
+  .jcard-use,.jcard-sc{font-size:12px;color:var(--ink-soft);margin-left:auto;}
+  .jcard-sc{margin-left:0;color:var(--gold);}
+  .jcard-nm{font-family:var(--font-kai);font-size:18px;font-weight:700;color:var(--ink);letter-spacing:.03em;}
+  .jcard-au{font-size:12.5px;color:var(--ink-soft);margin:4px 0 8px;}
+  .jcard-br{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:8px;}
+  .jpager{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 4px;}
+  .jp-n{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .jbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;
+    font-size:13.5px;font-family:inherit;cursor:pointer;min-height:40px;}
+  .jbtn.pri{background:var(--celadon-deep);color:#fff;border-color:transparent;}
+  .jact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;}
+  .jcode{font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;}
+  .jhead-mark{width:52px;height:52px;border-radius:12px;flex:none;background:linear-gradient(140deg,var(--gold),var(--cinnabar));
+    color:#fff;font-family:var(--font-kai);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .jboard-wrap{display:flex;gap:10px;align-items:stretch;margin:8px 0 10px;}
+  .jboard-lab{display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:var(--ink-soft);padding:6px 0;flex:none;width:2.2em;}
+  .jboard{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .jrow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+  .jcell{aspect-ratio:1;border:1px dashed var(--line);border-radius:9px;background:var(--paper-2);min-height:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;gap:2px;}
+  button.jcell{font-family:inherit;cursor:pointer;}
+  .jcell.filled{border-style:solid;background:var(--card);}
+  .jcell img{width:72%;height:auto;border-radius:6px;display:block;}
+  .jcell .jph{display:none;width:72%;aspect-ratio:1;border-radius:6px;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));
+    color:#fff;font-family:var(--font-kai);font-size:16px;font-weight:700;align-items:center;justify-content:center;}
+  .jcell .jcn{font-size:10px;color:var(--ink);line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .jleg,.jpos{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin:0 0 8px;}
+  .jops{margin:6px 0 10px;}
+  .jop{padding:8px 0;border-bottom:1px dashed var(--line);}
+  .jop:last-child{border-bottom:none;}
+  .jop-r{font-size:12px;color:var(--celadon-deep);font-weight:600;}
+  .jop-d{font-size:13px;color:var(--ink-soft);line-height:1.72;margin-top:3px;}
+  [data-theme="dark"] .jcard,[data-theme="dark"] .jobs-head,[data-theme="dark"] .jcell.filled{background:var(--card);}
+  @media (max-width:640px){
+    .jgrid{grid-template-columns:1fr;}
+    .jcell .jcn{font-size:9px;}
+    .jlord{margin-left:0;width:100%;}
+    .jbtn{min-height:44px;}
+    .jchip{min-height:40px;}
+  }
+
   /* ===== 词条悬停浮层 ===== */
   .wxq-term{cursor:help;border-bottom:1px dotted var(--celadon);color:var(--ink);transition:background .12s;padding:0 1px;border-radius:3px;}
   .wxq-term:hover{background:var(--celadon-soft);}
@@ -484,7 +543,7 @@
       <div class="hero-card">
         <p class="kicker">WÀNXIÀNGQÍ · 万象棋局</p>
         <h1>王者<span class="accent">万象棋</span>图鉴与攻略</h1>
-        <p class="sub">收录官方公开数据的全部棋手与卡牌（真实卡面 + 技能 / 数值 / 阵营流派），并附<b>保姆级攻略</b>：新手开局三选一、核心机制与六大系统、12 个词条详解、<b>12 组英雄搭配联动</b>、T0/T0.5/T1 阵容推荐、分职业出装、六大流派逐条解析、18 棋手逐人打法。点开任意一张卡查看详情，链接可分享直达。</p>
+        <p class="sub">收录官方公开数据的全部棋手与卡牌（真实卡面 + 技能 / 数值 / 阵营流派），并附<b>保姆级攻略</b>与<b>主播作业</b>：官网推荐库可复制阵容码、看官方棋盘摆法。点开任意一张卡查看详情，链接可分享直达。</p>
         <div class="chips" id="heroChips"></div>
       </div>
     </section>
@@ -499,6 +558,7 @@
           <button class="tab" data-type="talent">天赋牌</button>
         <button class="tab" data-type="faction">流派</button>
         <button class="tab ctab" data-type="chain">连锁</button>
+        <button class="tab jtab" data-type="jobs">作业</button>
         <button class="tab gtab" data-type="guide">攻略 ★</button>
         </div>
         <input class="search" id="q" placeholder="搜索名称…" autocomplete="off">
@@ -511,8 +571,8 @@
     <div class="grid" id="grid"></div>
 
     <div class="foot">
-      数据来源：<b>王者万象棋官方</b>（wxq.qq.com 公开数据快照）· 抓取于 <b id="capDate"></b><br>
-      卡面与数值均来自官方公开数据；「流派」对应游戏内阵营体系。本页为静态图鉴，随官方更新另行同步。
+      数据来源：<b>王者万象棋官方</b>（wxq.qq.com 公开数据快照 + 阵容推荐库）· 抓取于 <b id="capDate"></b><br>
+      卡面与数值均来自官方公开数据；作业页阵容码可导入游戏。本页为静态图鉴，随官方更新另行同步。
     </div>
   </div>
 
@@ -520,6 +580,8 @@
 
 <script src="wanxiangqi-data.js"></script>
 <script src="wanxiangqi-guide.js"></script>
+<script src="wanxiangqi-lineups.js"></script>
+<script src="wanxiangqi-jobs.js"></script>
 <!-- 连锁：B 规则层 → C 引擎层 → D 界面层，顺序不能换（后者依赖前者） -->
 <script src="wanxiangqi-rules.js"></script>
 <script src="wanxiangqi-engine.js"></script>
@@ -552,6 +614,9 @@
       heroChips.push('攻略 '+GUIDE.lineups.length+' 套阵容');
       if(GUIDE.combos) heroChips.push(GUIDE.combos.list.length+' 组搭配');
       if(GUIDE.keywords) heroChips.push(GUIDE.keywords.list.length+' 个词条');
+    }
+    if(window.WXQ_JOBS&&WXQ_JOBS.meta&&WXQ_JOBS.meta.counts){
+      heroChips.push('作业 '+WXQ_JOBS.meta.counts.total+' 套');
     }
     document.getElementById('heroChips').innerHTML=heroChips.map(function(s){return '<span class="chip">'+s+'</span>';}).join('');
 
@@ -594,10 +659,19 @@
     var grid=document.getElementById('grid');
     function render(){
       var isGuide=state.type==='guide';
-      document.getElementById('q').style.display = (state.type==='faction'||isGuide)?'none':'block';
-      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isGuide)?'none':'inline-block';
-      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isGuide)?'none':'inline-block';
+      var isJobs=state.type==='jobs';
+      var qEl=document.getElementById('q');
+      qEl.style.display = (state.type==='faction'||isGuide)?'none':'block';
+      qEl.placeholder = isJobs ? '搜索阵容 / 作者 / 英雄 / 棋手…' : '搜索名称…';
+      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isGuide||isJobs)?'none':'inline-block';
+      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isGuide||isJobs)?'none':'inline-block';
       if(isGuide) return renderGuide();
+      if(isJobs){
+        if(window.WXQ_JOBS_UI) return window.WXQ_JOBS_UI.render(grid,state);
+        grid.className='jobs-root';
+        grid.innerHTML='<div class="empty">作业模块没加载出来</div>';
+        return;
+      }
       if(state.type==='chain'){
         if(window.WXQ_CHAIN) return window.WXQ_CHAIN.render(grid,state);
         grid.className='chain-root';
@@ -788,20 +862,22 @@
       var top=mstack[mstack.length-1];
       if(top){
         modalBox.innerHTML=top.html;
+        modalBox.classList.toggle('wide', !!top.wide);
         modal.classList.add('open');document.body.style.overflow='hidden';
       }else{
         modalBox.innerHTML='';
+        modalBox.classList.remove('wide');
         modal.classList.remove('open');document.body.style.overflow='';
       }
     }
-    function openModal(html,hash){
-      mstack.push({html:html,hash:hash||''});
+    function openModal(html,hash,opt){
+      mstack.push({html:html,hash:hash||'',wide:!!(opt&&opt.wide)});
       paintModal();
       try{history.pushState({wxq:mstack.length},'',hash||location.pathname+location.search);}catch(e){}
     }
-    // 回退后地址栏可能残留 #p-/ #c-/ #f-，清掉它，免得刷新时又弹出弹窗
+    // 回退后地址栏可能残留 #p-/ #c-/ #f-/ #j-，清掉它，免得刷新时又弹出弹窗
     function cleanModalHash(){
-      if(/^#(p|c|f)-/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+      if(/^#(p|c|f|j)-/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
     }
     // 点 × / 返回 / Esc / 点遮罩：统一交给系统回退处理，保证和手势返回行为一致
     function closeModal(){
@@ -820,6 +896,7 @@
     // 而 .mini 只出现在弹窗里，导致「阵营成员」看着可点其实没反应）
     modal.addEventListener('click',function(e){
       if(e.target===modal)return closeModal();
+      if(window.WXQ_JOBS_UI&&WXQ_JOBS_UI.onModalClick(e))return;
       var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
     });
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
@@ -894,11 +971,15 @@
       openModal(html,'#f-'+encodeURIComponent(name));
     }
 
+    function closeSilent(){
+      mstack.length=0;paintModal();
+      try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+    }
     window.__wxq={close:closeModal, openPlayer:openPlayer, openCard:openCard, openFaction:openFaction};
     // 连锁 tab（wanxiangqi-chain.js）用的桥：它只负责画，通用工具从这儿拿，
     // 避免两个文件各写一套 esc / fmt 导致高亮不一致。
     window.__wxqUI={
-      esc:esc, fmt:fmt, qBadge:qBadge, openCard:openCard, openPlayer:openPlayer,
+      esc:esc, fmt:fmt, qBadge:qBadge, openCard:openCard, openPlayer:openPlayer, openModal:openModal, closeSilent:closeSilent,
       state:state, TYPE:TYPE, TYPE_LABEL:TYPE_LABEL,
       PLAYERS:PLAYERS, HEROES:HEROES, EFFECTS:EFFECTS
     };
@@ -1013,15 +1094,32 @@
       var wt=e.target.closest('.wxq-term'); if(wt){ showTip(wt); return; }
       var gc=e.target.closest('.gochain[data-preset]');
       if(gc){if(window.WXQ_CHAIN)window.WXQ_CHAIN.openPreset(+gc.getAttribute('data-preset'));return;}
+      if(window.WXQ_JOBS_UI){
+        var jr=WXQ_JOBS_UI.onGridClick(e);
+        if(jr==='rerender'){render();return;}
+        if(jr)return;
+      }
       var f=e.target.closest('.ccard');if(f){if(f.dataset.p)return openPlayer(f.dataset.p);if(f.dataset.type)return openCard(f.dataset.type,+f.dataset.id);}
       var fc=e.target.closest('.fcard');if(fc)return openFaction(fc.dataset.f);
       var gf=e.target.closest('.facd');if(gf&&gf.dataset.guideFac)return openFaction(gf.dataset.guideFac);
       var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
     });
+    grid.addEventListener('change',function(e){
+      if(e.target&&e.target.getAttribute&&e.target.getAttribute('data-job-lord')&&window.WXQ_JOBS_UI){
+        WXQ_JOBS_UI.onLordChange(e.target);render();
+      }
+    });
 
     function route(h){
       if(h===undefined)h=location.hash;
       if(h==='#g'||h==='#guide'){var gt=document.querySelector('.tab[data-type="guide"]');if(gt)gt.click();return;}
+      if(h==='#j'||h==='#jobs'){var jt=document.querySelector('.tab[data-type="jobs"]');if(jt)jt.click();return;}
+      if(h.indexOf('#j-')===0){
+        var jt2=document.querySelector('.tab[data-type="jobs"]');if(jt2)jt2.click();
+        var jk=decodeURIComponent(h.slice(3));
+        if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.open(jk);
+        return;
+      }
       if(h.indexOf('#p-')===0)return openPlayer(decodeURIComponent(h.slice(3)));
       if(h.indexOf('#c-')===0){var s=h.slice(3).split('-');var id=+s.pop();return openCard(s.join('-'),id);}
       if(h.indexOf('#f-')===0)return openFaction(decodeURIComponent(h.slice(3)));
@@ -1031,7 +1129,7 @@
     var _initHash=location.hash;
     // 深链进入弹窗时，先把基础 URL 上的 hash 抹掉，之后弹窗再压入属于自己的历史记录。
     // 于是「返回 / 左滑」只关弹窗，不会把用户带出本站。
-    if(/^#(p|c|f)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+    if(/^#(p|c|f|j)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
     route(_initHash);
   })();
   </script>

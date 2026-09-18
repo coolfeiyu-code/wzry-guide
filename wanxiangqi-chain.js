@@ -557,8 +557,42 @@
 
   function openPreset(i) {
     loadPreset(i);
+    goSandbox();
+  }
+
+  function loadHeroNames(names, effectNames) {
+    var ids = [], skipped = [];
+    (names || []).forEach(function (n) {
+      var id = heroIdByName(n);
+      if (id == null) skipped.push(n); else ids.push(id);
+    });
+    sb.heroes = new Array(MAX_HERO_SLOTS).fill(null);
+    var over = 0;
+    ids.forEach(function (id, k) {
+      if (k < MAX_HERO_SLOTS) sb.heroes[k] = id; else over++;
+    });
+    sb.effects = new Array(MAX_EFFECT_SLOTS).fill(null);
+    if (effectNames && effectNames.length) {
+      var E = global.WXQ_EFFECTS || [];
+      var ei = 0;
+      effectNames.forEach(function (n) {
+        if (ei >= MAX_EFFECT_SLOTS) return;
+        for (var i = 0; i < E.length; i++) {
+          if (E[i].name === n) { sb.effects[ei++] = E[i].id; break; }
+        }
+      });
+    }
+    var hint = [];
+    if (skipped.length) hint.push('没能在英雄池里找到：' + skipped.join('、'));
+    if (over) hint.push('还有 ' + over + ' 张没上（本版只有 ' + MAX_HERO_SLOTS + ' 个英雄槽）');
+    sb.presetHint.jobs = hint.join('；');
+    sb.picker = null;
+    sim();
+  }
+
+  function goSandbox() {
     var tab = document.querySelector('.tab[data-type="chain"]');
-    if (tab) tab.click();          // 切 tab 会触发 render()，此时 sb 已经填好
+    if (tab) tab.click();
     else rerender();
     setTimeout(function () {
       var wrap = document.getElementById('sbWrap');
@@ -568,9 +602,15 @@
     }, 30);
   }
 
+  function openHeroNames(names, effectNames) {
+    loadHeroNames(names, effectNames);
+    goSandbox();
+  }
+
   global.WXQ_CHAIN = {
     render: render,
     openPreset: openPreset,
+    openHeroNames: openHeroNames,
     rerender: rerender,
     state: sb,
     diagnostics: function () {
