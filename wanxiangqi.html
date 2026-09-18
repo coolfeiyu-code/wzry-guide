@@ -6,7 +6,7 @@
 <title>王者万象棋 · 图鉴与攻略 | 王者荣耀攻略总集</title>
 <meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
-<meta name="description" content="王者万象棋全图鉴 + 官方阵容库：19 位棋手（含阿离）、85 英雄牌；阵容页可复制阵容码并查看官方棋盘摆法。">
+<meta name="description" content="王者万象棋全图鉴 + 官方阵容库：19 位棋手（含阿离）、85 英雄牌；阵容可复制阵容码、看棋盘摆法，并打开词条连锁。">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -484,6 +484,10 @@
   .jav.eq img,.jav.eq i{border-radius:7px;}
   .jback{border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:13.5px;
     cursor:pointer;padding:0 0 12px;min-height:40px;}
+  .jdoc-acts{display:flex;flex-wrap:wrap;gap:8px;}
+  .sb-from{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;
+    border:1px solid var(--line);border-radius:12px;background:var(--paper-2);font-size:13.5px;color:var(--ink);}
+  .sb-from b{font-family:var(--font-kai);}
   .jdoc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 16px;}
   .jdoc-tit{flex:1 1 180px;}
   .jdoc-tit h1{margin:0;font-family:var(--font-kai);font-size:28px;font-weight:700;letter-spacing:.04em;color:var(--ink);}
@@ -577,8 +581,8 @@
     <section class="hero">
       <div class="hero-card">
         <p class="kicker">WÀNXIÀNGQÍ · 万象棋局</p>
-        <h1>王者<span class="accent">万象棋</span>图鉴与攻略</h1>
-        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌图鉴。点开一套阵容即可抄作业。</p>
+        <h1>王者<span class="accent">万象棋</span>图鉴</h1>
+        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌图鉴。点开一套可抄作业，也可看这套的词条连锁。</p>
         <div class="chips" id="heroChips"></div>
       </div>
     </section>
@@ -592,7 +596,6 @@
           <button class="tab" data-type="effect">效果</button>
           <button class="tab" data-type="equip">装备</button>
           <button class="tab" data-type="talent">天赋</button>
-          <button class="tab gtab" data-type="guide">攻略</button>
           <button class="tab ctab" data-type="chain">连锁</button>
         </div>
         <input class="search" id="q" placeholder="搜索名称…" autocomplete="off">
@@ -613,7 +616,6 @@
   <div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
 
 <script src="wanxiangqi-data.js"></script>
-<script src="wanxiangqi-guide.js"></script>
 <script src="wanxiangqi-lineups.js"></script>
 <script src="wanxiangqi-jobs.js"></script>
 <!-- 连锁：B 规则层 → C 引擎层 → D 界面层，顺序不能换（后者依赖前者） -->
@@ -624,8 +626,7 @@
   (function(){
     var M=window.WXQ_META, FACS=window.WXQ_FACTIONS,
         PLAYERS=window.WXQ_PLAYERS, HEROES=window.WXQ_HEROES,
-        EFFECTS=window.WXQ_EFFECTS, EQUIPS=window.WXQ_EQUIPS, TALENTS=window.WXQ_TALENTS,
-        GUIDE=window.WXQ_GUIDE;
+        EFFECTS=window.WXQ_EFFECTS, EQUIPS=window.WXQ_EQUIPS, TALENTS=window.WXQ_TALENTS;
     var TYPE={hero:HEROES, effect:EFFECTS, equip:EQUIPS, talent:TALENTS};
     var TYPE_LABEL={hero:'英雄', effect:'效果', equip:'装备', talent:'天赋'};
     var QCOLOR={1:'#8a9a8f',2:'#6E8B7B',3:'#5C8AA0',4:'#B6904E',5:'#C77B45',6:'#BE5A45'};
@@ -687,14 +688,12 @@
 
     var grid=document.getElementById('grid');
     function render(){
-      var isGuide=state.type==='guide';
       var isJobs=state.type==='jobs';
       var qEl=document.getElementById('q');
-      qEl.style.display = (state.type==='faction'||isGuide)?'none':'block';
+      qEl.style.display = (state.type==='faction')?'none':'block';
       qEl.placeholder = isJobs ? '搜索阵容 / 作者 / 英雄 / 棋手…' : '搜索名称…';
-      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isGuide||isJobs)?'none':'inline-block';
-      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isGuide||isJobs)?'none':'inline-block';
-      if(isGuide) return renderGuide();
+      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isJobs)?'none':'inline-block';
+      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isJobs)?'none':'inline-block';
       if(isJobs){
         if(window.WXQ_JOBS_UI) return window.WXQ_JOBS_UI.render(grid,state);
         grid.className='jobs-root';
@@ -762,108 +761,6 @@
       setTimeout(function(){grid.style.gridTemplateColumns='';},0);
     }
 
-    function renderGuide(){
-      grid.className='guide-root';grid.style.gridTemplateColumns='';
-      if(!GUIDE){grid.innerHTML='<div class="empty">攻略数据未加载</div>';return;}
-      document.getElementById('count').textContent='保姆级攻略';
-      var h='';
-      var chips=function(arr,cls){return (arr||[]).map(function(x){return '<span class="hchip'+(cls||'')+'">'+esc(x)+'</span>';}).join('');};
-
-      // 01 新手开局
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">01</span>新手开局 · 棋手三选一<span class="gh">'+esc(GUIDE.beginner.sub)+'</span></h2>';
-      h+='<div class="gnote">'+esc(GUIDE.beginner.order)+'</div>';
-      h+='<div class="bp-grid">'+GUIDE.beginner.picks.map(function(p){
-        var warn=(p.tag==='暂不推荐')?' warn':'';
-        return '<div class="bp-card"><div class="bp-nm">'+esc(p.name)+'<span class="bp-tag'+warn+'">'+esc(p.tag)+'</span></div>'
-          +'<div class="bp-rk">上手难度 '+esc(p.rank)+'</div><div class="bp-rs">'+esc(p.reason)+'</div></div>';
-      }).join('')+'</div></section>';
-
-      // 02 核心机制
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">02</span>核心机制 · 通用运营<span class="gh">所有棋手通用</span></h2>';
-      h+='<ul class="glist">'+GUIDE.mechanics.core.map(function(t){return '<li>'+esc(t)+'</li>';}).join('')+'</ul>';
-      if(GUIDE.mechanics.systems){
-        h+='<div class="gsec-h" style="font-size:15px;border:none;padding:16px 0 8px;">六大系统详解</div>';
-        h+='<div class="sys-grid">'+GUIDE.mechanics.systems.map(function(s){
-          return '<div class="sys-i"><div class="sy-n">'+esc(s.name)+'</div><div class="sy-t">'+esc(s.text)+'</div></div>';
-        }).join('')+'</div>';
-      }
-      h+='<div class="gsec-h" style="font-size:15px;border:none;padding:18px 0 2px;">运营节奏</div>';
-      h+='<div class="tl">'+GUIDE.mechanics.rhythm.map(function(r){return '<div class="tl-i"><div class="tl-p">'+esc(r.phase)+'</div><div class="tl-t">'+esc(r.text)+'</div></div>';}).join('')+'</div>';
-      h+='<div class="gnote" style="border-left-color:var(--cinnabar)"><b>新手三大死因：</b>'+GUIDE.mechanics.deaths.map(function(d,i){return (i+1)+'、'+esc(d);}).join('；')+'</div>';
-      h+='<div class="gmotto">'+esc(GUIDE.mechanics.motto)+'</div></section>';
-
-      // 03 词条详解
-      if(GUIDE.keywords){
-        var KW=GUIDE.keywords;
-        h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">03</span>'+esc(KW.title)+'<span class="gh">共 '+KW.list.length+' 个词条</span></h2>';
-        h+='<div class="gnote">'+esc(KW.sub)+'<br>'+esc(KW.note)+'</div>';
-        h+=KW.list.map(function(k){
-          var s='<div class="kw-wrap"><div class="kw-top"><span class="kw-nm">'+esc(k.key)+'</span>';
-          if(k.hits)s+='<span class="kw-hit">卡面出现 '+k.hits+' 次</span>';
-          s+='</div><div class="kw-ds">'+esc(k.desc)+'</div>';
-          if(k.ex&&k.ex.length){
-            s+='<div class="kw-ex">'+k.ex.map(function(e){
-              return '<div class="kwe"><b>'+esc(e.hero||e.effect||'')+'</b> · '+esc(e.text)+'</div>';
-            }).join('')+'</div>';
-          }
-          if(k.tip)s+='<div class="kw-tip">搭配要点：'+esc(k.tip)+'</div>';
-          return s+'</div>';
-        }).join('')+'</section>';
-      }
-
-      // 04 英雄搭配
-      if(GUIDE.combos){
-        var CB=GUIDE.combos;
-        h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">04</span>'+esc(CB.title)+'<span class="gh">'+esc(CB.sub)+'</span></h2>';
-        h+=CB.list.map(function(c,ci){
-          var tc=c.tier==='T0'?'t0':(c.tier==='T0.5'?'t05':'t1');
-          var s='<div class="cmb"><div class="cm-top"><span class="lu-tier '+tc+'">'+esc(c.tier)+'</span><span class="cm-nm">'+esc(c.name)+'</span><span class="cm-kw">'+esc(c.keyword)+'</span></div>';
-          s+='<div class="cm-row"><span class="cm-k">搭配英雄</span><span class="chips">'+chips(c.partners)+'</span></div>';
-          s+='<div class="cm-tx"><b>词条链条</b> · '+esc(c.chain)+'</div>';
-          s+='<div class="cm-tx"><b>收益</b> · '+esc(c.gain)+'</div>';
-          if(c.risk)s+='<div class="cm-risk"><b style="color:var(--ink)">风险点</b> · '+esc(c.risk)+'</div>';
-          // 不复制一份搭配文到连锁 tab，只把这几张牌送进去
-          s+='<div class="cm-go"><button class="gochain" data-preset="'+ci+'">在连锁里打开 →</button></div>';
-          return s+'</div>';
-        }).join('')+'</section>';
-      }
-
-      h+='<div class="gnote">完整阵容、站位和运营节奏见顶部「阵容」栏目（官方推荐库）。</div>';
-
-      // 05 出装
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">05</span>出装思路 · 按定位<span class="gh">'+GUIDE.equip.roles.length+' 类定位</span></h2>';
-      h+='<div class="gnote">'+esc(GUIDE.equip.rule)+'</div>';
-      h+=GUIDE.equip.roles.map(function(r){
-        var s='<div class="eq-row"><div class="eq-role">'+esc(r.role)+'<span class="eq-hs">'+(r.heroes||[]).map(esc).join(' / ')+'</span></div>';
-        s+='<div class="eq-std"><span class="hchip" style="margin-right:6px">标配</span>'+(r.std||[]).map(esc).join(' ＋ ')+'</div>';
-        if(r.swap)s+='<div class="eq-swap"><b style="color:var(--ink)">替换</b> · '+esc(r.swap)+'</div>';
-        if(r.note)s+='<div class="eq-note">'+esc(r.note)+'</div>';
-        return s+'</div>';
-      }).join('')+'</section>';
-
-      // 06 六大阵营详解
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">06</span>六大阵营 · 流派详解<span class="gh">点开可看完整流派解析</span></h2>';
-      h+='<div class="gnote">阵营不是「强弱标签」，而是<b>词条产地</b>——同一个阵营的英雄共享同一套词条，所以搭配才成立。下面按「机制 → 思路 → 怎么玩 → 强势期 → 克制」逐条拆解。</div>';
-      h+=GUIDE.factions.map(function(f){
-        var s='<div class="facd" data-guide-fac="'+esc(f.name)+'"><div class="fd-top"><span class="fd-nm">'+esc(f.name)+'</span>';
-        if(f.count)s+='<span class="fd-ct">'+f.count+' 名英雄</span>';
-        if(f.difficulty)s+='<span class="fd-df">'+esc(f.difficulty)+'</span>';
-        s+='</div>';
-        s+='<div class="fd-row"><b>机制</b> · '+esc(f.mech)+'　<b>强度</b> · '+esc(f.strength)+'</div>';
-        if(f.idea)s+='<div class="fd-row"><b>核心思路</b> · '+esc(f.idea)+'</div>';
-        if(f.how)s+='<div class="fd-row"><b>怎么玩</b> · '+esc(f.how)+'</div>';
-        if(f.key)s+='<div class="fd-row"><b>关键英雄</b> · '+esc(f.key)+'</div>';
-        if(f.spike)s+='<div class="fd-row"><b>强势期</b> · '+esc(f.spike)+'</div>';
-        if(f.counter)s+='<div class="fd-row"><b>克制关系</b> · '+esc(f.counter)+'</div>';
-        s+='<div class="fd-row"><b>代表英雄</b> · <span class="chips">'+chips(f.cores)+chips(f.lineups,' p')+'</span></div>';
-        return s+'</div>';
-      }).join('')+'</section>';
-
-      h+='<div class="foot" style="margin-top:8px">攻略来源：'+esc((GUIDE.meta.sources||[]).join(' ｜ '))+' · 整理于 '+esc(GUIDE.meta.capturedAt)+'<br>'+esc(GUIDE.meta.note)+'</div>';
-      grid.innerHTML=h;
-      linkifyTerms(grid);
-    }
-
     // modal
     var modal=document.getElementById('modal'), modalBox=document.getElementById('modalBox');
     // 弹窗历史栈：每开一层弹窗就压入一条 history 记录。
@@ -919,23 +816,11 @@
         return '<div class="skill"><span class="s-name">'+esc(s.name)+'</span><span class="s-kind">'+esc(s.kind)+'</span>'
           +'<div class="s-desc">'+fmt(s.desc)+'</div></div>';
       }).join('');
-      var g=(GUIDE&&GUIDE.players)?GUIDE.players[name]:null;
-      var ghtml='';
-      if(g){
-        var lu=(g.lineups||[]).map(function(x){return '<span class="hchip p">'+esc(x)+'</span>';}).join('');
-        ghtml='<h4>攻略 · 上手指引 <span class="tag">新</span></h4><div class="pguide">'
-          +'<div class="pg-row"><span class="pg-k">上手难度</span><span><span class="pg-stars">'+esc(g.stars)+'</span> · '+esc(g.diff)+'</span></div>'
-          +'<div class="pg-row"><span class="pg-k">定位</span><span>'+esc(g.role)+'</span></div>'
-          +'<div class="pg-row"><span class="pg-k">技能要点</span><span>'+esc(g.skill)+'</span></div>'
-          +'<div class="pg-row"><span class="pg-k">推荐阵容</span><span class="chips">'+lu+'</span></div>'
-          +'<div class="pg-row"><span class="pg-k">适用分段</span><span>'+esc(g.ranks)+'</span></div>'
-          +'</div>';
-      }
-      var sub='棋手 · 共 '+(p.skills?p.skills.length:0)+' 项能力'+(g?(' · 上手难度 '+g.stars):'');
+      var sub='棋手 · 共 '+(p.skills?p.skills.length:0)+' 项能力';
       var html='<div class="m-head"><img class="m-thumb" src="'+p.icon+'" alt="'+esc(p.name)+'" onerror="this.src=\''+p.portrait+'\'">'
         +'<div><div class="m-tit">'+esc(p.name)+'</div><div class="m-sub">'+esc(sub)+'</div></div>'
         +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
-        +'<div class="m-scroll">'+ghtml+'<h4>技能 / 秘技 / 专属</h4>'+skills+'</div>';
+        +'<div class="m-scroll"><h4>技能 / 秘技 / 专属</h4>'+skills+'</div>';
       openModal(html,'#p-'+encodeURIComponent(name));
     }
 
@@ -959,27 +844,10 @@
       );
       var mini=members.map(function(m){return '<div class="mini" data-type="'+m.t+'" data-id="'+m.c.id+'"><img loading="lazy" src="'+m.c.img+'" alt="'+esc(m.c.name)+'"><div class="mn">'+esc(m.c.name)+'</div></div>';}).join('');
       var dots=[];if(f.heroes)dots.push(f.heroes+' 英雄');if(f.effects)dots.push(f.effects+' 效果');if(f.equips)dots.push(f.equips+' 装备');if(f.talents)dots.push(f.talents+' 天赋');
-      // 攻略侧：流派详解
-      var gf=(GUIDE&&GUIDE.factions)?GUIDE.factions.find(function(x){return x.name===name;}):null;
-      var ghtml='';
-      if(gf){
-        var row=function(k,v){return v?'<div class="pg-row"><span class="pg-k">'+k+'</span><span>'+esc(v)+'</span></div>':'';};
-        ghtml='<h4>流派攻略 · 怎么玩 <span class="tag">新</span></h4><div class="pguide">'
-          +row('上手难度',gf.difficulty)
-          +row('机制',gf.mech)
-          +row('强度定位',gf.strength)
-          +row('核心思路',gf.idea)
-          +row('怎么玩',gf.how)
-          +row('关键英雄',gf.key)
-          +row('强势期',gf.spike)
-          +row('克制关系',gf.counter)
-          +row('细节提醒',gf.tips)
-          +'</div>';
-      }
       var html='<div class="m-head"><div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-kai);font-size:22px;font-weight:700;">'+esc(name.slice(0,1))+'</div>'
         +'<div><div class="m-tit">'+esc(name)+'</div><div class="m-sub">流派 · '+dots.join(' · ')+'</div></div>'
         +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
-        +'<div class="m-scroll">'+ghtml+'<h4>阵营成员 <span class="tag">'+members.length+'</span></h4><div class="m-grid">'+mini+'</div></div>';
+        +'<div class="m-scroll"><h4>阵营成员 <span class="tag">'+members.length+'</span></h4><div class="m-grid">'+mini+'</div></div>';
       openModal(html,'#f-'+encodeURIComponent(name));
     }
 
@@ -1009,23 +877,16 @@
       (EQUIPS||[]).forEach(function(c){ if(c.name&&c.name.length>=2) regAdd(c.name,'equip',c.img,c.desc,c.quality,c.faction,''); });
       (TALENTS||[]).forEach(function(c){ if(c.name&&c.name.length>=2) regAdd(c.name,'talent',c.img,c.desc,c.quality,c.faction,''); });
       (PLAYERS||[]).forEach(function(p){
-        var g=(GUIDE&&GUIDE.players)?GUIDE.players[p.name]:null;
-        var d=(g&&g.skill)?g.skill:(p.skills&&p.skills[0]?p.skills[0].desc:'');
-        var sub=(g&&g.stars)?('上手难度 '+g.stars):'';
-        regAdd(p.name,'player',p.icon,d,'','',sub);
+        var d=(p.skills&&p.skills[0]?p.skills[0].desc:'');
+        regAdd(p.name,'player',p.icon,d,'','','');
       });
       (FACS||[]).forEach(function(f){
-        var gf=(GUIDE&&GUIDE.factions)?GUIDE.factions.find(function(x){return x.name===f.name;}):null;
-        var d=gf?(gf.mech+(gf.idea?'；'+gf.idea:'')):(f.note||'');
         var sub=f.heroes?(f.heroes+' 英雄 · '+(f.effects||0)+' 效果 · '+(f.equips||0)+' 装备 · '+(f.talents||0)+' 天赋'):'';
-        regAdd(f.name,'faction',null,d,'','',sub);
+        regAdd(f.name,'faction',null,f.note||'','','',sub);
       });
-      if(GUIDE&&GUIDE.keywords&&GUIDE.keywords.list){
-        GUIDE.keywords.list.forEach(function(kw){
-          if(!kw||!kw.key)return;
-          var d=kw.desc||'';
-          if(kw.ex&&kw.ex.length){ d+='　示例：'+kw.ex.slice(0,3).map(function(e){return e.hero+'·'+e.text;}).join('；'); }
-          regAdd(kw.key,'keyword',null,d,'','',(kw.hits?('出现 '+kw.hits+' 次'):'词条'));
+      if(window.WXQ_RULES&&WXQ_RULES.keywords&&WXQ_RULES.keywords.order){
+        WXQ_RULES.keywords.order.forEach(function(k){
+          if(k) regAdd(k,'keyword',null,'词条','','','词条');
         });
       }
     }
@@ -1105,8 +966,6 @@
     grid.addEventListener('click',function(e){
       hideTip();
       var wt=e.target.closest('.wxq-term'); if(wt){ showTip(wt); return; }
-      var gc=e.target.closest('.gochain[data-preset]');
-      if(gc){if(window.WXQ_CHAIN)window.WXQ_CHAIN.openPreset(+gc.getAttribute('data-preset'));return;}
       if(window.WXQ_JOBS_UI){
         var jr=WXQ_JOBS_UI.onGridClick(e);
         if(jr==='rerender'){render();return;}
@@ -1129,7 +988,6 @@
         if(window.WXQ_JOBS_UI&&WXQ_JOBS_UI.state.openKey)window.WXQ_JOBS_UI.closeDetail(true);
         return;
       }
-      if(h==='#g'||h==='#guide'){var gt=document.querySelector('.tab[data-type="guide"]');if(gt)gt.click();return;}
       if(h==='#j'||h==='#jobs'){
         var jt=document.querySelector('.tab[data-type="jobs"]');if(jt)jt.click();
         if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.closeDetail(true);

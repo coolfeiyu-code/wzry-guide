@@ -219,7 +219,10 @@
       + ' · ' + wan(L.useNum) + ' 使用'
       + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
       + '</div></div>'
+      + '<div class="jdoc-acts">'
       + '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>'
+      + '<button type="button" class="jbtn" data-job-chain="' + esc(L.key) + '">查看连锁</button>'
+      + '</div>'
       + '</header>'
       + '<div class="jtri">'
       + '<section class="jbox"><h3>玩法介绍</h3><p>' + esc(play) + '</p></section>'
@@ -265,6 +268,14 @@
     var c = heroByName(name);
     var b = ui();
     if (c && b.openCard) b.openCard('hero', c.id);
+  }
+
+  function openChain(key) {
+    var L = find(key);
+    if (!L || !global.WXQ_CHAIN || !global.WXQ_CHAIN.openHeroNames) return;
+    var names = (L.heroes || []).map(function (h) { return h.name; });
+    var fx = (L.effects || []).slice();
+    global.WXQ_CHAIN.openHeroNames(names, fx, { key: L.key, name: L.name });
   }
 
   function copyKey(key, btn) {
@@ -359,6 +370,8 @@
     if (hero) { openHero(hero.getAttribute('data-job-hero')); return 'open'; }
     var cp = t.closest && t.closest('[data-copy-key]');
     if (cp) { copyKey(cp.getAttribute('data-copy-key'), cp); return 'open'; }
+    var ch = t.closest && t.closest('[data-job-chain]');
+    if (ch) { openChain(ch.getAttribute('data-job-chain')); return 'open'; }
     var f = t.closest && t.closest('[data-job-filter]');
     if (f) { js.filter = f.getAttribute('data-job-filter'); js.page = 1; return 'rerender'; }
     var s = t.closest && t.closest('[data-job-sort]');

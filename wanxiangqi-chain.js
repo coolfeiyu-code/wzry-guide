@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  var MAX_HERO_SLOTS = 6;
+  var MAX_HERO_SLOTS = 8;
   var MAX_EFFECT_SLOTS = 4;
 
   /* 沙盒状态：单独存，切 tab / 改筛选都不丢 */
@@ -28,7 +28,7 @@
     effects: new Array(MAX_EFFECT_SLOTS).fill(null),
     kw: [], join: 'or', deriv: [],
     picker: null,          // { kind:'hero'|'effect', slot:n, q:'' }
-    presetHint: {},        // { 组合下标: '提示文字' }
+    source: null,          // { key, name, hint } 从阵容点进来
     last: null, lastBoardKey: ''
   };
 
@@ -187,34 +187,6 @@
    * 分区 2：上场沙盒
    * ------------------------------------------------------------------ */
 
-  function combos() {
-    var G = global.WXQ_GUIDE;
-    return (G && G.combos && G.combos.list) || [];
-  }
-
-  function loadPreset(i) {
-    var list = combos();
-    var c = list[i];
-    if (!c) return;
-    var ids = [], skipped = [];
-    (c.partners || []).forEach(function (n) {
-      var id = heroIdByName(n);
-      if (id == null) skipped.push(n); else ids.push(id);
-    });
-    sb.heroes = new Array(MAX_HERO_SLOTS).fill(null);
-    var over = 0;
-    ids.forEach(function (id, k) {
-      if (k < MAX_HERO_SLOTS) sb.heroes[k] = id; else over++;
-    });
-    sb.effects = new Array(MAX_EFFECT_SLOTS).fill(null);
-    var hint = [];
-    if (skipped.length) hint.push('没能在英雄池里找到：' + skipped.join('、'));
-    if (over) hint.push('还有 ' + over + ' 张没上（本版只有 ' + MAX_HERO_SLOTS + ' 个英雄槽）');
-    sb.presetHint[i] = hint.join('；');
-    sb.picker = null;
-    sim();
-  }
-
   function boardKey() {
     return sb.heroes.filter(Boolean).join(',') + '|' + sb.effects.filter(Boolean).join(',');
   }
@@ -270,21 +242,18 @@
     return h;
   }
 
-  function presetHtml() {
-    var list = combos();
-    if (!list.length) return '';
-    return '<div class="sb-h">载入攻略里的搭配 <span>（不会自动载入，避免一进 tab 就占满）</span></div>' +
-      '<div class="sb-presets">' + list.map(function (c, i) {
-        var tc = c.tier === 'T0' ? 't0' : (c.tier === 'T0.5' ? 't05' : 't1');
-        return '<div class="preset-w"><button class="preset" data-preset="' + i + '">' +
-          '<span class="lu-tier ' + tc + '">' + esc(c.tier) + '</span>' +
-          '<span class="ps-n">' + esc(c.name) + '</span></button>' +
-          (sb.presetHint[i] ? '<div class="preset-hint">' + esc(sb.presetHint[i]) + '</div>' : '') + '</div>';
-      }).join('') + '</div>';
+  function sourceHtml() {
+    if (!sb.source) return '';
+    return '<div class="sb-from">' +
+      '<span>来自阵容 · <b>' + esc(sb.source.name) + '</b></span>' +
+      (sb.source.hint ? '<span class="preset-hint">' + esc(sb.source.hint) + '</span>' : '') +
+      '<button type="button" class="jbtn" data-chain-back="1">返回阵容</button>' +
+      '</div>';
   }
 
   function boardHtml() {
     var h = '<div class="sb-board">';
+    h += sourceHtml();
     h += '<div class="sb-h">上场 · ' + MAX_HERO_SLOTS + ' 个英雄槽 <span>点空槽加牌，点已上的牌移除</span></div>';
     h += '<div class="sb-slots">';
     for (var i = 0; i < MAX_HERO_SLOTS; i++) h += slotHtml('hero', i, sb.heroes[i]);
@@ -294,11 +263,7 @@
     for (var j = 0; j < MAX_EFFECT_SLOTS; j++) h += slotHtml('effect', j, sb.effects[j]);
     h += '</div>';
     h += pickerHtml();
-    h += '<div class="sb-h dim">棋手位 <span>本版灰置，schema 已预留 kind:"playerSkill"</span></div>';
-    h += '<div class="sb-slots one"><button class="slot ghost" disabled>棋手位 · <i>下个版本</i></button></div>';
-    h += presetHtml();
-    h += '<div class="sb-actions"><button class="sbtn" data-sb="clear">清空上场</button>' +
-      '<button class="sbtn" data-sb="demo">一键载入「曹操 ⇄ 甄姬 ⇄ 露娜」</button></div>';
+    h += '<div class="sb-actions"><button class="sbtn" data-sb="clear">清空上场</button></div>';
     h += '</div>';
     return h;
   }
@@ -418,7 +383,7 @@
     var R = global.WXQ_RULES;
     var h = '<div class="chain-head">' +
       '<div class="chain-title">连锁 · 词条推演</div>' +
-      '<div class="chain-sub">按词条筛牌，再把选中的牌摊成一回合的触发序列，看它会不会成环、缺一张断在哪。' +
+      '<div class="chain-sub">从阵容页点「查看连锁」把这套牌摊成一回合触发序列。也可以自己加牌。' +
       '<b>只演算词条，不模拟打架。</b></div>' +
       (R ? '<div class="chain-meta">规则层 schema ' + R.schema + ' · patch ' + esc(R.patch) +
         ' · 手工覆盖 ' + R.manualIds.length + ' 张</div>'
@@ -518,8 +483,13 @@
         sim();
         return refreshBoard();
       }
-      var pre = t.closest('.preset[data-preset]');
-      if (pre) { loadPreset(+pre.getAttribute('data-preset')); return rerender(); }
+      if (t.closest('[data-chain-back]') && sb.source && sb.source.key) {
+        var jobKey = sb.source.key;
+        var jt = document.querySelector('.tab[data-type="jobs"]');
+        if (jt) jt.click();
+        if (global.WXQ_JOBS_UI) global.WXQ_JOBS_UI.open(jobKey, true);
+        return;
+      }
 
       var sbb = t.closest('[data-sb]');
       if (sbb) {
@@ -527,10 +497,8 @@
         if (a === 'clear') {
           sb.heroes = new Array(MAX_HERO_SLOTS).fill(null);
           sb.effects = new Array(MAX_EFFECT_SLOTS).fill(null);
+          sb.source = null;
           sb.picker = null; sim();
-        } else if (a === 'demo') {
-          var idx = combos().findIndex(function (c) { return (c.partners || []).indexOf('曹操') >= 0; });
-          loadPreset(idx >= 0 ? idx : 0);
         }
         return rerender();
       }
@@ -551,16 +519,7 @@
     render(document.getElementById('grid'), st || { q: '', fac: '', qual: '' });
   }
 
-  /* ------------------------------------------------------------------ *
-   * 给攻略 tab 用：从「英雄搭配」直接跳进来
-   * ------------------------------------------------------------------ */
-
-  function openPreset(i) {
-    loadPreset(i);
-    goSandbox();
-  }
-
-  function loadHeroNames(names, effectNames) {
+  function loadHeroNames(names, effectNames, meta) {
     var ids = [], skipped = [];
     (names || []).forEach(function (n) {
       var id = heroIdByName(n);
@@ -585,7 +544,7 @@
     var hint = [];
     if (skipped.length) hint.push('没能在英雄池里找到：' + skipped.join('、'));
     if (over) hint.push('还有 ' + over + ' 张没上（本版只有 ' + MAX_HERO_SLOTS + ' 个英雄槽）');
-    sb.presetHint.jobs = hint.join('；');
+    sb.source = meta ? { key: meta.key, name: meta.name, hint: hint.join('；') } : (hint.length ? { key: '', name: '', hint: hint.join('；') } : null);
     sb.picker = null;
     sim();
   }
@@ -602,14 +561,13 @@
     }, 30);
   }
 
-  function openHeroNames(names, effectNames) {
-    loadHeroNames(names, effectNames);
+  function openHeroNames(names, effectNames, meta) {
+    loadHeroNames(names, effectNames, meta);
     goSandbox();
   }
 
   global.WXQ_CHAIN = {
     render: render,
-    openPreset: openPreset,
     openHeroNames: openHeroNames,
     rerender: rerender,
     state: sb,
