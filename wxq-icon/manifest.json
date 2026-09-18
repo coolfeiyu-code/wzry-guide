@@ -521,6 +521,10 @@
   "复印机": "复印机.png"
  },
  "players": {
+  "阿离": {
+   "portrait": "阿离_portrait.png",
+   "icon": "阿离_icon.png"
+  },
   "嬴律": {
    "portrait": "嬴律_portrait.png",
    "icon": "嬴律_icon.png"
