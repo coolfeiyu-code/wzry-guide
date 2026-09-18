@@ -451,62 +451,97 @@
     .preset{min-height:44px;padding:10px 12px;}
     .chj{min-height:34px;}
   }
-  /* ===== 作业 tab · 官方推荐库 ===== */
+  /* ===== 作业 tab · 官方阵容页 ===== */
   .tab.jtab{color:var(--gold);font-weight:600;}
   .tab.jtab.active{color:var(--ink);}
   .jobs-root{display:block;}
-  .jobs-head{border:1px solid var(--line);border-radius:16px;padding:18px 20px;background:var(--card);margin:0 0 14px;}
   .jbar{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
   .jbar-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
   .jchip{border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);border-radius:999px;
     padding:7px 13px;font-size:13px;font-family:inherit;cursor:pointer;min-height:36px;line-height:1;}
   .jchip.on{background:var(--card);color:var(--ink);border-color:var(--celadon-soft);font-weight:600;box-shadow:var(--shadow);}
   .jlord{margin-left:auto;}
-  .jgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-  .jcard{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:15px 16px;cursor:pointer;transition:.16s;text-align:left;}
+  .jgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .jcard{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:14px 15px 15px;cursor:pointer;transition:.16s;text-align:left;}
   .jcard:hover{border-color:var(--celadon-soft);transform:translateY(-2px);box-shadow:var(--shadow-lift);}
-  .jcard-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;}
-  .jtag{font-size:11px;color:#fff;border-radius:6px;padding:1px 8px;}
-  .jtag.hot{background:var(--cinnabar);} .jtag.god{background:var(--gold);} .jtag.beg{background:var(--celadon);}
-  .jcard-use,.jcard-sc{font-size:12px;color:var(--ink-soft);margin-left:auto;}
-  .jcard-sc{margin-left:0;color:var(--gold);}
-  .jcard-nm{font-family:var(--font-kai);font-size:18px;font-weight:700;color:var(--ink);letter-spacing:.03em;}
-  .jcard-au{font-size:12.5px;color:var(--ink-soft);margin:4px 0 8px;}
-  .jcard-br{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:8px;}
+  .jcard-avs{display:flex;gap:4px;margin-bottom:10px;min-height:36px;}
+  .jcard-nm{font-family:var(--font-kai);font-size:17px;font-weight:700;color:var(--ink);letter-spacing:.02em;}
+  .jcard-au{font-size:12px;color:var(--ink-soft);margin-top:4px;line-height:1.6;}
+  .jtag{font-size:10.5px;color:#fff;border-radius:5px;padding:0 6px;margin-left:4px;vertical-align:1px;}
+  .jtag.hot{background:var(--cinnabar);} .jtag.god{background:var(--gold);}
   .jpager{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 4px;}
   .jp-n{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .jbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;
     font-size:13.5px;font-family:inherit;cursor:pointer;min-height:40px;}
-  .jbtn.pri{background:var(--celadon-deep);color:#fff;border-color:transparent;}
-  .jact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;}
-  .jcode{font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;}
-  .jhead-mark{width:52px;height:52px;border-radius:12px;flex:none;background:linear-gradient(140deg,var(--gold),var(--cinnabar));
-    color:#fff;font-family:var(--font-kai);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;}
-  .jboard-wrap{display:flex;gap:10px;align-items:stretch;margin:8px 0 10px;}
-  .jboard-lab{display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:var(--ink-soft);padding:6px 0;flex:none;width:2.2em;}
-  .jboard{flex:1;display:flex;flex-direction:column;gap:5px;}
-  .jrow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-  .jcell{aspect-ratio:1;border:1px dashed var(--line);border-radius:9px;background:var(--paper-2);min-height:0;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;gap:2px;}
+  .jbtn.pri{background:var(--celadon-deep);color:#fff;border-color:transparent;white-space:nowrap;}
+  .jav{position:relative;display:inline-flex;width:36px;height:36px;flex:none;}
+  .jav img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;background:var(--paper-2);}
+  .jav i{display:none;width:100%;height:100%;border-radius:50%;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));
+    color:#fff;font-style:normal;font-family:var(--font-kai);font-weight:700;align-items:center;justify-content:center;font-size:14px;}
+  .jav.sm{width:32px;height:32px;}
+  .jav.lg{width:56px;height:56px;}
+  .jav.eq{width:28px;height:28px;}
+  .jav.eq img,.jav.eq i{border-radius:7px;}
+  .jback{border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:13.5px;
+    cursor:pointer;padding:0 0 12px;min-height:40px;}
+  .jdoc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 16px;}
+  .jdoc-tit{flex:1 1 180px;}
+  .jdoc-tit h1{margin:0;font-family:var(--font-kai);font-size:28px;font-weight:700;letter-spacing:.04em;color:var(--ink);}
+  .jdoc-sub{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+  .jtri{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 12px;}
+  .jtwo{display:grid;grid-template-columns:1fr 1.15fr;gap:12px;margin:0 0 12px;}
+  .jbox{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px 18px 18px;}
+  .jbox h3{margin:0 0 10px;font-size:14px;font-weight:700;color:var(--celadon-deep);letter-spacing:.04em;}
+  .jbox h3 span{font-weight:400;color:var(--ink-soft);font-size:12px;margin-left:8px;letter-spacing:0;}
+  .jbox p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.75;}
+  .jmuted{font-size:13px;color:var(--ink-soft);}
+  .jlord-block{margin-bottom:14px;}
+  .jlord-block:last-child{margin-bottom:0;}
+  .jlord-h{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .jlord-n{font-weight:700;font-size:15px;color:var(--ink);}
+  .jlord-k{font-size:12px;color:var(--ink-soft);}
+  .jsk{padding:8px 0;border-top:1px dashed var(--line);}
+  .jsk-k{font-size:11px;color:#fff;background:var(--gold);border-radius:5px;padding:1px 7px;margin-right:6px;}
+  .jsk-n{font-weight:600;color:var(--ink);font-size:13.5px;}
+  .jsk-d{font-size:13px;color:var(--ink-soft);line-height:1.7;margin-top:4px;}
+  .jboard{display:flex;flex-direction:column;gap:6px;}
+  .jrow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .jcell{aspect-ratio:1;border-radius:12px;background:var(--paper-2);min-height:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 1px 0;gap:2px;border:none;}
   button.jcell{font-family:inherit;cursor:pointer;}
-  .jcell.filled{border-style:solid;background:var(--card);}
-  .jcell img{width:72%;height:auto;border-radius:6px;display:block;}
-  .jcell .jph{display:none;width:72%;aspect-ratio:1;border-radius:6px;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));
-    color:#fff;font-family:var(--font-kai);font-size:16px;font-weight:700;align-items:center;justify-content:center;}
-  .jcell .jcn{font-size:10px;color:var(--ink);line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .jleg,.jpos{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin:0 0 8px;}
-  .jops{margin:6px 0 10px;}
-  .jop{padding:8px 0;border-bottom:1px dashed var(--line);}
-  .jop:last-child{border-bottom:none;}
-  .jop-r{font-size:12px;color:var(--celadon-deep);font-weight:600;}
-  .jop-d{font-size:13px;color:var(--ink-soft);line-height:1.72;margin-top:3px;}
-  [data-theme="dark"] .jcard,[data-theme="dark"] .jobs-head,[data-theme="dark"] .jcell.filled{background:var(--card);}
+  .jcell.filled{background:transparent;}
+  .jcell img{width:78%;aspect-ratio:1;object-fit:cover;border-radius:50%;display:block;background:var(--paper-2);}
+  .jcell .jph{display:none;width:78%;aspect-ratio:1;border-radius:50%;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));
+    color:#fff;font-family:var(--font-kai);font-size:15px;font-weight:700;align-items:center;justify-content:center;font-style:normal;}
+  .jcell .jcn{font-size:10px;color:var(--ink-soft);line-height:1.15;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .jeq-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);}
+  .jeq-row:last-child{border-bottom:none;}
+  .jeq-hero{font-weight:600;font-size:13.5px;color:var(--ink);min-width:3.5em;}
+  .jeq-items{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .jeq-n{font-size:12px;color:var(--ink-soft);}
+  .jphase{padding:12px 0;border-bottom:1px dashed var(--line);}
+  .jphase:last-child{border-bottom:none;padding-bottom:0;}
+  .jph-h{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+  .jph-h span{font-weight:400;color:var(--ink-soft);font-size:12px;margin-left:8px;}
+  .jph-faces{display:flex;flex-wrap:wrap;gap:10px 12px;margin-bottom:8px;}
+  .jphero{display:flex;flex-direction:column;align-items:center;gap:4px;width:48px;}
+  .jphero em{font-style:normal;font-size:11px;color:var(--ink-soft);text-align:center;line-height:1.2;}
+  .jphase p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.75;}
+  .jtal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .jtal{display:flex;gap:10px;align-items:flex-start;}
+  .jtal-n{font-weight:600;font-size:13.5px;color:var(--ink);}
+  .jtal-d{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin-top:2px;}
+  [data-theme="dark"] .jcard,[data-theme="dark"] .jbox{background:var(--card);}
+  @media (max-width:860px){
+    .jtri,.jtwo,.jtal-grid{grid-template-columns:1fr;}
+  }
   @media (max-width:640px){
-    .jgrid{grid-template-columns:1fr;}
+    .jgrid{grid-template-columns:1fr 1fr;}
     .jcell .jcn{font-size:9px;}
     .jlord{margin-left:0;width:100%;}
     .jbtn{min-height:44px;}
     .jchip{min-height:40px;}
+    .jdoc-tit h1{font-size:24px;}
   }
 
   /* ===== 词条悬停浮层 ===== */
@@ -543,7 +578,7 @@
       <div class="hero-card">
         <p class="kicker">WÀNXIÀNGQÍ · 万象棋局</p>
         <h1>王者<span class="accent">万象棋</span>图鉴与攻略</h1>
-        <p class="sub">收录官方公开数据的全部棋手与卡牌（真实卡面 + 技能 / 数值 / 阵营流派），并附<b>保姆级攻略</b>与<b>主播作业</b>：官网推荐库可复制阵容码、看官方棋盘摆法。点开任意一张卡查看详情，链接可分享直达。</p>
+        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌图鉴。点开一套阵容即可抄作业。</p>
         <div class="chips" id="heroChips"></div>
       </div>
     </section>
@@ -551,15 +586,14 @@
     <div class="toolbar">
       <div class="row">
         <div class="seg" id="tabs">
-          <button class="tab active" data-type="players">棋手</button>
-          <button class="tab" data-type="hero">英雄牌</button>
-          <button class="tab" data-type="effect">效果牌</button>
-          <button class="tab" data-type="equip">装备牌</button>
-          <button class="tab" data-type="talent">天赋牌</button>
-        <button class="tab" data-type="faction">流派</button>
-        <button class="tab ctab" data-type="chain">连锁</button>
-        <button class="tab jtab" data-type="jobs">作业</button>
-        <button class="tab gtab" data-type="guide">攻略 ★</button>
+          <button class="tab jtab active" data-type="jobs">阵容</button>
+          <button class="tab" data-type="players">棋手</button>
+          <button class="tab" data-type="hero">英雄</button>
+          <button class="tab" data-type="effect">效果</button>
+          <button class="tab" data-type="equip">装备</button>
+          <button class="tab" data-type="talent">天赋</button>
+          <button class="tab gtab" data-type="guide">攻略</button>
+          <button class="tab ctab" data-type="chain">连锁</button>
         </div>
         <input class="search" id="q" placeholder="搜索名称…" autocomplete="off">
         <select class="filter" id="fac"><option value="">全部阵营</option></select>
@@ -610,13 +644,8 @@
       '棋手 '+M.counts.players, '英雄 '+M.counts.heroes, '效果 '+M.counts.effects,
       '装备 '+M.counts.equips, '天赋 '+M.counts.talents, '流派 '+M.counts.factions
     ];
-    if(GUIDE){
-      heroChips.push('攻略 '+GUIDE.lineups.length+' 套阵容');
-      if(GUIDE.combos) heroChips.push(GUIDE.combos.list.length+' 组搭配');
-      if(GUIDE.keywords) heroChips.push(GUIDE.keywords.list.length+' 个词条');
-    }
     if(window.WXQ_JOBS&&WXQ_JOBS.meta&&WXQ_JOBS.meta.counts){
-      heroChips.push('作业 '+WXQ_JOBS.meta.counts.total+' 套');
+      heroChips.push('阵容 '+WXQ_JOBS.meta.counts.total+' 套');
     }
     document.getElementById('heroChips').innerHTML=heroChips.map(function(s){return '<span class="chip">'+s+'</span>';}).join('');
 
@@ -626,7 +655,7 @@
     var qualSel=document.getElementById('qual');
     for(var q=1;q<=6;q++){var o=document.createElement('option');o.value=q;o.textContent=q+' 阶';qualSel.appendChild(o);}
 
-    var state={type:'players', q:'', fac:'', qual:''};
+    var state={type:'jobs', q:'', fac:'', qual:''};
 
     // 官方文案格式化。
     // 1) 先整体转义，再只还原 <b> / <color>，避免数据里任何意外标签破坏结构；
@@ -799,27 +828,10 @@
         }).join('')+'</section>';
       }
 
-      // 05 阵容推荐
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">05</span>阵容推荐<span class="gh">T0 / T0.5 / T1 · 共 '+GUIDE.lineups.length+' 套</span></h2>';
-      h+=GUIDE.lineups.map(function(l){
-        var tc=l.tier==='T0'?'t0':(l.tier==='T0.5'?'t05':'t1');
-        var chips=function(arr,cls){return (arr||[]).map(function(x){return '<span class="hchip'+(cls||'')+'">'+esc(x)+'</span>';}).join('');};
-        var s='<div class="lu"><div class="lu-top"><span class="lu-tier '+tc+'">'+esc(l.tier)+'</span><span class="lu-nm">'+esc(l.name)+'</span></div>';
-        s+='<div class="lu-row"><span class="lu-k">核心</span><span class="chips">'+chips(l.core)+'</span></div>';
-        if(l.extra&&l.extra.length)s+='<div class="lu-row"><span class="lu-k">可补</span><span class="chips">'+chips(l.extra)+'</span></div>';
-        s+='<div class="lu-row"><span class="lu-k">推荐棋手</span><span class="chips">'+chips(l.players,' p')+'</span></div>';
-        if(l.rhythm)s+='<div class="lu-row"><span class="lu-k">节奏</span><span style="font-size:13px;color:var(--ink-soft)">'+esc(l.rhythm)+'</span></div>';
-        if(l.position)s+='<div class="lu-row"><span class="lu-k">站位</span><span style="font-size:13px;color:var(--ink-soft)">'+esc(l.position)+'</span></div>';
-        if(l.mech)s+='<div class="lu-tx">'+esc(l.mech)+'</div>';
-        if(l.ops&&l.ops.length){l.ops.forEach(function(o){s+='<div class="lu-tx"><b style="color:var(--ink)">'+esc(o.t)+'</b> · '+esc(o.x)+'</div>';});}
-        if(l.pick)s+='<div class="lu-tx"><b style="color:var(--ink)">英雄选择</b> · '+esc(l.pick)+'</div>';
-        if(l.equip)s+='<div class="lu-eq"><b style="color:var(--ink)">装备</b> · '+esc(l.equip)+'</div>';
-        if(l.build)s+='<div class="lu-eq"><b style="color:var(--ink)">出装详解</b> · '+esc(l.build)+'</div>';
-        return s+'</div>';
-      }).join('')+'</section>';
+      h+='<div class="gnote">完整阵容、站位和运营节奏见顶部「阵容」栏目（官方推荐库）。</div>';
 
-      // 06 出装
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">06</span>出装思路 · 按定位<span class="gh">'+GUIDE.equip.roles.length+' 类定位</span></h2>';
+      // 05 出装
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">05</span>出装思路 · 按定位<span class="gh">'+GUIDE.equip.roles.length+' 类定位</span></h2>';
       h+='<div class="gnote">'+esc(GUIDE.equip.rule)+'</div>';
       h+=GUIDE.equip.roles.map(function(r){
         var s='<div class="eq-row"><div class="eq-role">'+esc(r.role)+'<span class="eq-hs">'+(r.heroes||[]).map(esc).join(' / ')+'</span></div>';
@@ -829,8 +841,8 @@
         return s+'</div>';
       }).join('')+'</section>';
 
-      // 07 六大阵营详解
-      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">07</span>六大阵营 · 流派详解<span class="gh">点开可看完整流派解析</span></h2>';
+      // 06 六大阵营详解
+      h+='<section class="gsec"><h2 class="gsec-h"><span class="gn">06</span>六大阵营 · 流派详解<span class="gh">点开可看完整流派解析</span></h2>';
       h+='<div class="gnote">阵营不是「强弱标签」，而是<b>词条产地</b>——同一个阵营的英雄共享同一套词条，所以搭配才成立。下面按「机制 → 思路 → 怎么玩 → 强势期 → 克制」逐条拆解。</div>';
       h+=GUIDE.factions.map(function(f){
         var s='<div class="facd" data-guide-fac="'+esc(f.name)+'"><div class="fd-top"><span class="fd-nm">'+esc(f.name)+'</span>';
@@ -1084,6 +1096,7 @@
       [].forEach.call(this.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
       b.classList.add('active');state.type=b.getAttribute('data-type');state.q='';state.fac='';state.qual='';
       document.getElementById('q').value='';document.getElementById('fac').value='';document.getElementById('qual').value='';
+      if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.state.openKey='';
       render();
     });
     document.getElementById('q').addEventListener('input',function(){state.q=this.value.trim();render();});
@@ -1112,12 +1125,20 @@
 
     function route(h){
       if(h===undefined)h=location.hash;
+      if(!h||h==='#'){
+        if(window.WXQ_JOBS_UI&&WXQ_JOBS_UI.state.openKey)window.WXQ_JOBS_UI.closeDetail(true);
+        return;
+      }
       if(h==='#g'||h==='#guide'){var gt=document.querySelector('.tab[data-type="guide"]');if(gt)gt.click();return;}
-      if(h==='#j'||h==='#jobs'){var jt=document.querySelector('.tab[data-type="jobs"]');if(jt)jt.click();return;}
+      if(h==='#j'||h==='#jobs'){
+        var jt=document.querySelector('.tab[data-type="jobs"]');if(jt)jt.click();
+        if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.closeDetail(true);
+        return;
+      }
       if(h.indexOf('#j-')===0){
         var jt2=document.querySelector('.tab[data-type="jobs"]');if(jt2)jt2.click();
         var jk=decodeURIComponent(h.slice(3));
-        if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.open(jk);
+        if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.open(jk,true);
         return;
       }
       if(h.indexOf('#p-')===0)return openPlayer(decodeURIComponent(h.slice(3)));
@@ -1129,7 +1150,7 @@
     var _initHash=location.hash;
     // 深链进入弹窗时，先把基础 URL 上的 hash 抹掉，之后弹窗再压入属于自己的历史记录。
     // 于是「返回 / 左滑」只关弹窗，不会把用户带出本站。
-    if(/^#(p|c|f|j)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+    if(/^#(p|c|f)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
     route(_initHash);
   })();
   </script>

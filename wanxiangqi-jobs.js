@@ -1,8 +1,8 @@
 /* ============================================================================
  * 王者万象棋 · 官方阵容作业（jobs UI）
  * ----------------------------------------------------------------------------
- * 只渲染 WXQ_JOBS。数据由 scripts/sync-wxq-lineups.js 从官网推荐库生成。
- * 不模拟打架；阵容码 = key，对应游戏内「导入阵容」。
+ * 列表 + 通栏详情。详情排版对齐官网阵容页：玩法 / 站位 / 装备、棋盘、
+ * 分阶段运营、关键天赋。不模拟打架。
  * ========================================================================== */
 (function (global) {
   'use strict';
@@ -10,16 +10,18 @@
   var PAGE = 24;
   var COLS = 7;
   var ROWS = 4;
-  var js = { filter: 'all', sort: 'use', page: 1, lord: '' };
+  var PHASE = ['前期', '中期', '后期'];
+  var js = { filter: 'all', sort: 'use', page: 1, lord: '', openKey: '' };
 
   function ui() { return global.__wxqUI || {}; }
   function esc(s) { return ui().esc ? ui().esc(s) : String(s || ''); }
+  function fmt(s) { return ui().fmt ? ui().fmt(s) : esc(s); }
   function data() { return global.WXQ_JOBS || { meta: {}, list: [] }; }
 
   function wan(n) {
     n = Number(n) || 0;
     if (n >= 10000) {
-      var v = (n / 10000);
+      var v = n / 10000;
       return (Math.abs(v - Math.round(v)) < 0.05 ? Math.round(v) : v.toFixed(1)) + '万';
     }
     return String(n);
@@ -27,6 +29,8 @@
 
   function heroImg(name) { return 'wxq-icon/heroes/' + encodeURIComponent(name) + '.png'; }
   function playerImg(name) { return 'wxq-icon/players/' + encodeURIComponent(name) + '_icon.png'; }
+  function equipImg(name) { return 'wxq-icon/equips/' + encodeURIComponent(name) + '.png'; }
+  function talentImg(name) { return 'wxq-icon/talents/' + encodeURIComponent(name) + '.png'; }
 
   function heroByName(name) {
     var H = (ui().HEROES) || global.WXQ_HEROES || [];
@@ -38,6 +42,11 @@
     for (var i = 0; i < P.length; i++) if (P[i].name === name) return P[i];
     return null;
   }
+  function talentByName(name) {
+    var T = global.WXQ_TALENTS || [];
+    for (var i = 0; i < T.length; i++) if (T[i].name === name) return T[i];
+    return null;
+  }
 
   function find(key) {
     var list = data().list || [];
@@ -47,7 +56,7 @@
   }
 
   function hay(L) {
-    var parts = [L.name, L.author, L.brief, (L.lords || []).join(' '), (L.heroes || []).map(function (h) { return h.name; }).join(' '), (L.tags || []).join(' ')];
+    var parts = [L.name, L.author, L.brief, (L.lords || []).join(' '), (L.heroes || []).map(function (h) { return h.name; }).join(' ')];
     return parts.join(' ').toLowerCase();
   }
 
@@ -85,38 +94,33 @@
     });
   }
 
-  function ph(name) {
-    return '<span class="jph">' + esc((name || '？').slice(0, 1)) + '</span>';
+  function av(src, name, cls, attr) {
+    return '<span class="' + (cls || 'jav') + '"' + (attr || '') + '>'
+      + '<img src="' + src + '" alt="' + esc(name) + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+      + '<i>' + esc((name || '？').slice(0, 1)) + '</i>'
+      + '</span>';
   }
 
   function cardHtml(L) {
-    var hs = (L.heroes || []).slice(0, 8).map(function (h) {
-      return '<span class="hchip">' + esc(h.name) + (h.evo ? '' : '') + '</span>';
+    var faces = (L.heroes || []).slice(0, 7).map(function (h) {
+      return av(heroImg(h.name), h.name, 'jav sm');
     }).join('');
-    var lords = (L.lords || []).map(function (n) { return '<span class="hchip p">' + esc(n) + '</span>'; }).join('');
     var tag = (L.hot ? '<span class="jtag hot">热门</span>' : '')
-      + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '')
-      + (L.beg ? '<span class="jtag beg">新手</span>' : '');
+      + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '');
     var sc = parseFloat(L.score) || 0;
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
-      + '<div class="jcard-top">' + tag
-      + '<span class="jcard-use">' + wan(L.useNum) + ' 使用</span>'
-      + (sc > 0 ? '<span class="jcard-sc">' + esc(L.score) + ' 分</span>' : '')
-      + '</div>'
+      + '<div class="jcard-avs">' + (faces || '') + '</div>'
       + '<div class="jcard-nm">' + esc(L.name) + '</div>'
-      + '<div class="jcard-au">' + esc(L.author || '匿名投稿')
-      + (L.badge ? ' · ' + esc(L.badge) : '') + '</div>'
-      + '<div class="lu-row"><span class="lu-k">棋手</span><span class="chips">' + (lords || '—') + '</span></div>'
-      + '<div class="lu-row"><span class="lu-k">英雄</span><span class="chips">' + hs + '</span></div>'
-      + (L.brief ? '<div class="jcard-br">' + esc(L.brief) + '</div>' : '')
-      + '</article>';
+      + '<div class="jcard-au">' + esc(L.author || '匿名')
+      + (tag ? ' ' + tag : '')
+      + ' · ' + wan(L.useNum) + ' 使用'
+      + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
+      + '</div></article>';
   }
 
   function boardHtml(L) {
     var map = {};
-    (L.heroes || []).forEach(function (h) {
-      map[h.x + ',' + h.z] = h;
-    });
+    (L.heroes || []).forEach(function (h) { map[h.x + ',' + h.z] = h; });
     var rows = '';
     for (var z = ROWS - 1; z >= 0; z--) {
       var cells = '';
@@ -125,77 +129,142 @@
         if (!h) { cells += '<div class="jcell"></div>'; continue; }
         cells += '<button type="button" class="jcell filled" data-job-hero="' + esc(h.name) + '" title="' + esc(h.name) + '">'
           + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
-          + ph(h.name)
-          + '<span class="jcn">' + esc(h.name) + (h.evo ? ' · 觉' : '') + '</span>'
+          + '<i class="jph">' + esc(h.name.slice(0, 1)) + '</i>'
+          + '<span class="jcn">' + esc(h.name) + '</span>'
           + '</button>';
       }
       rows += '<div class="jrow">' + cells + '</div>';
     }
-    return '<div class="jboard-wrap"><div class="jboard-lab"><span>前排</span><span>后排</span></div>'
-      + '<div class="jboard">' + rows + '</div></div>';
+    return '<div class="jboard">' + rows + '</div>';
   }
 
-  function open(key) {
-    var L = find(key);
-    var b = ui();
-    if (!L || !b.openModal) return;
-    var lords = (L.lords || []).map(function (n) { return '<span class="hchip p">' + esc(n) + '</span>'; }).join('');
-    var eqs = [];
-    (L.heroes || []).forEach(function (h) {
-      if (h.eqs && h.eqs.length) eqs.push('<b>' + esc(h.name) + '</b> · ' + h.eqs.map(esc).join(' ＋ '));
-    });
-    var ops = (L.ops || []).map(function (o) {
-      var r = (o.from && o.to) ? (o.from === o.to ? '第 ' + o.from + ' 回合' : o.from + '–' + o.to + ' 回合') : '';
-      var who = (o.main || []).concat(o.sub || []);
-      return '<div class="jop"><div class="jop-r">' + esc(r) + (who.length ? ' · ' + who.map(esc).join(' / ') : '') + '</div>'
-        + '<div class="jop-d">' + esc(o.desc) + '</div></div>';
+  function lordsHtml(L) {
+    var names = L.lords || [];
+    if (!names.length) return '<div class="jmuted">未标注棋手</div>';
+    return names.map(function (n) {
+      var p = playerByName(n);
+      var head = '<div class="jlord-h">'
+        + av(playerImg(n), n, 'jav')
+        + '<div><div class="jlord-n">' + esc(n) + '</div>'
+        + (p ? '<div class="jlord-k">棋手</div>' : '<div class="jlord-k">官方库棋手（图鉴未收录）</div>')
+        + '</div></div>';
+      if (!p || !p.skills || !p.skills.length) return '<div class="jlord-block">' + head + '</div>';
+      var sk = p.skills.map(function (s) {
+        return '<div class="jsk"><span class="jsk-k">' + esc(s.kind) + '</span>'
+          + '<span class="jsk-n">' + esc(s.name) + '</span>'
+          + '<div class="jsk-d">' + fmt(s.desc) + '</div></div>';
+      }).join('');
+      return '<div class="jlord-block">' + head + sk + '</div>';
     }).join('');
-    var tal = (L.talents || []).map(function (n) { return '<span class="hchip">' + esc(n) + '</span>'; }).join('');
-    var eff = (L.effects || []).map(function (n) { return '<span class="hchip">' + esc(n) + '</span>'; }).join('');
+  }
+
+  function equipsHtml(L) {
+    var rows = (L.heroes || []).filter(function (h) { return h.eqs && h.eqs.length; });
+    if (!rows.length) return L.equipDesc ? '' : '<div class="jmuted">这套没有标注装备</div>';
+    return rows.map(function (h) {
+      var items = h.eqs.map(function (e) {
+        return av(equipImg(e), e, 'jav eq') + '<span class="jeq-n">' + esc(e) + '</span>';
+      }).join('');
+      return '<div class="jeq-row">'
+        + av(heroImg(h.name), h.name, 'jav')
+        + '<span class="jeq-hero">' + esc(h.name) + '</span>'
+        + '<div class="jeq-items">' + items + '</div></div>';
+    }).join('');
+  }
+
+  function opsHtml(L) {
+    var ops = L.ops || [];
+    if (!ops.length) return '';
+    return ops.map(function (o, i) {
+      var label = PHASE[i] || ('阶段 ' + (i + 1));
+      var round = (o.from && o.to) ? (o.from === o.to ? o.from + ' 回合' : o.from + '–' + o.to + ' 回合') : '';
+      var who = (o.main || []).concat(o.sub || []);
+      var faces = who.map(function (n) {
+        return '<span class="jphero">' + av(heroImg(n), n, 'jav sm') + '<em>' + esc(n) + '</em></span>';
+      }).join('');
+      return '<div class="jphase">'
+        + '<div class="jph-h">' + esc(label) + (round ? '<span>' + esc(round) + ' · ' + who.length + ' 张</span>' : '') + '</div>'
+        + (faces ? '<div class="jph-faces">' + faces + '</div>' : '')
+        + (o.desc ? '<p>' + esc(o.desc) + '</p>' : '')
+        + '</div>';
+    }).join('');
+  }
+
+  function talentsHtml(L) {
+    var names = L.talents || [];
+    if (!names.length) return '';
+    return '<div class="jtal-grid">' + names.map(function (n) {
+      var t = talentByName(n);
+      return '<div class="jtal">'
+        + av(talentImg(n), n, 'jav eq')
+        + '<div><div class="jtal-n">' + esc(n) + '</div>'
+        + '<div class="jtal-d">' + (t ? fmt(t.desc) : '') + '</div></div></div>';
+    }).join('') + '</div>';
+  }
+
+  function detailHtml(L) {
+    var cover = (L.heroes && L.heroes[0]) ? heroImg(L.heroes[0].name) : playerImg((L.lords || [])[0] || '');
+    var coverName = (L.heroes && L.heroes[0] && L.heroes[0].name) || (L.lords || [])[0] || '';
     var sc = parseFloat(L.score) || 0;
-    var pos = L.positionDesc && L.positionDesc !== '如图所示' ? L.positionDesc : '';
-    var html = '<div class="m-head">'
-      + '<div class="jhead-mark">阵</div>'
-      + '<div><div class="m-tit">' + esc(L.name) + '</div>'
-      + '<div class="m-sub">' + esc(L.author || '匿名') + (L.badge ? ' · ' + esc(L.badge) : '')
-      + ' · ' + wan(L.useNum) + ' 使用' + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '') + '</div></div>'
-      + '<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
-      + '<div class="m-scroll">'
-      + (L.brief ? '<div class="gnote">' + esc(L.brief) + '</div>' : '')
-      + '<div class="jact">'
+    var pos = L.positionDesc && L.positionDesc !== '如图所示' ? L.positionDesc : '按图中站位即可。';
+    var play = L.brief || '官方推荐库未写玩法介绍。';
+    var eqTx = L.equipDesc || '见下方推荐装备。';
+    return '<article class="jdoc">'
+      + '<button type="button" class="jback" data-job-back>← 返回列表</button>'
+      + '<header class="jdoc-head">'
+      + av(cover, coverName, 'jav lg')
+      + '<div class="jdoc-tit"><h1>' + esc(L.name) + '</h1>'
+      + '<div class="jdoc-sub">作者 · ' + esc(L.author || '匿名')
+      + (L.badge ? ' · ' + esc(L.badge) : '')
+      + ' · ' + wan(L.useNum) + ' 使用'
+      + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
+      + '</div></div>'
       + '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>'
-      + '<button type="button" class="jbtn" data-job-chain="' + esc(L.key) + '">在连锁里打开</button>'
-      + '<code class="jcode">' + esc(L.key) + '</code>'
+      + '</header>'
+      + '<div class="jtri">'
+      + '<section class="jbox"><h3>玩法介绍</h3><p>' + esc(play) + '</p></section>'
+      + '<section class="jbox"><h3>站位分析</h3><p>' + esc(pos) + '</p></section>'
+      + '<section class="jbox"><h3>装备分析</h3><p>' + esc(eqTx) + '</p></section>'
       + '</div>'
-      + '<div class="lu-row"><span class="lu-k">棋手</span><span class="chips">' + (lords || '—') + '</span></div>'
-      + '<h4>摆法</h4>'
-      + boardHtml(L)
-      + (pos ? '<div class="jpos">' + esc(pos) + '</div>' : '')
-      + '<div class="jleg">上排靠近对手（前排），下排靠近己方（后排）。坐标取自官方阵容库，不是本站推演。</div>'
-      + (eqs.length ? '<h4>装备</h4><div class="jops">' + eqs.map(function (x) { return '<div class="jop-d">' + x + '</div>'; }).join('') + '</div>' : '')
-      + (L.equipDesc ? '<div class="lu-eq">' + esc(L.equipDesc) + '</div>' : '')
-      + (ops ? '<h4>运营节奏</h4><div class="jops">' + ops + '</div>' : '')
-      + (tal ? '<h4>天赋</h4><div class="chips" style="margin-top:8px">' + tal + '</div>' + (L.talentDesc ? '<div class="lu-eq">' + esc(L.talentDesc) + '</div>' : '') : '')
-      + (eff ? '<h4>效果牌</h4><div class="chips" style="margin-top:8px">' + eff + '</div>' + (L.effectDesc ? '<div class="lu-eq">' + esc(L.effectDesc) + '</div>' : '') : '')
-      + '<div class="foot" style="margin-top:16px">来源：王者万象棋官方阵容推荐库 · 阵容码导入游戏即可抄作业。本页不计算胜率。</div>'
-      + '</div>';
-    b.openModal(html, '#j-' + encodeURIComponent(L.key), { wide: true });
+      + '<div class="jtwo">'
+      + '<section class="jbox"><h3>推荐棋手</h3>' + lordsHtml(L) + '</section>'
+      + '<div>'
+      + '<section class="jbox"><h3>阵容站位</h3>' + boardHtml(L) + '</section>'
+      + '<section class="jbox" style="margin-top:12px"><h3>推荐装备</h3>' + equipsHtml(L) + '</section>'
+      + '</div></div>'
+      + ((L.ops && L.ops.length) ? '<section class="jbox"><h3>运营思路 <span>前 / 中 / 后期上阵</span></h3>' + opsHtml(L) + '</section>' : '')
+      + ((L.talents && L.talents.length) ? '<section class="jbox"><h3>关键天赋</h3>' + talentsHtml(L) + '</section>' : '')
+      + '</article>';
+  }
+
+  function setHash(h, push) {
+    try {
+      if (push) history.pushState({ wxqJobs: 1 }, '', h);
+      else history.replaceState({ wxqJobs: 1 }, '', h);
+    } catch (e) {}
+  }
+
+  function open(key, fromRoute) {
+    var L = find(key);
+    if (!L) return;
+    js.openKey = String(L.key);
+    if (!fromRoute) setHash('#j-' + encodeURIComponent(L.key), true);
+    var grid = document.getElementById('grid');
+    if (grid) render(grid, ui().state || { q: '' });
+  }
+
+  function closeDetail(fromRoute) {
+    if (!js.openKey) return;
+    js.openKey = '';
+    if (!fromRoute) setHash('#j', true);
+    var grid = document.getElementById('grid');
+    if (grid) render(grid, ui().state || { q: '' });
   }
 
   function openHero(name) {
     var c = heroByName(name);
     var b = ui();
     if (c && b.openCard) b.openCard('hero', c.id);
-  }
-
-  function openChain(key) {
-    var L = find(key);
-    if (!L || !global.WXQ_CHAIN || !global.WXQ_CHAIN.openHeroNames) return;
-    var b = ui();
-    if (b.closeSilent) b.closeSilent();
-    var names = (L.heroes || []).map(function (h) { return h.name; });
-    var fx = (L.effects || []).slice();
-    global.WXQ_CHAIN.openHeroNames(names, fx);
   }
 
   function copyKey(key, btn) {
@@ -223,15 +292,31 @@
   }
 
   function render(grid, state) {
-    var D = data();
+    var qEl = document.getElementById('q');
+    var countEl = document.getElementById('count');
+    if (js.openKey) {
+      var L = find(js.openKey);
+      if (qEl) qEl.style.display = 'none';
+      if (!L) { js.openKey = ''; }
+      else {
+        grid.className = 'jobs-root';
+        grid.style.gridTemplateColumns = '';
+        if (countEl) countEl.textContent = L.name;
+        grid.innerHTML = detailHtml(L);
+        return;
+      }
+    }
+    if (qEl && state && state.type === 'jobs') {
+      qEl.style.display = 'block';
+      qEl.placeholder = '搜索阵容 / 作者 / 英雄 / 棋手…';
+    }
     var q = (state && state.q) || '';
     var list = filtered(q);
     var pages = Math.max(1, Math.ceil(list.length / PAGE));
     if (js.page > pages) js.page = pages;
     if (js.page < 1) js.page = 1;
     var slice = list.slice((js.page - 1) * PAGE, js.page * PAGE);
-    var countEl = document.getElementById('count');
-    if (countEl) countEl.textContent = list.length + ' 套作业';
+    if (countEl) countEl.textContent = list.length + ' 套';
     grid.className = 'jobs-root';
     grid.style.gridTemplateColumns = '';
 
@@ -247,19 +332,12 @@
         return '<option value="' + esc(x.name) + '"' + (js.lord === x.name ? ' selected' : '') + '>' + esc(x.name) + ' · ' + x.n + '</option>';
       }).join('') + '</select>';
 
-    var note = (D.meta && D.meta.note) ? D.meta.note : '';
-    var h = '<div class="jobs-head">'
-      + '<div class="chain-title">主播作业 · 官方推荐库</div>'
-      + '<div class="chain-sub">来自官网阵容推荐 / 热门 / 新手三份公开库，作者栏就是投稿人（含认证「万象棋大神」）。'
-      + '<b>不是战斗模拟，也不另算一套最强。</b> 复制阵容码后，在游戏「阵容 → 我的阵容 → 导入」使用。</div>'
-      + (note ? '<div class="chain-meta">同步 ' + esc(D.meta.capturedAt) + ' · 共 ' + (D.meta.counts && D.meta.counts.total || list.length) + ' 套 · ' + (D.meta.counts && D.meta.counts.uniqueAuthors || '') + ' 位作者</div>' : '')
-      + '</div>'
-      + '<div class="jbar">'
-      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门榜') + fbtn('god', '大神') + fbtn('beg', '官方新手') + '</div>'
-      + '<div class="jbar-row">' + sbtn('use', '按使用量') + sbtn('score', '按评分') + sbtn('new', '按时间') + lordSel + '</div>'
+    var h = '<div class="jbar">'
+      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + '</div>'
+      + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('new', '时间') + lordSel + '</div>'
       + '</div>';
     if (!slice.length) {
-      grid.innerHTML = h + '<div class="empty">没有匹配的作业，换个筛选或关键词试试</div>';
+      grid.innerHTML = h + '<div class="empty">没有匹配的阵容</div>';
       return;
     }
     h += '<div class="jgrid">' + slice.map(cardHtml).join('') + '</div>';
@@ -275,6 +353,12 @@
 
   function onGridClick(e) {
     var t = e.target;
+    var back = t.closest && t.closest('[data-job-back]');
+    if (back) { closeDetail(false); return 'open'; }
+    var hero = t.closest && t.closest('[data-job-hero]');
+    if (hero) { openHero(hero.getAttribute('data-job-hero')); return 'open'; }
+    var cp = t.closest && t.closest('[data-copy-key]');
+    if (cp) { copyKey(cp.getAttribute('data-copy-key'), cp); return 'open'; }
     var f = t.closest && t.closest('[data-job-filter]');
     if (f) { js.filter = f.getAttribute('data-job-filter'); js.page = 1; return 'rerender'; }
     var s = t.closest && t.closest('[data-job-sort]');
@@ -286,16 +370,7 @@
     return null;
   }
 
-  function onModalClick(e) {
-    var t = e.target;
-    var h = t.closest && t.closest('[data-job-hero]');
-    if (h) { openHero(h.getAttribute('data-job-hero')); return true; }
-    var c = t.closest && t.closest('[data-copy-key]');
-    if (c) { copyKey(c.getAttribute('data-copy-key'), c); return true; }
-    var ch = t.closest && t.closest('[data-job-chain]');
-    if (ch) { openChain(ch.getAttribute('data-job-chain')); return true; }
-    return false;
-  }
+  function onModalClick() { return false; }
 
   function onLordChange(sel) {
     js.lord = sel.value || '';
@@ -305,6 +380,7 @@
   global.WXQ_JOBS_UI = {
     render: render,
     open: open,
+    closeDetail: closeDetail,
     onGridClick: onGridClick,
     onModalClick: onModalClick,
     onLordChange: onLordChange,

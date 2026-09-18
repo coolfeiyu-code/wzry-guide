@@ -1,52 +1,62 @@
 #!/bin/sh
-# pre-commit: 攻略内容有改动时自动递增版本号（三级语义化）
-# 触发条件：本次提交包含 heroes-data.js / index.html / 万象棋板块 等站点文件（内容或界面更新）# 档位（通过环境变量 VERSION_BUMP 指定，缺省=patch）：
-#   major -> +1.0.0（大更新）   minor -> +0.1（中更新）   patch -> +0.0.1（小更新，默认）
+# pre-commit: 按改动范围升版
+#   王者荣耀（heroes-data.js GUIDE_META）← 只在英雄攻略 / 首页 / 装备库变动时升
+#   王者万象棋（wanxiangqi-data.js WXQ_META）← 只在 wanxiangqi* 变动时升
+# 档位：VERSION_BUMP=major|minor|patch（缺省 patch）
 set -e
 
 ROOT=$(git rev-parse --show-toplevel)
-FILE="heroes-data.js"
-
-# 攻略内容、界面、图标、装备库或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
-# 攻略内容、界面、图标、装备库、万象棋板块或 manifest 任一变动都升版（换图标/改 manifest 视为小更新）
-# wanxiangqi* 覆盖：wanxiangqi.html / -data.js / -guide.js / -rules.js / -engine.js / -chain.js
-changed=$(git diff --cached --name-only -- "$FILE" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/" "wanxiangqi*")
-if [ -z "$changed" ]; then
-  exit 0
-fi
-
 cd "$ROOT" || exit 0
 
-cur=$(grep -oE 'version: "[0-9]+\.[0-9]+\.[0-9]+"' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-if [ -z "$cur" ]; then
-  echo "pre-commit: 未找到 version 字段，跳过升版"
+LEVEL=${VERSION_BUMP:-patch}
+
+bump_semver() {
+  cur="$1"
+  maj=$(echo "$cur" | cut -d. -f1)
+  min=$(echo "$cur" | cut -d. -f2)
+  pat=$(echo "$cur" | cut -d. -f3)
+  case "$LEVEL" in
+    major) maj=$((maj + 1)); min=0; pat=0; label="大更新 +1.0.0" ;;
+    minor) min=$((min + 1)); pat=0; label="中更新 +0.1" ;;
+    *)     pat=$((pat + 1)); label="小更新 +0.0.1" ;;
+  esac
+  echo "$maj.$min.$pat $label"
+}
+
+CORE=$(git diff --cached --name-only -- "heroes-data.js" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/sync-items.py" "scripts/item-changes.json")
+WXQ=$(git diff --cached --name-only -- "wanxiangqi*" "scripts/sync-wxq-lineups.js")
+
+if [ -n "$CORE" ]; then
+  FILE="heroes-data.js"
+  cur=$(grep -oE 'version: "[0-9]+\.[0-9]+\.[0-9]+"' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+  if [ -n "$cur" ]; then
+    set -- $(bump_semver "$cur")
+    new=$1; shift; label="$*"
+    sed -i "0,/version: \"[0-9][0-9.]*\"/s//version: \"$new\"/" "$FILE"
+    git add "$FILE"
+    echo "pre-commit: 王者荣耀 [$label] $cur -> $new"
+  fi
+fi
+
+if [ -n "$WXQ" ]; then
+  FILE="wanxiangqi-data.js"
+  # 本次提交已经改过 WXQ_META.version 就不再叠一次
+  if git diff --cached -- "$FILE" | grep -q '"version":'; then
+    echo "pre-commit: 万象棋 version 已在本次改动中更新，跳过自动升版"
+  else
+    cur=$(grep -oE '"version":"[0-9]+\.[0-9]+\.[0-9]+"' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+    if [ -n "$cur" ]; then
+      set -- $(bump_semver "$cur")
+      new=$1; shift; label="$*"
+      sed -i "0,/\"version\":\"[0-9][0-9.]*\"/s//\"version\":\"$new\"/" "$FILE"
+      git add "$FILE"
+      echo "pre-commit: 万象棋 [$label] $cur -> $new"
+    fi
+  fi
+fi
+
+if [ -z "$CORE" ] && [ -z "$WXQ" ]; then
   exit 0
 fi
 
-LEVEL=${VERSION_BUMP:-patch}
-maj=$(echo "$cur" | cut -d. -f1)
-min=$(echo "$cur" | cut -d. -f2)
-pat=$(echo "$cur" | cut -d. -f3)
-
-case "$LEVEL" in
-  major)
-    maj=$((maj + 1)); min=0; pat=0
-    label="大更新 +1.0.0"
-    ;;
-  minor)
-    min=$((min + 1)); pat=0
-    label="中更新 +0.1"
-    ;;
-  *)
-    pat=$((pat + 1))
-    label="小更新 +0.0.1"
-    ;;
-esac
-
-new="$maj.$min.$pat"
-# 只替换文件中第一处 version: "x.y.z"（即 GUIDE_META.version）
-sed -i "0,/version: \"[0-9][0-9.]*\"/s//version: \"$new\"/" "$FILE"
-git add "$FILE"
-
-echo "pre-commit: [$label] 版本号 $cur -> $new"
 exit 0

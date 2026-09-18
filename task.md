@@ -41,7 +41,7 @@ wzry-guide/
 │   ├── sync-items.py       装备官方数据同步脚本
 │   ├── sync-wxq-lineups.js 万象棋官方阵容推荐库同步（推荐/热门/新手）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
-├── wanxiangqi.html         万象棋图鉴+攻略页（复用月色主题）。9 tab：棋手/英雄牌/效果牌/装备牌/天赋牌/流派/连锁/作业/攻略★
+├── wanxiangqi.html         万象棋页。默认「阵容」通栏详情（玩法/站位/装备/棋盘/运营/天赋）；其余 tab：棋手/英雄/效果/装备/天赋/攻略/连锁。版本看 WXQ_META，不升英雄攻略 GUIDE_META
 ├── wanxiangqi-data.js      万象棋官方快照只读数据源（WXQ_META + WXQ_PLAYERS(18)/HEROES(85)/EFFECTS(98)/EQUIPS(73)/TALENTS(255)/FACTIONS(7)）。**严禁手改**
 ├── wanxiangqi-guide.js     万象棋攻略数据（WXQ_GUIDE，手工维护，改文案改这里）
 ├── wanxiangqi-lineups.js   官方阵容推荐库（WXQ_JOBS，scripts/sync-wxq-lineups.js 生成，**勿手改**）
