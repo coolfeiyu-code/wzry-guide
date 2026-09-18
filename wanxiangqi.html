@@ -118,6 +118,18 @@
   .skill .s-kind{font-size:11.5px;color:#fff;background:var(--gold);border-radius:6px;padding:1px 8px;margin-left:8px;}
   .skill .s-desc{margin-top:7px;color:var(--ink-soft);font-size:13.5px;line-height:1.75;}
   .desc-box{border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:var(--card);color:var(--ink-soft);font-size:14px;line-height:1.8;}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px;}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
+  .stat .k{font-size:11px;color:var(--ink-soft);letter-spacing:.04em;}
+  .stat .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);margin-top:2px;}
+  .enhance{margin-top:10px;padding-top:2px;}
+  .enh-i{font-size:13px;color:var(--ink-soft);line-height:1.7;padding:8px 0;border-top:1px dashed var(--line);}
+  .enh-lv{color:var(--gold);font-weight:700;margin-right:8px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .kw-help{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card);margin:8px 0;}
+  .kw-help-n{font-family:var(--font-kai);font-size:16px;font-weight:700;color:var(--ink);}
+  .kw-help-d{font-size:13.5px;color:var(--ink-soft);margin-top:6px;line-height:1.7;}
+  [data-theme="dark"] .stat,[data-theme="dark"] .kw-help{background:var(--card);}
+  @media(max-width:640px){.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
   /* 官方卡面文案的重点色是为「深色底」设计的（#ffffff 白 / #FFE897 淡金），
      在本页浅色主题下会变成白底白字（表现为"少字/缺字"）。
      这里改为按主题语义上色：词条名词→墨色，条件/关键短语→朱砂。 */
@@ -569,7 +581,7 @@
 <body>
   <div class="appbar"><div class="topbar"><div class="inner">
     <div class="brand"><span class="mark"><span>象</span></span>王者万象棋</div>
-    <a class="back-link" href="index.html">← 返回总攻略</a>
+    <a class="back-link" href="index.html">← 王者荣耀</a>
     <span class="meta" id="metaLine"></span>
     <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
       <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
@@ -744,7 +756,10 @@
         return '<div class="ccard" data-type="'+type+'" data-id="'+c.id+'">'
           +'<img class="img" loading="lazy" src="'+c.img+'" alt="'+esc(c.name)+'">'
           +'<div class="meta"><div class="nm">'+esc(c.name)+'</div>'
-          +'<div class="bd">'+qBadge(c.quality)+'<span class="badge">'+esc(c.faction||'无阵营')+'</span></div></div></div>';
+          +'<div class="bd">'+qBadge(c.quality)+'<span class="badge">'+esc(c.faction||'无阵营')+'</span>'
+          +(c.subType?'<span class="badge">'+esc(c.subType)+'</span>':'')
+          +(c.equipType?'<span class="badge">'+esc(c.equipType)+'</span>':'')
+          +'</div></div></div>';
       }).join('');
       linkifyTerms(grid);
     }
@@ -834,13 +849,86 @@
       openModal(html,'#p-'+encodeURIComponent(name));
     }
 
+    function findById(id){
+      id=Number(id);
+      var kinds=['hero','effect','equip','talent'];
+      for(var i=0;i<kinds.length;i++){
+        var arr=TYPE[kinds[i]]; if(!arr) continue;
+        for(var j=0;j<arr.length;j++){ if(Number(arr[j].id)===id) return {kind:kinds[i],c:arr[j]}; }
+      }
+      return null;
+    }
+    function costLabel(cost){
+      if(!cost||!cost.count) return '';
+      return '商店 '+cost.count+(cost.type===1?' 古币':'');
+    }
+    function statLabel(k){
+      return ({
+        HP:'生命', phyAttack:'物理攻击', magAttack:'法术攻击',
+        phyDefense:'物理防御', magDefense:'法术防御',
+        moveSpeed:'移动速度', attackSpeed:'攻击速度',
+        criticalRate:'暴击率', criticalEffect:'暴击效果',
+        attackDistance:'攻击距离', initEnergy:'初始能量',
+        energy:'能量', initLevel:'初始等级'
+      })[k]||k;
+    }
+    function miniOf(id, fallbackName){
+      var hit=findById(id);
+      if(hit){
+        return '<div class="mini" data-type="'+hit.kind+'" data-id="'+hit.c.id+'"><img loading="lazy" src="'+hit.c.img+'" alt="'+esc(hit.c.name)+'"><div class="mn">'+esc(hit.c.name)+'</div></div>';
+      }
+      return '<div class="mini"><div class="mn">'+esc(fallbackName||('#'+id))+'</div></div>';
+    }
     function openCard(type,id){
       var c=TYPE[type].find(function(x){return x.id===id;});if(!c)return;
+      var cl=costLabel(c.cost);
+      var badges=qBadge(c.quality)+'<span class="badge">阵营 · '+esc(c.faction||'无阵营')+'</span>';
+      if(c.subType) badges+='<span class="badge">'+esc(c.subType)+'</span>';
+      if(c.equipType) badges+='<span class="badge">'+esc(c.equipType)+'</span>';
+      if(cl) badges+='<span class="badge">'+esc(cl)+'</span>';
+      var sub=TYPE_LABEL[type]+'牌'+(cl?' · '+cl:'');
+      var body='<div class="m-badges">'+badges+'</div>';
+      body+='<h4>卡面效果</h4><div class="desc-box">'+fmt(c.desc)+'</div>';
+      if(c.stats){
+        var order=['HP','phyAttack','magAttack','phyDefense','magDefense','attackDistance','moveSpeed','attackSpeed','initEnergy','energy','criticalRate','criticalEffect','initLevel'];
+        var cells=order.filter(function(k){return c.stats[k]!=null;}).map(function(k){
+          return '<div class="stat"><div class="k">'+esc(statLabel(k))+'</div><div class="v">'+c.stats[k]+'</div></div>';
+        }).join('');
+        if(cells) body+='<h4>基础属性</h4><div class="stat-grid">'+cells+'</div>';
+      }
+      if(c.skills&&c.skills.length){
+        body+='<h4>技能</h4>'+c.skills.map(function(s){
+          var enh='';
+          if(s.enhance&&s.enhance.length){
+            enh='<div class="enhance">'+s.enhance.map(function(p){
+              return '<div class="enh-i"><span class="enh-lv">'+p.level+' 阶质变</span>'+fmt(p.desc)+'</div>';
+            }).join('')+'</div>';
+          }
+          return '<div class="skill"><span class="s-name">'+esc(s.name)+'</span>'
+            +'<div class="s-desc">'+fmt(s.desc)+'</div>'+enh+'</div>';
+        }).join('');
+      }
+      if(c.awakeDesc){
+        body+='<h4>觉醒</h4><div class="desc-box">'+fmt(c.awakeDesc)+'</div>';
+      }
+      if(c.kwHelp&&c.kwHelp.length){
+        body+='<h4>词条释义</h4>'+c.kwHelp.map(function(k){
+          return '<div class="kw-help"><div class="kw-help-n"><span class="wxq-term" data-k="'+esc(k.name)+'">'+esc(k.name)+'</span></div><div class="kw-help-d">'+fmt(k.desc)+'</div></div>';
+        }).join('');
+      }
+      if(c.craftFrom&&c.craftFrom.length){
+        body+='<h4>合成来源</h4><div class="m-grid">'+c.craftFrom.map(function(s){return miniOf(s.id,s.name);}).join('')+'</div>';
+      }
+      if(c.craftInto&&c.craftInto.length){
+        body+='<h4>可铸造成</h4><div class="m-grid">'+c.craftInto.map(function(cid){return miniOf(cid);}).join('')+'</div>';
+      }
+      if(c.getDesc){
+        body+='<h4>获取途径</h4><div class="desc-box">'+esc(c.getDesc)+'</div>';
+      }
       var html='<div class="m-head"><img class="m-thumb contain" src="'+c.img+'" alt="'+esc(c.name)+'">'
-        +'<div><div class="m-tit">'+esc(c.name)+'</div><div class="m-sub">'+TYPE_LABEL[type]+'牌</div></div>'
+        +'<div><div class="m-tit">'+esc(c.name)+'</div><div class="m-sub">'+esc(sub)+'</div></div>'
         +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
-        +'<div class="m-scroll"><div class="m-badges">'+qBadge(c.quality)+'<span class="badge">阵营 · '+esc(c.faction||'无阵营')+'</span></div>'
-        +'<h4>效果描述</h4><div class="desc-box">'+fmt(c.desc)+'</div></div>';
+        +'<div class="m-scroll">'+body+'</div>';
       openModal(html,'#c-'+type+'-'+id);
     }
 

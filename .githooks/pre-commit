@@ -24,7 +24,7 @@ bump_semver() {
 }
 
 CORE=$(git diff --cached --name-only -- "heroes-data.js" "index.html" "manifest.json" "icons/" "items.html" "items-data.js" "scripts/sync-items.py" "scripts/item-changes.json")
-WXQ=$(git diff --cached --name-only -- "wanxiangqi*" "scripts/sync-wxq-lineups.js")
+WXQ=$(git diff --cached --name-only -- "wanxiangqi*" "scripts/sync-wxq-lineups.js" "scripts/sync-wxq-cards.js")
 
 if [ -n "$CORE" ]; then
   FILE="heroes-data.js"
