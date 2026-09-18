@@ -100,25 +100,19 @@ body.home .appbar{background:transparent;border-bottom-color:transparent;backdro
   height:min(64vh,540px);min-height:420px;}
 .gate{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:8px;
   min-height:0;padding:28px 32px 30px;border-radius:22px;border:1px solid var(--line);
-  background:
-    radial-gradient(120% 80% at 88% -10%, rgba(110,139,123,.18), transparent 52%),
-    linear-gradient(180deg,#EEF2EC 0%,#F7F8F4 70%);
-  text-decoration:none;color:var(--ink);box-shadow:var(--shadow);
+  background:#1E2A24;text-decoration:none;color:#F7F8F4;box-shadow:var(--shadow);
   transition:transform .18s,box-shadow .18s,border-color .18s;cursor:pointer;font-family:inherit;text-align:left;overflow:hidden;}
-.gate::after{content:"";position:absolute;inset:0;border-radius:22px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);}
+.gate-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 28%;
+  pointer-events:none;transition:transform .45s cubic-bezier(.16,1,.3,1);}
+.gate.alt .gate-photo{object-position:center 18%;}
+.gate::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(20,26,23,.05) 32%,rgba(20,26,23,.78) 100%);}
+.gate::after{content:"";position:absolute;inset:0;z-index:2;border-radius:22px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);}
 .gate:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
-.gate.alt{background:
-  radial-gradient(120% 80% at 100% 0%, rgba(190,90,69,.14), transparent 50%),
-  linear-gradient(180deg,#F3EEEA 0%,#F7F8F4 72%);}
-.gate-art{position:absolute;right:0;top:10px;width:90%;height:64%;color:var(--celadon);opacity:.55;pointer-events:none;}
-.gate-board{position:absolute;left:50%;top:16%;transform:translateX(-50%);width:70%;
-  display:grid;grid-template-columns:repeat(7,1fr);gap:7px;pointer-events:none;}
-.gate-board i{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.55);border:1px solid rgba(60,90,78,.14);display:block;}
-.gate-board i.on{background:var(--celadon);border-color:transparent;opacity:.78;}
-.gate.alt .gate-board i.on{background:var(--cinnabar);opacity:.72;}
-.gate-tx{position:relative;z-index:1;}
-.gate h2{margin:0;font-family:var(--font-kai);font-size:40px;letter-spacing:.06em;font-weight:700;line-height:1.12;}
-.gate p{margin:6px 0 0;font-size:14.5px;color:var(--ink-soft);line-height:1.6;}
+.gate:hover .gate-photo{transform:scale(1.04);}
+.gate-tx{position:relative;z-index:3;}
+.gate h2{margin:0;font-family:var(--font-kai);font-size:40px;letter-spacing:.06em;font-weight:700;line-height:1.12;color:#F7F8F4;}
+.gate p{margin:6px 0 0;font-size:14.5px;color:rgba(247,248,244,.86);line-height:1.6;}
 .gate-meta{position:relative;margin:10px 0 18px;display:flex;flex-wrap:wrap;gap:9px;}
 .item-tools{display:none;width:100%;}
 .item-tools.show{display:block;}
@@ -170,15 +164,7 @@ body.view-heroes #itemPanel{display:none;}
 .item-more{display:inline-block;margin:4px 0 18px;font-size:13px;color:var(--celadon-deep);
   text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 15px;background:var(--card);}
 .item-more:hover{border-color:var(--celadon-soft);}
-[data-theme="dark"] .gate{background:
-  radial-gradient(120% 80% at 88% -10%, rgba(132,165,148,.16), transparent 52%),
-  linear-gradient(180deg,#1B231F 0%,#161C19 70%);}
-[data-theme="dark"] .gate.alt{background:
-  radial-gradient(120% 80% at 100% 0%, rgba(217,116,94,.14), transparent 50%),
-  linear-gradient(180deg,#221C1A 0%,#161C19 72%);}
-[data-theme="dark"] .gate::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
-[data-theme="dark"] .gate-art{opacity:.38;}
-[data-theme="dark"] .gate-board i{background:rgba(255,255,255,.06);border-color:rgba(174,203,187,.18);}
+[data-theme="dark"] .gate::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
 [data-theme="dark"] .imeta .used{color:var(--celadon);}
 @media(max-width:640px){
   body.home .wrap{justify-content:flex-start;padding-top:8px;}
@@ -186,8 +172,6 @@ body.view-heroes #itemPanel{display:none;}
   .gates{grid-template-columns:1fr;gap:12px;height:auto;min-height:0;margin:8px 0 0;}
   .gate{padding:22px 20px 22px;border-radius:18px;min-height:250px;height:min(38vh,300px);}
   .gate h2{font-size:32px;}
-  .gate-art{width:70%;height:52%;top:12px;}
-  .gate-board{width:64%;top:14%;gap:5px;}
   .igrid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px;}
   .icard{padding:10px;gap:9px;}
 }
@@ -629,6 +613,7 @@ body.view-heroes #itemPanel{display:none;}
   @media(prefers-reduced-motion:reduce){
     .card{animation:none;opacity:1;transform:none;}
     .modal-box{animation:none;}
+    .gate:hover,.gate:hover .gate-photo{transform:none;}
     html{scroll-behavior:auto;}
   }
   /* ===== 打印 / 导出 PDF：只输出英雄详情内容 ===== */
@@ -692,23 +677,14 @@ body.view-heroes #itemPanel{display:none;}
 
 <section class="gates" aria-label="王者荣耀与王者万象棋">
   <button type="button" class="gate" id="gateWzry">
-    <svg class="gate-art" viewBox="0 0 240 132" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round">
-        <path d="M0 80 C26 72 46 78 74 70 C100 62 126 80 154 73 C184 66 212 76 240 69" stroke-width="1.1" opacity=".55"/>
-        <path d="M0 96 C24 88 48 95 76 86 C104 77 130 96 158 89 C186 82 214 93 240 86" stroke-width="1.4" opacity=".8"/>
-        <path d="M0 114 C34 107 62 112 94 105 C122 99 152 113 182 107 C206 102 226 110 240 107" stroke-width="1.8"/>
-        <path d="M150 118 q13 8 28 0" stroke-width="1.6"/>
-        <path d="M164 118 L164 104" stroke-width="1.1" opacity=".7"/>
-      </g>
-      <circle cx="190" cy="34" r="13" fill="currentColor" opacity=".16"/>
-    </svg>
+    <img class="gate-photo" src="images/home/wzry.jpg" alt="" decoding="async">
     <span class="gate-tx">
       <h2>王者荣耀</h2>
       <p>英雄攻略 · 装备图鉴</p>
     </span>
   </button>
   <a class="gate alt" href="wanxiangqi.html">
-    <span class="gate-board" aria-hidden="true"><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i></span>
+    <img class="gate-photo" src="images/home/wxq.png" alt="" decoding="async">
     <span class="gate-tx">
       <h2>王者万象棋</h2>
       <p>棋手 · 阵容 · 卡牌</p>

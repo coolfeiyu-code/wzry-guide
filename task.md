@@ -3,7 +3,7 @@
 > 最后更新：2026-09-18
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.9**（首页大门画面）；万象棋 `WXQ_META` **v1.5.1**（capturedAt 2026-09-14，卡面技能/质变/觉醒/合成已并入）；官方阵容作业库 `WXQ_JOBS` 约 446 套。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.10**（首页大门用官方图）；万象棋 `WXQ_META` **v1.5.1**（capturedAt 2026-09-14，卡面技能/质变/觉醒/合成已并入）；官方阵容作业库 `WXQ_JOBS` 约 446 套。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -35,6 +35,7 @@
 ```
 wzry-guide/
 ├── index.html              首页二选一 + 王者荣耀英雄/装备。body.home 只显示两扇门；点王者荣耀后 body.wzry，hash `#wzry`/`#items`/`#hero-xxx`
+├── images/home/            首页大门官方图：wzry.jpg（李白皮肤原画）、wxq.png（万象棋官网 share 弈星）
 ├── heroes-data.js          英雄单一数据源：GUIDE_META(version/updateLog) + HEROES(132)
 ├── items.html              装备库渲染器
 ├── items-data.js           装备数据源(121) + items-icon/(108 图) — 由 scripts/sync-items.py 生成（勿手工编辑）
@@ -132,7 +133,10 @@ WXQ_GUIDE = {
 - 首页 **只显示两扇门**：王者荣耀 / 王者万象棋。不要再把英雄列表、装备库、赛季 chips 和大门放在同一屏。
 - 点王者荣耀 → `body.wzry`，工具栏出现「英雄 | 装备」。返回用「← 首页」或点品牌。
 - 深链：`#wzry` 英雄、`#items` 装备、`#hero-<id>` 直达英雄详情（会先进入王者荣耀）。
-- 大门视觉：王者荣耀荷塘月色远山+月；万象棋 7×4 棋盘圆点。**不要做成两张拉满视口的空白白卡片**（用户已嫌难看）。
+- 大门视觉用**官方图**铺满，不要手绘远山/圆点棋盘（用户已判难看）。
+  - 王者荣耀：`images/home/wzry.jpg` ← 官方李白皮肤原画 `game.gtimg.cn/.../131-bigskin-1.jpg`
+  - 王者万象棋：`images/home/wxq.png` ← 官网 share 图 `game.gtimg.cn/images/osgame/cp/a20260709sfzt/share.png`（弈星）
+  - 底部压深色渐变，白字。禁止再发明空白卡片或自绘装饰。
 - 装备库不再与万象棋并列；`items.html` 仅作深页，返回 `index.html#items`。
 
 ### 5.7 官方卡面补全（WXQ_META 1.5.x）
