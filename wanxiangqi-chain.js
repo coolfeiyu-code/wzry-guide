@@ -390,7 +390,7 @@
         : '<div class="chain-meta bad">规则层（wanxiangqi-rules.js）没加载 —— 这个 tab 需要它才能工作</div>') +
       '</div>';
     h += '<section class="chsec"><h2 class="chsec-h"><span class="gn">01</span>按词条查' +
-      '<span class="gh">点词条，看哪些牌会咬在一起</span></h2>' + sectionFilter(state) + '</section>';
+      '<span class="gh">点词条看详情，返回即关</span></h2>' + sectionFilter(state) + '</section>';
     h += '<section class="chsec" id="sbWrap"><h2 class="chsec-h"><span class="gn">02</span>上场沙盒' +
       '<span class="gh">最多 ' + MAX_HERO_SLOTS + ' 英雄 + ' + MAX_EFFECT_SLOTS + ' 效果牌</span></h2>' +
       sectionSandbox() + '</section>';
@@ -398,6 +398,8 @@
 
     var cEl = document.getElementById('count');
     if (cEl) cEl.textContent = '连锁 · 词条推演';
+    var b = ui();
+    if (b.linkify) b.linkify(grid);
     bind();
     return true;
   }
@@ -405,7 +407,11 @@
   /** 只重画时间轴，别把整个 tab 重建（保住搜索框焦点和滚动位置） */
   function refreshTimeline() {
     var body = document.getElementById('tlBody');
-    if (body) body.innerHTML = timelineHtml();
+    if (body) {
+      body.innerHTML = timelineHtml();
+      var b = ui();
+      if (b.linkify) b.linkify(body);
+    }
   }
 
   /** 只重画槽位 + 时间轴 */
@@ -440,9 +446,9 @@
       var t = e.target;
       var kw = t.closest('.chchip[data-kw]');
       if (kw) {
-        var k = kw.getAttribute('data-kw'), i = sb.kw.indexOf(k);
-        if (i >= 0) sb.kw.splice(i, 1); else sb.kw.push(k);
-        return rerender();
+        var b = ui();
+        if (b.openKeyword) b.openKeyword(kw.getAttribute('data-kw'));
+        return;
       }
       var dj = t.closest('.chj[data-join]');
       if (dj) { sb.join = dj.getAttribute('data-join'); return rerender(); }
@@ -566,9 +572,16 @@
     goSandbox();
   }
 
+  function toggleKw(name) {
+    if (!name) return;
+    if (sb.kw.indexOf(name) < 0) sb.kw.push(name);
+    if (ui().state && ui().state.type === 'chain') rerender();
+  }
+
   global.WXQ_CHAIN = {
     render: render,
     openHeroNames: openHeroNames,
+    toggleKw: toggleKw,
     rerender: rerender,
     state: sb,
     diagnostics: function () {

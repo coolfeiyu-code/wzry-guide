@@ -314,6 +314,7 @@
         grid.style.gridTemplateColumns = '';
         if (countEl) countEl.textContent = L.name;
         grid.innerHTML = detailHtml(L);
+        if (ui().linkify) ui().linkify(grid);
         return;
       }
     }
@@ -360,6 +361,7 @@
       h += '</div>';
     }
     grid.innerHTML = h;
+    if (ui().linkify) ui().linkify(grid);
   }
 
   function onGridClick(e) {

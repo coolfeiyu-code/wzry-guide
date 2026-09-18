@@ -549,8 +549,8 @@
   }
 
   /* ===== 词条悬停浮层 ===== */
-  .wxq-term{cursor:help;border-bottom:1px dotted var(--celadon);color:var(--ink);transition:background .12s;padding:0 1px;border-radius:3px;}
-  .wxq-term:hover{background:var(--celadon-soft);}
+  .wxq-term{cursor:pointer;border-bottom:1px dotted var(--celadon);color:var(--celadon-deep);font-weight:600;transition:background .12s;padding:0 1px;border-radius:3px;}
+  .wxq-term:hover{background:var(--celadon-soft);color:var(--ink);}
   #wxqTip{position:fixed;z-index:1200;max-width:300px;width:max-content;display:none;pointer-events:none;
     background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(20,30,24,.18);
     padding:12px 13px;color:var(--ink);font-size:13px;line-height:1.7;}
@@ -662,7 +662,7 @@
     // 1) 先整体转义，再只还原 <b> / <color>，避免数据里任何意外标签破坏结构；
     // 2) 官方重点色 <color=#ffffff> / <color=#FFE897> 是给深色卡面设计的，
     //    照搬会在浅色主题下"隐形"（表现为缺字）→ 映射为 .hl-term / .hl-gold；
-    // 3) 官方 <a href=...> 锚点指向游戏内详情，页面无对应页 → 只去掉标签、保留文字。
+    // 3) 官方 <a href=N>词条</a> 变成可点词条，点进去看带此词条的牌，返回关掉。
     function _lum(hex){
       var h=String(hex||'').replace('#','');
       if(h.length===3)h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2);
@@ -680,6 +680,11 @@
         return (v==='#ffe897'||v==='#ff9'||v==='#ffe')?'<span class="hl-gold">':'<span class="hl-term">';
       });
       s=s.replace(/&lt;\/color&gt;/gi,'</span>');
+      s=s.replace(/&lt;a\s*href=(\d+)&gt;([\s\S]*?)&lt;\/a&gt;/gi,function(_,n,inner){
+        var hrefMap=(window.WXQ_RULES&&WXQ_RULES.keywords&&WXQ_RULES.keywords.byHref)||{};
+        var kn=hrefMap[String(n)]||inner.replace(/<[^>]*>/g,'');
+        return '<span class="wxq-term" data-k="'+esc(kn)+'">'+inner+'</span>';
+      });
       s=s.replace(/&lt;a\s*href=[^&]*&gt;/gi,'').replace(/&lt;a&gt;/gi,'').replace(/&lt;\/a&gt;/gi,'');
       return s.replace(/\n/g,'<br>');
     }
@@ -722,6 +727,7 @@
           +'<div class="meta"><div class="nm">'+esc(p.name)+'</div>'
           +'<div class="bd">'+(p.skills||[]).map(function(s){return '<span class="badge">'+esc(s.kind)+'</span>';}).join('')+'</div></div></div>';
       }).join('');
+      linkifyTerms(grid);
     }
 
     function renderCards(type){
@@ -740,6 +746,7 @@
           +'<div class="meta"><div class="nm">'+esc(c.name)+'</div>'
           +'<div class="bd">'+qBadge(c.quality)+'<span class="badge">'+esc(c.faction||'无阵营')+'</span></div></div></div>';
       }).join('');
+      linkifyTerms(grid);
     }
 
     function renderFactions(){
@@ -773,6 +780,7 @@
         modalBox.innerHTML=top.html;
         modalBox.classList.toggle('wide', !!top.wide);
         modal.classList.add('open');document.body.style.overflow='hidden';
+        linkifyTerms(modalBox);
       }else{
         modalBox.innerHTML='';
         modalBox.classList.remove('wide');
@@ -786,7 +794,7 @@
     }
     // 回退后地址栏可能残留 #p-/ #c-/ #f-/ #j-，清掉它，免得刷新时又弹出弹窗
     function cleanModalHash(){
-      if(/^#(p|c|f|j)-/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+      if(/^#(p|c|f|j|k)-/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
     }
     // 点 × / 返回 / Esc / 点遮罩：统一交给系统回退处理，保证和手势返回行为一致
     function closeModal(){
@@ -806,6 +814,8 @@
     modal.addEventListener('click',function(e){
       if(e.target===modal)return closeModal();
       if(window.WXQ_JOBS_UI&&WXQ_JOBS_UI.onModalClick(e))return;
+      var wt=e.target.closest('.wxq-term'); if(wt){ openTerm(wt.getAttribute('data-k')); return; }
+      var kf=e.target.closest('[data-kw-filter]'); if(kf){ applyKwFilter(kf.getAttribute('data-kw-filter')); return; }
       var mn=e.target.closest('.mini');if(mn)return openCard(mn.dataset.type,+mn.dataset.id);
     });
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
@@ -851,15 +861,84 @@
       openModal(html,'#f-'+encodeURIComponent(name));
     }
 
+    function isKw(name){
+      var R=window.WXQ_RULES&&WXQ_RULES.keywords;
+      if(!R||!name)return false;
+      if((R.order||[]).indexOf(name)>=0)return true;
+      if((R.traits||[]).indexOf(name)>=0)return true;
+      var bh=R.byHref||{};
+      for(var k in bh){ if(bh[k]===name)return true; }
+      return false;
+    }
+    function cardsWithKw(name){
+      var R=window.WXQ_RULES; if(!R||!R.cards)return [];
+      var out=[], seen={};
+      Object.keys(R.cards).forEach(function(id){
+        var r=R.cards[id];
+        if(!r||!r.keywords||r.keywords.indexOf(name)<0)return;
+        var kind=r.kind||'hero';
+        var arr=TYPE[kind]; if(!arr)return;
+        var c=null;
+        for(var i=0;i<arr.length;i++){ if(String(arr[i].id)===String(r.id)||arr[i].name===r.name){ c=arr[i]; break; } }
+        if(!c||seen[kind+':'+c.id])return;
+        seen[kind+':'+c.id]=1;
+        out.push({kind:kind,c:c});
+      });
+      return out;
+    }
+    function openKeyword(name){
+      if(!name||!isKw(name))return;
+      var R=window.WXQ_RULES&&WXQ_RULES.keywords;
+      var desc=(R&&R.descs&&R.descs[name])||'';
+      var isPhase=R&&R.phases&&R.phases.indexOf(name)>=0;
+      var members=cardsWithKw(name);
+      var mini=members.map(function(m){
+        return '<div class="mini" data-type="'+m.kind+'" data-id="'+m.c.id+'"><img loading="lazy" src="'+m.c.img+'" alt="'+esc(m.c.name)+'"><div class="mn">'+esc(m.c.name)+'</div></div>';
+      }).join('');
+      var filterBtn=(state.type==='chain')
+        ? '<button type="button" class="jbtn pri" data-kw-filter="'+esc(name)+'" style="margin-top:12px">用此词条筛选上场牌</button>'
+        : '<button type="button" class="jbtn" data-kw-filter="'+esc(name)+'" style="margin-top:12px">在连锁里筛选此词条</button>';
+      var html='<div class="m-head"><div class="jhead-mark">词</div>'
+        +'<div><div class="m-tit">'+esc(name)+'</div><div class="m-sub">词条 · '+(isPhase?'时机（会进时间轴）':'标签')+'</div></div>'
+        +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
+        +'<div class="m-scroll">'
+        +(desc?'<div class="desc-box">'+esc(desc)+'</div>':'')
+        +'<h4>带此词条的牌 <span class="tag">'+members.length+'</span></h4>'
+        +(mini?'<div class="m-grid">'+mini+'</div>':'<div class="jmuted">图鉴里还没有挂上这条词条的牌。</div>')
+        +filterBtn
+        +'</div>';
+      openModal(html,'#k-'+encodeURIComponent(name));
+    }
+    function openTerm(name){
+      hideTip();
+      if(isKw(name)) return openKeyword(name);
+      var en=REG[name]; if(!en)return;
+      if(en.kind==='player') return openPlayer(name);
+      if(en.kind==='faction') return openFaction(name);
+      if(en.kind==='hero'||en.kind==='effect'||en.kind==='equip'||en.kind==='talent'){
+        var arr=TYPE[en.kind]; if(!arr)return;
+        for(var i=0;i<arr.length;i++){ if(arr[i].name===name) return openCard(en.kind, arr[i].id); }
+      }
+    }
+    function applyKwFilter(name){
+      if(!window.WXQ_CHAIN)return;
+      if(WXQ_CHAIN.toggleKw) WXQ_CHAIN.toggleKw(name);
+      else if(WXQ_CHAIN.openHeroNames){ /* no-op */ }
+      closeModal();
+      var ct=document.querySelector('.tab[data-type="chain"]');
+      if(ct&&state.type!=='chain') ct.click();
+    }
+
     function closeSilent(){
       mstack.length=0;paintModal();
       try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
     }
-    window.__wxq={close:closeModal, openPlayer:openPlayer, openCard:openCard, openFaction:openFaction};
+    window.__wxq={close:closeModal, openPlayer:openPlayer, openCard:openCard, openFaction:openFaction, openKeyword:openKeyword};
     // 连锁 tab（wanxiangqi-chain.js）用的桥：它只负责画，通用工具从这儿拿，
     // 避免两个文件各写一套 esc / fmt 导致高亮不一致。
     window.__wxqUI={
       esc:esc, fmt:fmt, qBadge:qBadge, openCard:openCard, openPlayer:openPlayer, openModal:openModal, closeSilent:closeSilent,
+      openKeyword:openKeyword, openTerm:openTerm, linkify:function(el){ linkifyTerms(el); },
       state:state, TYPE:TYPE, TYPE_LABEL:TYPE_LABEL,
       PLAYERS:PLAYERS, HEROES:HEROES, EFFECTS:EFFECTS
     };
@@ -884,9 +963,18 @@
         var sub=f.heroes?(f.heroes+' 英雄 · '+(f.effects||0)+' 效果 · '+(f.equips||0)+' 装备 · '+(f.talents||0)+' 天赋'):'';
         regAdd(f.name,'faction',null,f.note||'','','',sub);
       });
-      if(window.WXQ_RULES&&WXQ_RULES.keywords&&WXQ_RULES.keywords.order){
-        WXQ_RULES.keywords.order.forEach(function(k){
-          if(k) regAdd(k,'keyword',null,'词条','','','词条');
+      if(window.WXQ_RULES&&WXQ_RULES.keywords){
+        var KW=WXQ_RULES.keywords;
+        var knames={};
+        (KW.order||[]).forEach(function(k){ knames[k]=1; });
+        (KW.traits||[]).forEach(function(k){ knames[k]=1; });
+        Object.keys(KW.byHref||{}).forEach(function(h){ knames[KW.byHref[h]]=1; });
+        Object.keys(KW.descs||{}).forEach(function(k){ knames[k]=1; });
+        Object.keys(knames).forEach(function(k){
+          if(!k)return;
+          var d=(KW.descs&&KW.descs[k])||'词条';
+          var sub=(KW.phases&&KW.phases.indexOf(k)>=0)?'时机词条':'词条';
+          regAdd(k,'keyword',null,d,'','',sub);
         });
       }
     }
@@ -904,7 +992,7 @@
       while(tn=walker.nextNode()){
         if(!tn.nodeValue||!tn.nodeValue.trim())continue;
         if(tn.parentNode&&tn.parentNode.nodeType===1&&tn.parentNode.closest&&tn.parentNode.closest('.wxq-term'))continue;
-        if(tn.parentNode&&tn.parentNode.closest&&tn.parentNode.closest('#wxqTip'))continue;
+        if(tn.parentNode&&tn.parentNode.closest&&tn.parentNode.closest('#wxqTip,button,a,.jcell,.jcn,.nm,.jcard-nm,.jav,.m-tit'))continue;
         tns.push(tn);
       }
       tns.forEach(function(t){
@@ -965,7 +1053,7 @@
     document.getElementById('qual').addEventListener('change',function(){state.qual=this.value;render();});
     grid.addEventListener('click',function(e){
       hideTip();
-      var wt=e.target.closest('.wxq-term'); if(wt){ showTip(wt); return; }
+      var wt=e.target.closest('.wxq-term'); if(wt){ openTerm(wt.getAttribute('data-k')); return; }
       if(window.WXQ_JOBS_UI){
         var jr=WXQ_JOBS_UI.onGridClick(e);
         if(jr==='rerender'){render();return;}
@@ -999,6 +1087,7 @@
         if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.open(jk,true);
         return;
       }
+      if(h.indexOf('#k-')===0)return openKeyword(decodeURIComponent(h.slice(3)));
       if(h.indexOf('#p-')===0)return openPlayer(decodeURIComponent(h.slice(3)));
       if(h.indexOf('#c-')===0){var s=h.slice(3).split('-');var id=+s.pop();return openCard(s.join('-'),id);}
       if(h.indexOf('#f-')===0)return openFaction(decodeURIComponent(h.slice(3)));
@@ -1008,7 +1097,7 @@
     var _initHash=location.hash;
     // 深链进入弹窗时，先把基础 URL 上的 hash 抹掉，之后弹窗再压入属于自己的历史记录。
     // 于是「返回 / 左滑」只关弹窗，不会把用户带出本站。
-    if(/^#(p|c|f)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+    if(/^#(p|c|f|k)-/.test(_initHash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
     route(_initHash);
   })();
   </script>
