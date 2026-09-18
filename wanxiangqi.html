@@ -476,7 +476,7 @@
     .preset{min-height:44px;padding:10px 12px;}
     .chj{min-height:34px;}
   }
-  /* ===== 作业 tab · 官方阵容页 ===== */
+  /* ===== 阵容 tab · 官方推荐库 ===== */
   .tab.jtab{color:var(--gold);font-weight:600;}
   .tab.jtab.active{color:var(--ink);}
   .jobs-root{display:block;}
@@ -514,6 +514,10 @@
   .ex-op:last-child{border-bottom:none;}
   .ex-oph{font-size:13px;font-weight:700;color:var(--celadon-deep);margin-bottom:4px;}
   .ex-tips{border-color:rgba(182,144,78,.4);}
+  .ex-read p,.ex-readp{font-size:14.5px;color:var(--ink);line-height:1.85;margin:0;}
+  .ex-readp{margin:0 0 12px;}
+  .ex-read{border-color:rgba(110,139,123,.4);background:rgba(110,139,123,.06);}
+  [data-theme="dark"] .ex-read{background:rgba(132,165,148,.10);}
   .explain-hub{display:flex;flex-direction:column;gap:12px;}
   .explain-hub>.jbox:first-child p{font-size:14px;color:var(--ink-soft);line-height:1.75;margin:0 0 8px;}
   .jpager{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 4px;}
@@ -662,7 +666,7 @@
 
     <div class="foot">
       数据来源：<b>王者万象棋官方</b>（wxq.qq.com 公开数据快照 + 阵容推荐库）· 抓取于 <b id="capDate"></b><br>
-      卡面与数值均来自官方公开数据；作业页阵容码可导入游戏。讲解只转述卡面与作业原文，不模拟打架。
+      卡面与数值均来自官方公开数据；阵容码可导入游戏。讲解按卡面讲机制，实战句子取自该套阵容原文。
     </div>
   </div>
 
@@ -754,7 +758,7 @@
       if(isJobs){
         if(window.WXQ_JOBS_UI) return window.WXQ_JOBS_UI.render(grid,state);
         grid.className='jobs-root';
-        grid.innerHTML='<div class="empty">作业模块没加载出来</div>';
+        grid.innerHTML='<div class="empty">阵容模块没加载出来</div>';
         return;
       }
       if(state.type==='explain'){
@@ -1064,7 +1068,7 @@
       try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
     }
     window.__wxq={close:closeModal, openPlayer:openPlayer, openCard:openCard, openFaction:openFaction, openKeyword:openKeyword};
-    // 作业 / 讲解页用的桥：通用 esc / fmt / 弹窗，避免两套高亮。
+    // 阵容 / 讲解页用的桥：通用 esc / fmt / 弹窗，避免两套高亮。
     window.__wxqUI={
       esc:esc, fmt:fmt, qBadge:qBadge, openCard:openCard, openPlayer:openPlayer, openModal:openModal, closeSilent:closeSilent,
       openKeyword:openKeyword, openTerm:openTerm, linkify:function(el){ linkifyTerms(el); },
