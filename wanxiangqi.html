@@ -759,6 +759,7 @@
           +'<div class="bd">'+qBadge(c.quality)+'<span class="badge">'+esc(c.faction||'无阵营')+'</span>'
           +(c.subType?'<span class="badge">'+esc(c.subType)+'</span>':'')
           +(c.equipType?'<span class="badge">'+esc(c.equipType)+'</span>':'')
+          +(c.craftFrom&&c.craftFrom.length?'<span class="badge">从'+esc(c.craftFrom.map(function(s){return s.name;}).join('、'))+'合成的</span>':'')
           +'</div></div></div>';
       }).join('');
       linkifyTerms(grid);
@@ -917,7 +918,9 @@
         }).join('');
       }
       if(c.craftFrom&&c.craftFrom.length){
-        body+='<h4>合成来源</h4><div class="m-grid">'+c.craftFrom.map(function(s){return miniOf(s.id,s.name);}).join('')+'</div>';
+        var fromNm=c.craftFrom.map(function(s){return s.name;}).join('、');
+        sub+=' · 从'+fromNm+'合成的';
+        body+='<h4>从'+esc(fromNm)+'合成的</h4><div class="m-grid">'+c.craftFrom.map(function(s){return miniOf(s.id,s.name);}).join('')+'</div>';
       }
       if(c.craftInto&&c.craftInto.length){
         body+='<h4>可铸造成</h4><div class="m-grid">'+c.craftInto.map(function(cid){return miniOf(cid);}).join('')+'</div>';
