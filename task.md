@@ -3,7 +3,7 @@
 > 最后更新：2026-09-18
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.10**（首页大门用官方图）；万象棋 `WXQ_META` **v1.5.1**（capturedAt 2026-09-14，卡面技能/质变/觉醒/合成已并入）；官方阵容作业库 `WXQ_JOBS` 约 446 套。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.11**（首页官方主视觉 + 王者荣耀筛选收口）；万象棋 `WXQ_META` **v1.5.2**（属性按局内数值显示）；官方阵容作业库 `WXQ_JOBS` 约 446 套。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -35,7 +35,7 @@
 ```
 wzry-guide/
 ├── index.html              首页二选一 + 王者荣耀英雄/装备。body.home 只显示两扇门；点王者荣耀后 body.wzry，hash `#wzry`/`#items`/`#hero-xxx`
-├── images/home/            首页大门官方图：wzry.jpg（李白皮肤原画）、wxq.png（万象棋官网 share 弈星）
+├── images/home/            首页大门官方图：wzry.jpg（李白皮肤原画）、wxq.jpg（万象棋官网六人主视觉 top_bg.jpg）
 ├── heroes-data.js          英雄单一数据源：GUIDE_META(version/updateLog) + HEROES(132)
 ├── items.html              装备库渲染器
 ├── items-data.js           装备数据源(121) + items-icon/(108 图) — 由 scripts/sync-items.py 生成（勿手工编辑）
@@ -135,14 +135,17 @@ WXQ_GUIDE = {
 - 深链：`#wzry` 英雄、`#items` 装备、`#hero-<id>` 直达英雄详情（会先进入王者荣耀）。
 - 大门视觉用**官方图**铺满，不要手绘远山/圆点棋盘（用户已判难看）。
   - 王者荣耀：`images/home/wzry.jpg` ← 官方李白皮肤原画 `game.gtimg.cn/.../131-bigskin-1.jpg`
-  - 王者万象棋：`images/home/wxq.png` ← 官网 share 图 `game.gtimg.cn/images/osgame/cp/a20260709sfzt/share.png`（弈星）
+  - 王者万象棋：`images/home/wxq.jpg` ← 官网六人主视觉 `game.gtimg.cn/images/osgame/cp/a20260709sfzt/top_bg.jpg`
   - 底部压深色渐变，白字。禁止再发明空白卡片或自绘装饰。
-- 装备库不再与万象棋并列；`items.html` 仅作深页，返回 `index.html#items`。
+- 王者荣耀栏分路只留工具栏一处，**不要**再加底部锚点导航（会和分路筛重复）。
+- 装备库不再与万象棋并列；首页不链 `items.html`。`items.html` 仅作旧链落地，返回 `index.html#items`。
+- 万象棋页返回文案是「← 首页」，不要写成「王者荣耀」。
 
 ### 5.7 官方卡面补全（WXQ_META 1.5.x）
 
 - `node scripts/sync-wxq-cards.js` 拉 `589094_oscard_new_1.js` / `_4.js`，按 id 对齐专名 0-mismatch。
 - 英雄弹窗：卡面效果、基础属性、技能、10/40/100 阶质变、觉醒、词条释义、商店古币。
+- 属性展示折算（官方存的是放大整数）：移速 `/1000`（4600→4.6）、攻速 `/10000`（6000→0.60）、暴击率/暴击效果 `/100` 加 `%`。HP/攻防/距离/能量原样。
 - 装备弹窗：类型、从 XX 合成的（`craftFrom`）、可铸造成（`craftInto`）、获取途径。基础装没有 craftFrom 只显示可铸造。
 
 ---

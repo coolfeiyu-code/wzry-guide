@@ -581,7 +581,7 @@
 <body>
   <div class="appbar"><div class="topbar"><div class="inner">
     <div class="brand"><span class="mark"><span>象</span></span>王者万象棋</div>
-    <a class="back-link" href="index.html">← 王者荣耀</a>
+    <a class="back-link" href="index.html">← 首页</a>
     <span class="meta" id="metaLine"></span>
     <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
       <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
@@ -873,6 +873,13 @@
         energy:'能量', initLevel:'初始等级'
       })[k]||k;
     }
+    function statValue(k, v){
+      if(v==null) return '';
+      if(k==='moveSpeed') return (Number(v)/1000).toFixed(1);
+      if(k==='attackSpeed') return (Number(v)/10000).toFixed(2);
+      if(k==='criticalRate' || k==='criticalEffect') return (Number(v)/100).toFixed(0) + '%';
+      return String(v);
+    }
     function miniOf(id, fallbackName){
       var hit=findById(id);
       if(hit){
@@ -893,7 +900,7 @@
       if(c.stats){
         var order=['HP','phyAttack','magAttack','phyDefense','magDefense','attackDistance','moveSpeed','attackSpeed','initEnergy','energy','criticalRate','criticalEffect','initLevel'];
         var cells=order.filter(function(k){return c.stats[k]!=null;}).map(function(k){
-          return '<div class="stat"><div class="k">'+esc(statLabel(k))+'</div><div class="v">'+c.stats[k]+'</div></div>';
+          return '<div class="stat"><div class="k">'+esc(statLabel(k))+'</div><div class="v">'+esc(statValue(k,c.stats[k]))+'</div></div>';
         }).join('');
         if(cells) body+='<h4>基础属性</h4><div class="stat-grid">'+cells+'</div>';
       }
