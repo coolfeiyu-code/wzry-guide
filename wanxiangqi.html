@@ -24,7 +24,8 @@
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);line-height:1.7;font-size:15px;
-    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s;-webkit-tap-highlight-color:transparent;}
+    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s;-webkit-tap-highlight-color:transparent;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;}
   body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
     background:radial-gradient(120% 70% at 82% -8%, rgba(110,139,123,.16), transparent 55%),
               radial-gradient(80% 50% at 10% 0%, rgba(182,144,78,.07), transparent 50%);transition:background .3s;}
@@ -258,14 +259,25 @@
   [data-theme="dark"] .desc-box{background:var(--card);}
 
   @media (max-width:640px){
-    .wrap{padding:0 15px 72px;}
-    .topbar .inner{padding:11px 15px;gap:8px;}
-    .back-link{padding:8px 11px;font-size:12.5px;}
-    .hero{padding:26px 0 16px;}
-    .hero-card{padding:28px 22px 26px;border-radius:16px;}
-    .hero h1{font-size:34px;}
-    .toolbar .row{gap:9px;}
-    .search{min-width:0;flex:1 1 140px;padding:8px 12px 8px 32px;background-position:10px center;}
+    .wrap{padding:0 12px 64px;}
+    .appbar{position:static;background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;}
+    .topbar .inner{padding:8px 12px;gap:8px;flex-wrap:nowrap;}
+    .brand{font-size:13.5px;white-space:nowrap;}
+    .topbar .meta{display:none;}
+    .back-link{padding:6px 10px;font-size:12.5px;}
+    .hero{padding:8px 0 6px;}
+    .hero-card{padding:14px 14px 12px;border-radius:14px;}
+    .hero .kicker,.hero .sub{display:none;}
+    .hero h1{font-size:22px;line-height:1.2;}
+    .hero .chips{display:none;}
+    .toolbar{padding:6px 0 8px;}
+    .toolbar .row{gap:8px;}
+    #tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      width:100%;max-width:100%;scrollbar-width:none;}
+    #tabs::-webkit-scrollbar{display:none;}
+    .seg .tab{padding:6px 12px;font-size:13px;flex:none;}
+    .search,select.filter{font-size:16px;min-height:40px;}
+    .search{min-width:0;flex:1 1 120px;padding:8px 12px 8px 32px;background-position:10px center;}
     .grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;}
     .modal{padding:0;}
     /* iOS Safari 的 100vh 会被地址栏/工具栏盖住 → 用 dvh，底部再让出安全区 */
@@ -279,6 +291,7 @@
     .modal-close .mc-x{display:none;}
     .modal-close .mc-back{display:inline-flex;align-items:center;gap:5px;}
     .m-scroll{padding:16px 15px calc(26px + env(safe-area-inset-bottom));overscroll-behavior:contain;}
+    [data-theme="dark"] .appbar{background:var(--paper);}
   }
 
   /* ==================================================================
@@ -522,7 +535,7 @@
   .jsk-d{font-size:13px;color:var(--ink-soft);line-height:1.7;margin-top:4px;}
   .jboard{display:flex;flex-direction:column;gap:6px;}
   .jrow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
-  .jcell{aspect-ratio:1;border-radius:12px;background:var(--paper-2);min-height:0;
+  .jcell{aspect-ratio:1;border-radius:12px;background:var(--paper-2);min-height:0;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 1px 0;gap:2px;border:none;}
   button.jcell{font-family:inherit;cursor:pointer;}
   .jcell.filled{background:transparent;}
@@ -552,12 +565,18 @@
     .jtri,.jtwo,.jtal-grid{grid-template-columns:1fr;}
   }
   @media (max-width:640px){
-    .jgrid{grid-template-columns:1fr 1fr;}
-    .jcell .jcn{font-size:9px;}
-    .jlord{margin-left:0;width:100%;}
-    .jbtn{min-height:44px;}
-    .jchip{min-height:40px;}
-    .jdoc-tit h1{font-size:24px;}
+    .jgrid{grid-template-columns:1fr 1fr;gap:8px;}
+    .jboard{gap:3px;width:100%;max-width:100%;}
+    .jrow{gap:3px;}
+    .jcell{border-radius:8px;padding:1px;}
+    .jcell img,.jcell .jph{width:86%;}
+    .jcell .jcn{display:none;}
+    .jlord{margin-left:0;width:auto;max-width:100%;}
+    .jbtn{min-height:40px;}
+    .jchip{min-height:36px;padding:6px 11px;}
+    .jdoc-tit h1{font-size:20px;}
+    .jbox{padding:12px 13px 14px;border-radius:12px;}
+    .jav.lg{width:44px;height:44px;}
   }
 
   /* ===== 词条悬停浮层 ===== */
