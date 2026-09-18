@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-<title>王者荣耀 S44 英雄攻略总集 · 全英雄</title>
-<meta name="description" content="王者荣耀 S44 赛季全英雄攻略总集：按分路归类，含版本调整、梯度、出装铭文与克制关系，数据驱动、可实时更新。">
+<title>王者荣耀 S44 · 王者万象棋</title>
+<meta name="description" content="王者荣耀 S44 全英雄攻略与装备图鉴，与王者万象棋官方图鉴并列：阵容码、棋盘摆法、英雄牌技能与装备合成。">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="S44 攻略总集">
+<meta name="apple-mobile-web-app-title" content="王者攻略">
 <meta name="theme-color" content="#F7F8F4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)">
 <style>
@@ -83,29 +83,85 @@
 .hchip{font-size:12.5px;color:var(--ink);text-decoration:none;background:var(--paper-2);
   border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer;transition:.16s;}
 .hchip:hover{border-color:var(--celadon-soft);background:var(--card);color:var(--celadon-deep);}
-/* 顶栏「装备库」入口 */
-.nav-link{display:inline-flex;align-items:center;gap:2px;font-size:13px;color:var(--ink-soft);
-  text-decoration:none;padding:6px 13px;border-radius:999px;border:1px solid var(--line);
-  background:var(--card);white-space:nowrap;transition:.18s;margin-left:auto;flex-shrink:0;}
-.nav-link:hover{color:var(--celadon-deep);border-color:var(--celadon-soft);}
-[data-theme="dark"] .nav-link{color:var(--ink-soft);border-color:var(--line);}
-[data-theme="dark"] .nav-link:hover{color:var(--celadon);border-color:var(--celadon-soft);}
-
-/* 首页「功能板块」显眼入口 */
-.feature-strip{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 26px;}
-.feat-card{position:relative;display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:16px;border:1px solid var(--line);background:var(--card);text-decoration:none;color:var(--ink);transition:.18s;box-shadow:var(--shadow);overflow:hidden;}
-.feat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
-.feat-ico{width:46px;height:46px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:var(--font-kai);background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);}
-.feat-tx{display:flex;flex-direction:column;gap:3px;min-width:0;}
-.feat-tx b{font-size:16px;letter-spacing:.02em;}
-.feat-tx i{font-style:normal;font-size:12.5px;color:var(--ink-soft);}
-.feat-go{margin-left:auto;font-size:22px;color:var(--ink-soft);transition:.18s;}
-.feat-card:hover .feat-go{color:var(--celadon-deep);}
-.feat-card.hot{border-color:var(--cinnabar);background:linear-gradient(180deg,rgba(190,90,69,.10),var(--card));}
-.feat-card.hot .feat-ico{background:linear-gradient(140deg,var(--cinnabar),#9c4636);}
-.feat-card.hot .feat-go{color:var(--cinnabar);}
-.feat-tag{position:absolute;top:10px;right:14px;font-size:10.5px;letter-spacing:.14em;color:#fff;background:var(--cinnabar);border-radius:999px;padding:2px 9px;font-weight:600;}
-@media(max-width:640px){.feature-strip{grid-template-columns:1fr;}}
+/* 首页双庭：王者荣耀 / 王者万象棋 */
+.workspace{position:relative;}
+.gates{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 4px;align-items:stretch;}
+.gate{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  min-height:176px;padding:26px 28px 22px;border-radius:20px;border:1px solid var(--line);
+  background:var(--card);text-decoration:none;color:var(--ink);box-shadow:var(--shadow);
+  transition:transform .18s,box-shadow .18s,border-color .18s;cursor:pointer;font-family:inherit;text-align:left;overflow:hidden;}
+.gate:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
+.gate.on{border-color:var(--celadon);box-shadow:0 0 0 1px rgba(110,139,123,.35), var(--shadow);}
+.gate.alt{background:
+  radial-gradient(120% 80% at 100% 0%, rgba(190,90,69,.12), transparent 55%),
+  var(--card);}
+.gate .gk{font-size:11.5px;letter-spacing:.22em;color:var(--celadon-deep);font-weight:600;}
+.gate.alt .gk{color:var(--cinnabar);}
+.gate h2{margin:4px 0 0;font-family:var(--font-kai);font-size:32px;letter-spacing:.06em;font-weight:700;line-height:1.15;}
+.gate p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.65;}
+.gate .go{margin-top:auto;padding-top:12px;font-size:13px;color:var(--celadon-deep);font-weight:600;}
+.gate.alt .go{color:var(--cinnabar);}
+.gate-meta{position:relative;margin:10px 0 18px;display:flex;flex-wrap:wrap;gap:9px;}
+.item-tools{display:none;width:100%;}
+.item-tools.show{display:block;}
+.hero-tools{display:contents;}
+body.view-items .hero-tools{display:none;}
+body.view-items .item-tools{display:block;}
+body.view-items #list,body.view-items #anchorNav{display:none;}
+body.view-items #itemPanel{display:block;}
+body.view-heroes #itemPanel{display:none;}
+.item-panel{display:none;padding-top:8px;}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:11px;padding:4px 0 20px;}
+.icard{background:var(--card);border:1px solid var(--line);border-radius:13px;
+  padding:12px;cursor:pointer;box-shadow:var(--shadow);
+  display:flex;gap:11px;align-items:flex-start;transition:.18s;position:relative;overflow:hidden;}
+.icard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:var(--celadon-soft);}
+.icard.season{border-color:rgba(182,144,78,.45);}
+.icard.season::before{content:"赛季";position:absolute;top:0;right:0;
+  background:var(--gold);color:#fff;font-size:10px;padding:2px 7px;
+  border-bottom-left-radius:8px;letter-spacing:.5px;}
+.iico{width:46px;height:46px;border-radius:10px;flex-shrink:0;overflow:hidden;
+  background:var(--paper-2);display:grid;place-items:center;border:1px solid var(--line);}
+.iico img{width:100%;height:100%;object-fit:cover;display:block;}
+.iico .ph{width:100%;height:100%;display:grid;place-items:center;
+  font-size:17px;font-weight:600;color:#fff;font-family:var(--font-serif);}
+.imeta{min-width:0;flex:1;}
+.imeta .nm{font-size:14.5px;font-weight:600;line-height:1.35;margin-bottom:3px;word-break:break-all;}
+.imeta .pr{font-size:11.5px;color:var(--gold);margin-bottom:5px;}
+.imeta .at{font-size:12px;color:var(--ink-soft);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.imeta .cat{display:inline-block;font-size:10.5px;color:var(--ink-soft);
+  border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-top:5px;}
+.imeta .used{font-size:11px;color:var(--celadon-deep);margin-top:5px;font-weight:600;}
+.chg{margin:4px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
+.chg-hd{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none;}
+.chg-hd .ttl{font-family:var(--font-kai);font-size:15.5px;font-weight:600;flex:1;}
+.chg-hd .cnt{font-size:12px;color:var(--ink-soft);}
+.chg-hd .arw{color:var(--ink-soft);font-size:12px;transition:transform .22s;}
+.chg.open .chg-hd{border-bottom:1px solid var(--line);}
+.chg.open .chg-hd .arw{transform:rotate(90deg);}
+.chg-bd{display:none;padding:4px 16px 14px;}
+.chg.open .chg-bd{display:block;}
+.chg-item{padding:12px 0;border-bottom:1px dashed var(--line);}
+.chg-item:last-child{border-bottom:none;}
+.chg-item .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+.chg-item .nm{font-weight:600;font-size:14.5px;}
+.chg-item .sub{font-size:13px;color:var(--ink-soft);flex-basis:100%;margin-top:2px;}
+.chg-item .ds{font-size:13.5px;color:var(--ink-soft);line-height:1.68;}
+.seg-label{font-size:12px;color:var(--ink-soft);margin:8px 2px 6px;font-weight:600;letter-spacing:.4px;}
+.item-more{display:inline-block;margin:4px 0 18px;font-size:13px;color:var(--celadon-deep);
+  text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 15px;background:var(--card);}
+.item-more:hover{border-color:var(--celadon-soft);}
+[data-theme="dark"] .gate.alt{background:radial-gradient(120% 80% at 100% 0%, rgba(217,116,94,.14), transparent 55%), var(--card);}
+[data-theme="dark"] .gate.on{border-color:var(--celadon);box-shadow:0 0 0 1px rgba(132,165,148,.35), var(--shadow);}
+[data-theme="dark"] .imeta .used{color:var(--celadon);}
+@media(max-width:640px){
+  .gates{grid-template-columns:1fr;gap:12px;margin:16px 0 6px;}
+  .gate{min-height:148px;padding:22px 20px 18px;border-radius:16px;}
+  .gate h2{font-size:28px;}
+  .igrid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px;}
+  .icard{padding:10px;gap:9px;}
+}
 .badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600;
   letter-spacing:.3px;display:inline-block;flex-shrink:0;}
 .b-new{background:rgba(110,139,123,.15);color:var(--celadon-deep);border:1px solid var(--celadon-soft);}
@@ -174,7 +230,7 @@
     backdrop-filter:blur(14px) saturate(1.1);border-bottom:1px solid var(--line);transition:background .3s,border-color .3s;
     padding-top:env(safe-area-inset-top);}
   .topbar{background:transparent;}
-  .topbar .inner{max-width:1120px;margin:0 auto;padding:13px 24px;
+  .topbar .inner{max-width:1120px;margin:0 auto;padding:13px 0;
     display:flex;align-items:center;gap:11px;}
   .brand{display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;color:var(--ink);letter-spacing:.02em;}
   .brand .mark{width:22px;height:22px;border-radius:7px;flex:none;
@@ -222,6 +278,7 @@
     color:var(--ink-soft);padding:6px 15px;border-radius:9px;transition:color .18s, background .18s;white-space:nowrap;letter-spacing:.02em;}
   .seg .tab:hover{color:var(--celadon-deep);}
   .seg .tab.active{background:var(--card);color:var(--celadon-deep);font-weight:600;box-shadow:0 1px 3px rgba(30,42,36,.08);}
+  .seg .tab .n{opacity:.65;font-size:11.5px;}
   .tiers{display:inline-flex;flex-wrap:wrap;gap:6px;}
   .tier-btn{font-size:12.5px;cursor:pointer;border:1px solid var(--line);background:var(--card);
     border-radius:9px;padding:5px 12px;color:var(--ink-soft);font-family:inherit;transition:.18s;font-variant-numeric:tabular-nums;letter-spacing:.02em;}
@@ -484,7 +541,7 @@
     .appbar{position:static;background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line);}
     body{font-size:17px;line-height:1.75;}
     /* 顶栏允许换行，品牌名不再被挤成竖排单字 */
-    .topbar .inner{padding:11px 14px;gap:9px;flex-wrap:wrap;row-gap:7px;}
+    .topbar .inner{padding:11px 0;gap:9px;flex-wrap:wrap;row-gap:7px;}
     .brand{font-size:13.5px;gap:8px;flex:0 0 auto;white-space:nowrap;}
     .hero{padding:26px 0 18px;}
     .hero h1{font-size:32px;}
@@ -549,9 +606,9 @@
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}
     body{background:#fff!important;color:#000!important;}
     /* 隐藏所有非详情内容 */
-    .appbar,.toolbar,.hero,.hero-art,.grid,.search-wrap,.count,.foot,
+    .appbar,.toolbar,.hero,.hero-art,.gates,.gate-meta,.grid,.search-wrap,.count,.foot,
     .anchor-nav,.seg,.tiers,.modal-close,.m-share,.m-head-actions,
-    .theme-toggle,.compact-toggle{display:none!important;}
+    .theme-toggle,.compact-toggle,.item-panel{display:none!important;}
     /* 弹窗变为正常文档流 */
     .modal{position:static!important;display:block!important;inset:auto!important;
       background:#fff!important;padding:0!important;overflow:visible!important;}
@@ -583,7 +640,7 @@
   }
 </style>
 </head>
-<body>
+<body class="view-heroes">
 <div class="wrap">
 
 <div class="appbar">
@@ -591,19 +648,41 @@
     <div class="inner">
       <span class="brand">
         <span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 8 C13.5 12.5 13.5 17 16 22 C18.5 17 18.5 12.5 16 8 Z M16 22 C11 19 8 16.5 9 12.5 C13 14.5 14.8 17.5 16 22 Z M16 22 C21 19 24 16.5 23 12.5 C19 14.5 17.2 17.5 16 22 Z" fill="#F7F8F4"/></svg></span>
-        王者荣耀 · S44 攻略总集
+        王者攻略
       </span>
       <span class="meta" id="topMeta"></span>
-      <a class="nav-link" href="items.html" title="S44 全装备图鉴 · 属性/被动/改动">装备库 ›</a>
-      <a class="nav-link" href="wanxiangqi.html" title="王者万象棋全图鉴 · 棋手 / 卡牌 / 流派 / 装备">万象棋 ›</a>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换深色 / 浅色模式" title="切换深色模式">
         <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5Z"/></svg>
       </button>
     </div>
   </header>
+</div>
+
+<section class="gates" aria-label="王者荣耀与王者万象棋">
+  <button type="button" class="gate on" id="gateWzry">
+    <span class="gk">S44 赛季</span>
+    <h2>王者荣耀</h2>
+    <p>英雄攻略与 S44 装备图鉴</p>
+    <span class="go">英雄 / 装备</span>
+  </button>
+  <a class="gate alt" href="wanxiangqi.html">
+    <span class="gk">官方图鉴</span>
+    <h2>王者万象棋</h2>
+    <p>棋手、英雄牌、阵容与连锁</p>
+    <span class="go">进入万象棋</span>
+  </a>
+</section>
+<div class="gate-meta" id="metaBadges"></div>
+
+<div class="workspace">
   <div class="toolbar">
     <div class="row">
+      <div class="seg" id="scopeTabs" role="tablist" aria-label="王者荣耀内容">
+        <button class="tab active" data-scope="heroes">英雄</button>
+        <button class="tab" data-scope="items">装备</button>
+      </div>
+      <div class="hero-tools">
       <div class="seg" id="roleTabs" role="tablist" aria-label="分路筛选">
         <button class="tab active" data-role="all">全部</button>
         <button class="tab" data-role="top">对抗路</button>
@@ -626,6 +705,12 @@
         <button class="tier-btn" data-tier="T2">T2</button>
       </div>
       <button class="toggle-pill" id="compactToggle" type="button" aria-pressed="false" title="切换紧凑视图（更多列 / 收起简介）"><span class="dot"></span>紧凑</button>
+      </div>
+      <div class="item-tools" id="itemTools">
+        <div class="seg" id="itemCats" role="tablist" aria-label="装备分类"></div>
+        <div class="seg-label">适配分路（按英雄出装统计）</div>
+        <div class="seg" id="itemRoles" role="tablist" aria-label="装备分路"></div>
+      </div>
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5" stroke-linecap="round"/></svg>
         <input class="search" id="search" placeholder="搜索英雄名 / 标签（如 暴击、真伤、致盲）" aria-label="搜索">
@@ -640,50 +725,25 @@
     <a href="#role-adc" data-role="adc">发育路</a>
     <a href="#role-support" data-role="support">游走</a>
   </nav>
-</div>
-
-<header class="hero">
-  <div class="hero-card">
-    <svg class="hero-art" viewBox="0 0 240 132" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round">
-        <!-- 远山：三层山脊，越远越淡，营造水墨纵深 -->
-        <path d="M0 80 C26 72 46 78 74 70 C100 62 126 80 154 73 C184 66 212 76 240 69" stroke-width="1.1" opacity=".55"/>
-        <path d="M0 96 C24 88 48 95 76 86 C104 77 130 96 158 89 C186 82 214 93 240 86" stroke-width="1.4" opacity=".8"/>
-        <path d="M0 114 C34 107 62 112 94 105 C122 99 152 113 182 107 C206 102 226 110 240 107" stroke-width="1.8"/>
-        <!-- 一叶扁舟：弧线船身 + 细竿 -->
-        <path d="M150 118 q13 8 28 0" stroke-width="1.6"/>
-        <path d="M164 118 L164 104" stroke-width="1.1" opacity=".7"/>
-      </g>
-      <!-- 淡月 -->
-      <circle cx="190" cy="34" r="13" fill="currentColor" opacity=".16"/>
-    </svg>
-    <p class="kicker">王者荣耀 · S44 赛季 · 数据驱动</p>
-    <h1>全英雄攻略<span class="accent">总集</span></h1>
-    <p class="sub">按分路归类，轻点卡片查看详细攻略 —— 含本赛季版本调整、梯度、出装铭文与克制关系。</p>
-    <div class="chips" id="metaBadges"></div>
-  </div>
-</header>
-
-<section class="feature-strip" aria-label="功能板块">
-  <a class="feat-card hot" href="wanxiangqi.html" title="王者万象棋全图鉴 + 详细攻略">
-    <span class="feat-tag">新板块</span>
-    <span class="feat-ico">象</span>
-    <span class="feat-tx"><b>王者万象棋</b><i>18 棋手 · 85 英雄牌 · 主播作业（官方推荐库）+ 保姆级攻略</i></span>
-    <span class="feat-go">›</span>
-  </a>
-  <a class="feat-card" href="items.html" title="S44 全装备图鉴">
-    <span class="feat-ico">装</span>
-    <span class="feat-tx"><b>装备库</b><i>S44 全装备图鉴 · 属性 / 被动 / 改动</i></span>
-    <span class="feat-go">›</span>
-  </a>
-</section>
 
 <main id="list"></main>
+<section class="item-panel" id="itemPanel">
+  <section class="chg" id="chgBox">
+    <div class="chg-hd" id="chgHd">
+      <span class="ttl">S44 装备改动</span>
+      <span class="cnt" id="chgCnt"></span>
+      <span class="arw">▶</span>
+    </div>
+    <div class="chg-bd" id="chgBd"></div>
+  </section>
+  <div class="igrid" id="itemGrid"></div>
+  <a class="item-more" href="items.html">单独打开装备库页</a>
+</section>
+</div>
 
 <footer class="foot">
-  本攻略总集基于王者荣耀 S44 赛季公开资料（百度百科、官方公告、主流攻略榜）整理，数值与梯度以正式服为准。<br>
-  数据文件：<b>heroes-data.js</b>（单一数据源，自动 / 按需更新）· 渲染器：index.html <span id="footVer"></span><br>
-  加英雄 / 刷新版本：告诉 WorkBuddy 即可（已配置「wzry-guide」技能 + 每周自动校准）。
+  王者荣耀 S44 英雄攻略与装备图鉴，并列王者万象棋官方图鉴。数值以正式服为准。<br>
+  数据文件：<b>heroes-data.js</b> / <b>items-data.js</b> / <b>wanxiangqi-data.js</b> · 渲染器：index.html <span id="footVer"></span>
   <div id="metaPanel"></div>
 </footer>
 
@@ -749,11 +809,15 @@
     if(t==='T2') return 't-T2';
     return 't-dash';
   };
-  var state = {role:'all', tier:'all', q:'', compact:false, sort:'default'};
+  var state = {role:'all', tier:'all', q:'', compact:false, sort:'default', scope:'heroes', itemCat:'all', itemRole:'all'};
   try{ if(localStorage.getItem('wzry-compact')==='1'){ state.compact = true; } }catch(e){}
+  var ITEM_LIST = (window.ITEMS && window.ITEMS.items) || [];
+  var ITEM_CATS = (window.ITEMS && window.ITEMS.cats) || [];
+  var ITEM_CHANGES = (window.ITEMS && window.ITEMS.changes) || [];
 
   // 头部信息（无重复：总数只在顶栏、版本只在顶栏/页脚；无版本号时不留空尾）
-  var metaStr = '全 ' + HEROES.length + ' 名';
+  var metaStr = HEROES.length + ' 英雄';
+  if(ITEM_LIST.length) metaStr += ' · ' + ITEM_LIST.length + ' 装备';
   if(META.version) metaStr += ' · v' + META.version;
   document.getElementById('topMeta').textContent = metaStr;
   document.getElementById('footVer').textContent = META.version ? ('· v' + META.version) : '';
@@ -845,7 +909,112 @@
     heads.forEach(function(h){ spyObs.observe(h); });
   }
 
+  function setScope(scope, skipHash){
+    state.scope = scope === 'items' ? 'items' : 'heroes';
+    document.body.classList.toggle('view-items', state.scope === 'items');
+    document.body.classList.toggle('view-heroes', state.scope === 'heroes');
+    Array.prototype.forEach.call(document.querySelectorAll('#scopeTabs .tab'), function(t){
+      t.classList.toggle('active', t.getAttribute('data-scope') === state.scope);
+    });
+    var si = document.getElementById('search');
+    if(si){
+      si.placeholder = state.scope === 'items'
+        ? '搜装备名 / 属性 / 被动，如「暴击」「吸血」'
+        : '搜索英雄名 / 标签（如 暴击、真伤、致盲）';
+    }
+    if(!skipHash){
+      var next = state.scope === 'items' ? (location.pathname + location.search + '#items') : (location.pathname + location.search);
+      try{ history.replaceState(history.state, '', next); }catch(e){}
+    }
+    render();
+  }
+  function itemIconHTML(it){
+    if(it.hasIcon){
+      return '<span class="iico"><img src="items-icon/' + it.id + '.jpg" alt="" loading="lazy" '
+        + 'onerror="this.parentNode.innerHTML=\'<span class=&quot;ph ph-' + it.cat + '&quot;>' + esc(it.name.charAt(0)) + '</span>\'"></span>';
+    }
+    return '<span class="iico"><span class="ph ph-' + it.cat + '">' + esc(it.name.charAt(0)) + '</span></span>';
+  }
+  function renderItemFilters(){
+    var cats = [{id:'all', name:'全部', count:ITEM_LIST.length}].concat(ITEM_CATS);
+    var catEl = document.getElementById('itemCats');
+    if(catEl){
+      catEl.innerHTML = cats.map(function(t){
+        return '<button class="tab' + (t.id===state.itemCat?' active':'') + '" data-cat="' + esc(t.id) + '">'
+          + esc(t.name) + '<span class="n"> ' + t.count + '</span></button>';
+      }).join('');
+    }
+    var roles = [
+      {id:'all',name:'全部'},{id:'top',name:'对抗路'},{id:'jungle',name:'打野'},
+      {id:'mid',name:'中路'},{id:'adc',name:'发育路'},{id:'support',name:'游走'}
+    ];
+    var roleEl = document.getElementById('itemRoles');
+    if(roleEl){
+      roleEl.innerHTML = roles.map(function(t){
+        var n = t.id==='all' ? ITEM_LIST.length
+          : ITEM_LIST.filter(function(it){ return it.mainRole === t.id; }).length;
+        return '<button class="tab' + (t.id===state.itemRole?' active':'') + '" data-irole="' + t.id + '">'
+          + t.name + '<span class="n"> ' + n + '</span></button>';
+      }).join('');
+    }
+  }
+  function matchedItems(){
+    var k = (state.q || '').toLowerCase();
+    return ITEM_LIST.filter(function(it){
+      if(state.itemCat !== 'all' && it.cat !== state.itemCat) return false;
+      if(state.itemRole !== 'all' && it.mainRole !== state.itemRole) return false;
+      if(!k) return true;
+      return (it.name + ' ' + (it.attrs||'') + ' ' + (it.passive||'') + ' ' + (it.catName||'')).toLowerCase().indexOf(k) >= 0;
+    });
+  }
+  function renderItems(){
+    buildItemHeroes();
+    ITEM_LIST.forEach(function(it){
+      if(it.heroCount == null) it.heroCount = (ITEM_HEROES[it.id]||[]).length;
+      if(it.mainRole == null) it.mainRole = roleOf(it);
+    });
+    renderItemFilters();
+    var list = matchedItems();
+    var ROLE_LABEL2 = {top:'对抗路', jungle:'打野', mid:'中路', adc:'发育路', support:'游走'};
+    document.getElementById('count').textContent = '共 ' + list.length + ' 件装备';
+    var g = document.getElementById('itemGrid');
+    if(!g) return;
+    if(!list.length){
+      g.innerHTML = '<div class="empty">没有匹配的装备，换个词或分类试试。</div>';
+      return;
+    }
+    g.innerHTML = list.map(function(it){
+      var used = it.heroCount ? '<div class="used">' + it.heroCount + ' 位英雄常用</div>' : '';
+      var roleTag = it.mainRole ? '<span class="cat">' + esc(ROLE_LABEL2[it.mainRole]) + '</span> ' : '';
+      return '<div class="icard' + (it.cat==='season'?' season':'') + '" data-id="' + it.id + '">'
+        + itemIconHTML(it)
+        + '<div class="imeta">'
+        +   '<div class="nm">' + esc(it.name) + '</div>'
+        +   '<div class="pr">' + (it.total ? it.total + ' 金' : '—') + '</div>'
+        +   '<div class="at">' + esc(it.attrs || '—') + '</div>'
+        +   '<span class="cat">' + esc(it.catName) + '</span> ' + roleTag
+        +   used
+        + '</div></div>';
+    }).join('');
+  }
+  function renderItemChanges(){
+    var box = document.getElementById('chgBd');
+    var cnt = document.getElementById('chgCnt');
+    var wrap = document.getElementById('chgBox');
+    if(!box || !wrap) return;
+    if(!ITEM_CHANGES.length){ wrap.style.display='none'; return; }
+    if(cnt) cnt.textContent = ITEM_CHANGES.length + ' 项调整';
+    var badgeTxt = {new:'新增', buff:'加强', nerf:'削弱'};
+    box.innerHTML = ITEM_CHANGES.map(function(c){
+      return '<div class="chg-item">'
+        + '<div class="hd"><span class="badge b-' + esc(c.badge) + '">' + (badgeTxt[c.badge]||'调整') + '</span>'
+        + '<span class="nm">' + esc(c.name) + '</span>'
+        + '<span class="sub">' + esc(c.title) + '</span></div>'
+        + '<div class="ds">' + esc(c.desc) + '</div></div>';
+    }).join('');
+  }
   function render(){
+    if(state.scope === 'items') return renderItems();
     var list = document.getElementById('list');
     var data = filtered();
     document.getElementById('count').textContent = '共 '+data.length+' 名';
@@ -1285,6 +1454,30 @@
     else closeModal();
   });
 
+  document.getElementById('scopeTabs').addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('.tab') : null;
+    if(!t) return;
+    setScope(t.getAttribute('data-scope'));
+  });
+  document.getElementById('gateWzry').addEventListener('click', function(){ setScope('heroes'); });
+  document.getElementById('itemTools').addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('.tab') : null;
+    if(!t) return;
+    if(t.getAttribute('data-cat')){ state.itemCat = t.getAttribute('data-cat'); renderItems(); }
+    if(t.getAttribute('data-irole')){ state.itemRole = t.getAttribute('data-irole'); renderItems(); }
+  });
+  document.getElementById('itemGrid').addEventListener('click', function(e){
+    var card = e.target.closest ? e.target.closest('.icard') : null;
+    if(!card) return;
+    var id = parseInt(card.getAttribute('data-id'), 10);
+    var it = null;
+    for(var i=0;i<ITEM_LIST.length;i++){ if(ITEM_LIST[i].id === id){ it = ITEM_LIST[i]; break; } }
+    if(it) openItemModal(it);
+  });
+  document.getElementById('chgHd').addEventListener('click', function(){
+    document.getElementById('chgBox').classList.toggle('open');
+  });
+
   // 工具栏事件
   document.getElementById('roleTabs').addEventListener('click', function(e){
     if(!e.target.classList.contains('tab')) return;
@@ -1336,6 +1529,7 @@
   function openHeroFromHash(hs){
     var m = ((hs === undefined ? location.hash : hs) || '').match(/^#hero-([\w-]+)$/);
     if(!m) return;
+    if(state.scope !== 'heroes') setScope('heroes', true);
     var h = HEROES.find(function(x){ return x.id === m[1]; });
     if(!h) return;
     // 已经是这个英雄就不要再压一层（hashchange 可能被重复触发）
@@ -1345,12 +1539,17 @@
   }
   window.addEventListener('hashchange', function(){ openHeroFromHash(); });
 
-  render();
-  // 深链进入时先把基础 URL 的 hash 抹掉，之后弹窗再压入属于自己的历史记录。
-  // 于是「返回 / 左滑」只关弹窗，不会把用户带出本站。
+  renderItemChanges();
+  document.body.classList.add('view-heroes');
   var _initHash = location.hash;
-  if(/^#hero-/.test(_initHash)){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
-  openHeroFromHash(_initHash);
+  if(_initHash === '#items' || _initHash === '#equip'){
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+    setScope('items', true);
+  } else {
+    if(/^#hero-/.test(_initHash)){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
+    render();
+    openHeroFromHash(_initHash);
+  }
 })();
 </script>
 </body>
