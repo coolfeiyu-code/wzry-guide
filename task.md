@@ -2,14 +2,15 @@
 
 > 最后更新：2026-09-18
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
-> 当前版本状态：站点 `heroes-data.js` **v2.6.5**（提交作业页时 pre-commit 会再升 patch）；万象棋数据快照 `WXQ_META` **v1.0.0**（capturedAt 2026-09-14）；官方阵容作业库 `WXQ_JOBS` **v1.0.0**。
+> **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.9**（首页大门画面）；万象棋 `WXQ_META` **v1.5.1**（capturedAt 2026-09-14，卡面技能/质变/觉醒/合成已并入）；官方阵容作业库 `WXQ_JOBS` 约 446 套。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
 
 ## 0. 一句话定位
 
-这是一个**零构建、纯静态、数据驱动**的王者荣耀攻略站，包含三大块：① 132 英雄详细攻略（S44）② 121 装备库 ③ **王者万象棋图鉴+攻略板块（近期工作重点）**。所有内容由本地的 `*.js` 数据文件驱动，HTML 只做渲染。改内容 = 改数据文件，几乎不动 HTML。
+这是一个**零构建、纯静态、数据驱动**的王者荣耀攻略站。首页是二选一（王者荣耀 / 王者万象棋），点王者荣耀才展开英雄+装备；万象棋是独立页。数据由本地 `*.js` 驱动，HTML 只做渲染。
 
 ---
 
@@ -18,7 +19,7 @@
 | 项 | 值 |
 |---|---|
 | 本地路径 | `C:\Users\Zhuqi\Desktop\wzry-guide` |
-| GitHub | `coolfeiyu-code/wzry-guide`（SSH remote，**需 VPN** 才能 push） |
+| GitHub | `coolfeiyu-code/wzry-guide`（origin 是 SSH；本机 Clash fake-ip 会把 github.com 指到 `198.18.0.109:22` 超时。**HTTPS 推送**走 `git -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main`，然后 `git update-ref refs/remotes/origin/main <sha>`） |
 | 部署 | GitHub Pages，**main 分支根目录**，零构建 |
 | 重建 | push 后 **1–3 分钟**自动重建 |
 | 新文件窗口 | 新文件有 **30–45s 404 窗口**，轮询即可，**非失败**（别误判） |
@@ -33,16 +34,17 @@
 
 ```
 wzry-guide/
-├── index.html              英雄攻略渲染器（月色/暗色主题、移动端、分享深链、出装自动图标注入）
+├── index.html              首页二选一 + 王者荣耀英雄/装备。body.home 只显示两扇门；点王者荣耀后 body.wzry，hash `#wzry`/`#items`/`#hero-xxx`
 ├── heroes-data.js          英雄单一数据源：GUIDE_META(version/updateLog) + HEROES(132)
 ├── items.html              装备库渲染器
 ├── items-data.js           装备数据源(121) + items-icon/(108 图) — 由 scripts/sync-items.py 生成（勿手工编辑）
 ├── scripts/
 │   ├── sync-items.py       装备官方数据同步脚本
 │   ├── sync-wxq-lineups.js 万象棋官方阵容推荐库同步（推荐/热门/新手）
+│   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
-├── wanxiangqi.html         万象棋页。默认「阵容」通栏详情；tab：阵容/棋手/英雄/效果/装备/天赋/连锁。攻略 tab 已下线。连锁无旧预设，从阵容「查看连锁」载入。版本只升 WXQ_META
-├── wanxiangqi-data.js      万象棋官方快照只读数据源（WXQ_META + WXQ_PLAYERS(18)/HEROES(85)/EFFECTS(98)/EQUIPS(73)/TALENTS(255)/FACTIONS(7)）。**严禁手改**
+├── wanxiangqi.html         万象棋页。默认「阵容」通栏详情；tab：阵容/棋手/英雄/效果/装备/天赋/连锁。攻略 tab 已下线。连锁无旧预设，从阵容「查看连锁」载入。英雄弹窗含技能/质变/觉醒/属性；装备有合成则写「从XX合成的」。版本只升 WXQ_META
+├── wanxiangqi-data.js      万象棋官方快照只读数据源（WXQ_META + WXQ_PLAYERS(19 含阿离)/HEROES(85)/EFFECTS(98)/EQUIPS(73)/TALENTS(255)/FACTIONS(7)）。**严禁手改**。英雄另有 skills/awakeDesc/stats/kwHelp/cost；装备另有 subType/equipType/craftFrom/craftInto
 ├── wanxiangqi-guide.js     万象棋攻略数据（WXQ_GUIDE，手工维护，改文案改这里）
 ├── wanxiangqi-lineups.js   官方阵容推荐库（WXQ_JOBS，scripts/sync-wxq-lineups.js 生成，**勿手改**）
 ├── wanxiangqi-jobs.js      作业 tab 渲染（只画，不含规则）
@@ -123,7 +125,21 @@ WXQ_GUIDE = {
 
 ### 5.5 词条悬停浮层（v2.2.0 后新增 UI）
 
-- `wanxiangqi.html` 自动链接英雄/装备/效果/天赋/棋手/流派/词条，Puppeteer 测过 **1382 词**、移动端 OK。
+- `wanxiangqi.html` 自动链接英雄/装备/效果/天赋/棋手/流派/词条；词条可点进 `#k-词条` 详情，返回关层。
+
+### 5.6 首页二选一（2026-09-18）
+
+- 首页 **只显示两扇门**：王者荣耀 / 王者万象棋。不要再把英雄列表、装备库、赛季 chips 和大门放在同一屏。
+- 点王者荣耀 → `body.wzry`，工具栏出现「英雄 | 装备」。返回用「← 首页」或点品牌。
+- 深链：`#wzry` 英雄、`#items` 装备、`#hero-<id>` 直达英雄详情（会先进入王者荣耀）。
+- 大门视觉：王者荣耀荷塘月色远山+月；万象棋 7×4 棋盘圆点。**不要做成两张拉满视口的空白白卡片**（用户已嫌难看）。
+- 装备库不再与万象棋并列；`items.html` 仅作深页，返回 `index.html#items`。
+
+### 5.7 官方卡面补全（WXQ_META 1.5.x）
+
+- `node scripts/sync-wxq-cards.js` 拉 `589094_oscard_new_1.js` / `_4.js`，按 id 对齐专名 0-mismatch。
+- 英雄弹窗：卡面效果、基础属性、技能、10/40/100 阶质变、觉醒、词条释义、商店古币。
+- 装备弹窗：类型、从 XX 合成的（`craftFrom`）、可铸造成（`craftInto`）、获取途径。基础装没有 craftFrom 只显示可铸造。
 
 ---
 
@@ -140,6 +156,11 @@ WXQ_GUIDE = {
 | **A 工作** | 游侠(ali213) 85 英雄牌对齐校验，与官方池 **FULL MATCH 0 差异 0 字段缺口** | ✅ |
 | **B 工作（本次核心）** | 扒网页攻略扩写 `lineups` 8→**18**、`combos` 12→**18**，全部命名对照官方池校验 **0 错** | ✅ 已提交推送上线 |
 | **官方作业库** | 接官网推荐/热门/新手 JSON → `wanxiangqi-lineups.js`；作业 tab 展示主播投稿、棋盘摆法、阵容码 | ✅ |
+| 棋手阿离 | 官方 lordId 20，技能枫叶舞 / 惊鸿游龙 / 即刻起舞 | ✅ |
+| 攻略 tab 下线 | 连锁只从阵容「查看连锁」载入，无旧预设 | ✅ |
+| 词条可点 | `#k-词条` 详情 + 带此词条的牌，返回关层 | ✅ |
+| 官方卡面 | 85 英雄技能/质变/觉醒/属性 + 73 装备类型/合成 | ✅ |
+| 首页二选一 | 先选王者荣耀或万象棋；装备并入王者荣耀「英雄\|装备」 | ✅ |
 
 ---
 
@@ -208,13 +229,16 @@ WXQ_GUIDE = {
 | 11 | 批量改 `heroes-data.js` 多个 Edit 会写覆盖 | 必须用 Node 脚本读 `vm` 加载后整体 `fs.writeFileSync` 写回；文件为 LF |
 | 12 | Edit 改 `combos.title` 第一次未生效 | 改完务必 Grep/Read 复核 |
 | 13 | 本机 shell shim 坏 | 一律用受管 Node 跑 fs/https 脚本 |
+| 14 | SSH push 连 198.18.0.109:22 超时 | Clash TUN fake-ip。改走 HTTPS + `http.proxy=http://127.0.0.1:7897` |
+| 15 | 首页两张拉满视口的空白白卡片 | 用户已判难看。大门要有荷塘月色/棋盘画面，字压底部，不要空心居中 |
 
 ---
 
 ## 10. 给其他 AI 的接手指引（下一步可做什么）
 
+0. **改完同步 `task.md`**（版本号、首页 IA、万象棋字段、git 推送方式）。不写等于没交接。
 1. **待手补 opaque 卡**（英雄 49 张含整张全 opaque 45、效果牌 50 张全部）：这些卡当前只显原文不计数字，是下一版活。加卡只在 `wanxiangqi-rules.js` 的 `MANUAL` 加条目，勿动引擎 if-else；改完跑 `wxq_engine_test.cjs`(13/13)+`wxq_chain_test.cjs`(50/50)。
-2. **赛季更新**：重跑英雄技能脚本（GBK）+ 万象棋快照 pulls + `scripts/sync-items.py`（装备）+ `node scripts/sync-wxq-lineups.js`（官方作业库）。重跑前先确认 VPN/网络。作业库英雄名须 0 未知；棋手「阿离」当前不在 18 人快照里，允许保留并在 unknown.players 列出。
+2. **赛季更新**：重跑英雄技能脚本（GBK）+ 万象棋快照 pulls + `scripts/sync-items.py`（装备）+ `node scripts/sync-wxq-lineups.js`（官方作业库）+ `node scripts/sync-wxq-cards.js`（卡面技能/合成）。重跑前先确认网络。作业库英雄名须 0 未知；棋手「阿离」已按官方 lords 补录。
 3. **新增阵容/联动规范**：机制从官方 `desc` 提炼 → 写进 `lineups[]`/`combos.list[]` → 同步 `factions[x].lineups[]` → 跑第 8 节 1–3 步校验 → 提交（commit 后单独 push） → 轮询 Pages。
 4. **攻略可信度**：专有名词/技能名必须脚本比对官方数据集，0 处不符才算过。
 
@@ -231,6 +255,13 @@ cd "C:/Users/Zhuqi/Desktop/wzry-guide" && /c/Users/Zhuqi/.workbuddy/binaries/pyt
 
 # 同步万象棋官方阵容推荐库（作业 tab）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-lineups.js
+
+# 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-cards.js
+
+# HTTPS 推送（SSH 被 Clash fake-ip 挡时）
+git -C "C:/Users/Zhuqi/Desktop/wzry-guide" -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main
+git -C "C:/Users/Zhuqi/Desktop/wzry-guide" update-ref refs/remotes/origin/main HEAD
 
 # 命名校验（示例逻辑，实际用 vm 加载两 js 交叉比对）
 node -e "const fs=require('fs'),vm=require('vm');/* load data -> pool; load guide -> names; diff */"
