@@ -3,7 +3,7 @@
 > 最后更新：2026-09-18
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.3**（手机端顶栏/tab/棋盘收口，避免第一屏被撑爆）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.4**（连锁改为讲解：官方卡面+作业原文，不编造）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -44,7 +44,8 @@ wzry-guide/
 │   ├── sync-wxq-lineups.js 万象棋官方阵容推荐库同步（推荐/热门/新手）
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
-├── wanxiangqi.html         万象棋页。默认「阵容」通栏详情；tab：阵容/棋手/英雄/效果/装备/天赋/连锁。攻略 tab 已下线。连锁无旧预设，从阵容「查看连锁」载入。英雄弹窗含技能/质变/觉醒/属性；装备有合成则写「从XX合成的」。版本只升 WXQ_META
+├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的作业有「讲解这套」。版本只升 WXQ_META
+├── wanxiangqi-explain.js   讲解：官方卡面 + 作业原文，四类识别（木兰复生/三分倒转/大河开团/日落海整备）
 ├── wanxiangqi-data.js      万象棋官方快照只读数据源（WXQ_META + WXQ_PLAYERS(19 含阿离)/HEROES(85)/EFFECTS(98)/EQUIPS(73)/TALENTS(255)/FACTIONS(7)）。**严禁手改**。英雄另有 skills/awakeDesc/stats/kwHelp/cost；装备另有 subType/equipType/craftFrom/craftInto
 ├── wanxiangqi-guide.js     万象棋攻略数据（WXQ_GUIDE，手工维护，改文案改这里）
 ├── wanxiangqi-lineups.js   官方阵容推荐库（WXQ_JOBS，scripts/sync-wxq-lineups.js 生成，**勿手改**）
@@ -101,7 +102,15 @@ WXQ_GUIDE = {
 - `combos.list[]` 每组字段：`name/tier/partners[]/keyword/chain/gain/risk`。
 - `factions[]` 每阵营含 `cores/mech/strength/idea/how/key/spike/counter/tips/lineups[]`（lineups 须与 lineups[] 的 name 完全一致，否则站点不互链）。
 
-### 5.2 连锁 tab 四层架构（v2.6.0，新增卡只改 B 层）
+### 5.2 讲解（2026-09-19，替换原连锁 tab）
+
+- 原连锁（词条推演沙盒）已从页面拿掉，文件 `wanxiangqi-chain.js` / `wanxiangqi-engine.js` 仍留在仓库但不加载。
+- 新 tab **讲解** + 阵容详情「讲解这套」（只出现在对得上的作业上）。
+- 识别四类（用上场英雄名，不编造）：花木兰复生、三分整备倒转、大河开团、日落海整备。
+- 讲解正文：官方卡面 desc + kwHelp；「怎么动」只复述这些卡面的触发顺序；实战要点从该套 `brief` / `ops.desc` / `effectDesc` 抽含「手里 / 不要急着打出 / 唤醒 / 整备」等句。
+- 深链 `#x-阵容码`。`wanxiangqi-explain.js`。
+
+### 5.2b 原连锁四层（已下线，仅留档）
 
 - **A** `wanxiangqi-data.js`（快照，未改）→ **B** `wanxiangqi-rules.js`（`WXQ_RULES`，规则+手补 `MANUAL`）→ **C** `wanxiangqi-engine.js`（`WXQ_ENGINE.simulate(board,rules,cards)` 纯函数）→ **D** `wanxiangqi-chain.js`（`WXQ_CHAIN` 只渲染，经 html 注入的 `window.__wxqUI` 桥复用弹窗/主题）。**规则严禁写进 HTML onclick。**
 - 定位：**只演算词条，不模拟打架**（无 DPS / 站位伤害 / 胜率），页面须写出这句。

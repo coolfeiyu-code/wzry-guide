@@ -11,7 +11,7 @@
   var COLS = 7;
   var ROWS = 4;
   var PHASE = ['前期', '中期', '后期'];
-  var js = { filter: 'all', sort: 'use', page: 1, lord: '', openKey: '' };
+  var js = { filter: 'all', sort: 'use', page: 1, lord: '', openKey: '', view: '' };
 
   function ui() { return global.__wxqUI || {}; }
   function esc(s) { return ui().esc ? ui().esc(s) : String(s || ''); }
@@ -106,7 +106,8 @@
       return av(heroImg(h.name), h.name, 'jav sm');
     }).join('');
     var tag = (L.hot ? '<span class="jtag hot">热门</span>' : '')
-      + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '');
+      + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '')
+      + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L) ? '<span class="jtag exp">讲解</span>' : '');
     var sc = parseFloat(L.score) || 0;
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
@@ -221,7 +222,9 @@
       + '</div></div>'
       + '<div class="jdoc-acts">'
       + '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>'
-      + '<button type="button" class="jbtn" data-job-chain="' + esc(L.key) + '">查看连锁</button>'
+      + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L)
+        ? '<button type="button" class="jbtn" data-job-explain="' + esc(L.key) + '">讲解这套</button>'
+        : '')
       + '</div>'
       + '</header>'
       + '<div class="jtri">'
@@ -251,14 +254,34 @@
     var L = find(key);
     if (!L) return;
     js.openKey = String(L.key);
+    js.view = '';
     if (!fromRoute) setHash('#j-' + encodeURIComponent(L.key), true);
     var grid = document.getElementById('grid');
     if (grid) render(grid, ui().state || { q: '' });
   }
 
+  function openExplain(key, fromRoute) {
+    var L = find(key);
+    if (!L || !global.WXQ_EXPLAIN) return;
+    js.openKey = String(L.key);
+    js.view = 'explain';
+    if (!fromRoute) setHash('#x-' + encodeURIComponent(L.key), true);
+    var st = ui().state;
+    if (st && st.type !== 'jobs') {
+      st.type = 'jobs';
+      var tabs = document.querySelectorAll('#tabs .tab');
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.toggle('active', tabs[i].getAttribute('data-type') === 'jobs');
+      }
+    }
+    var grid = document.getElementById('grid');
+    if (grid) render(grid, st || { q: '', type: 'jobs' });
+  }
+
   function closeDetail(fromRoute) {
     if (!js.openKey) return;
     js.openKey = '';
+    js.view = '';
     if (!fromRoute) setHash('#j', true);
     var grid = document.getElementById('grid');
     if (grid) render(grid, ui().state || { q: '' });
@@ -268,14 +291,6 @@
     var c = heroByName(name);
     var b = ui();
     if (c && b.openCard) b.openCard('hero', c.id);
-  }
-
-  function openChain(key) {
-    var L = find(key);
-    if (!L || !global.WXQ_CHAIN || !global.WXQ_CHAIN.openHeroNames) return;
-    var names = (L.heroes || []).map(function (h) { return h.name; });
-    var fx = (L.effects || []).slice();
-    global.WXQ_CHAIN.openHeroNames(names, fx, { key: L.key, name: L.name });
   }
 
   function copyKey(key, btn) {
@@ -308,12 +323,16 @@
     if (js.openKey) {
       var L = find(js.openKey);
       if (qEl) qEl.style.display = 'none';
-      if (!L) { js.openKey = ''; }
+      if (!L) { js.openKey = ''; js.view = ''; }
       else {
         grid.className = 'jobs-root';
         grid.style.gridTemplateColumns = '';
         if (countEl) countEl.textContent = L.name;
-        grid.innerHTML = detailHtml(L);
+        if (js.view === 'explain' && global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.pageHtml) {
+          grid.innerHTML = global.WXQ_EXPLAIN.pageHtml(L);
+        } else {
+          grid.innerHTML = detailHtml(L);
+        }
         if (ui().linkify) ui().linkify(grid);
         return;
       }
@@ -372,8 +391,10 @@
     if (hero) { openHero(hero.getAttribute('data-job-hero')); return 'open'; }
     var cp = t.closest && t.closest('[data-copy-key]');
     if (cp) { copyKey(cp.getAttribute('data-copy-key'), cp); return 'open'; }
-    var ch = t.closest && t.closest('[data-job-chain]');
-    if (ch) { openChain(ch.getAttribute('data-job-chain')); return 'open'; }
+    var exb = t.closest && t.closest('[data-job-explain-back]');
+    if (exb) { open(exb.getAttribute('data-job-explain-back')); return 'open'; }
+    var ex = t.closest && t.closest('[data-job-explain]');
+    if (ex) { openExplain(ex.getAttribute('data-job-explain')); return 'open'; }
     var f = t.closest && t.closest('[data-job-filter]');
     if (f) { js.filter = f.getAttribute('data-job-filter'); js.page = 1; return 'rerender'; }
     var s = t.closest && t.closest('[data-job-sort]');
@@ -395,6 +416,7 @@
   global.WXQ_JOBS_UI = {
     render: render,
     open: open,
+    openExplain: openExplain,
     closeDetail: closeDetail,
     onGridClick: onGridClick,
     onModalClick: onModalClick,

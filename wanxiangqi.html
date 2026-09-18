@@ -494,6 +494,28 @@
   .jcard-au{font-size:12px;color:var(--ink-soft);margin-top:4px;line-height:1.6;}
   .jtag{font-size:10.5px;color:#fff;border-radius:5px;padding:0 6px;margin-left:4px;vertical-align:1px;}
   .jtag.hot{background:var(--cinnabar);} .jtag.god{background:var(--gold);}
+  .jtag.exp{background:var(--celadon-deep);}
+  .ex-ol{margin:0;padding-left:1.2em;font-size:14px;color:var(--ink);line-height:1.8;}
+  .ex-ol li{margin:6px 0;}
+  .ex-ul{margin:0;padding-left:1.2em;font-size:14px;color:var(--ink);line-height:1.8;}
+  .ex-ul li{margin:6px 0;}
+  .ex-card{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);}
+  .ex-card:last-child{border-bottom:none;}
+  .ex-card img{width:48px;height:48px;border-radius:10px;object-fit:cover;background:var(--paper-2);flex:none;}
+  .ex-cn{font-weight:700;font-size:15px;color:var(--ink);}
+  .ex-cd{font-size:13.5px;color:var(--ink-soft);line-height:1.7;margin-top:4px;}
+  .ex-kw{font-size:12.5px;color:var(--ink-soft);margin-top:6px;line-height:1.65;}
+  .ex-when{font-size:13px;color:var(--ink-soft);margin:0 0 10px;}
+  .ex-jobs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center;}
+  .ex-job{border:1px solid var(--line);background:var(--paper-2);color:var(--ink);border-radius:999px;
+    padding:6px 12px;font-size:13px;font-family:inherit;cursor:pointer;}
+  .ex-job:hover{border-color:var(--celadon-soft);color:var(--celadon-deep);}
+  .ex-op{padding:10px 0;border-bottom:1px dashed var(--line);}
+  .ex-op:last-child{border-bottom:none;}
+  .ex-oph{font-size:13px;font-weight:700;color:var(--celadon-deep);margin-bottom:4px;}
+  .ex-tips{border-color:rgba(182,144,78,.4);}
+  .explain-hub{display:flex;flex-direction:column;gap:12px;}
+  .explain-hub>.jbox:first-child p{font-size:14px;color:var(--ink-soft);line-height:1.75;margin:0 0 8px;}
   .jpager{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 4px;}
   .jp-n{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .jbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;
@@ -613,7 +635,7 @@
       <div class="hero-card">
         <p class="kicker">WÀNXIÀNGQÍ · 万象棋局</p>
         <h1>王者<span class="accent">万象棋</span>图鉴</h1>
-        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌图鉴。点开一套可抄作业，也可看这套的词条连锁。</p>
+        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌图鉴。整备、花木兰复生、大河开团等，详情里点「讲解这套」看卡面怎么串。</p>
         <div class="chips" id="heroChips"></div>
       </div>
     </section>
@@ -627,7 +649,7 @@
           <button class="tab" data-type="effect">效果</button>
           <button class="tab" data-type="equip">装备</button>
           <button class="tab" data-type="talent">天赋</button>
-          <button class="tab ctab" data-type="chain">连锁</button>
+          <button class="tab ctab" data-type="explain">讲解</button>
         </div>
         <input class="search" id="q" placeholder="搜索名称…" autocomplete="off">
         <select class="filter" id="fac"><option value="">全部阵营</option></select>
@@ -640,7 +662,7 @@
 
     <div class="foot">
       数据来源：<b>王者万象棋官方</b>（wxq.qq.com 公开数据快照 + 阵容推荐库）· 抓取于 <b id="capDate"></b><br>
-      卡面与数值均来自官方公开数据；作业页阵容码可导入游戏。本页为静态图鉴，随官方更新另行同步。
+      卡面与数值均来自官方公开数据；作业页阵容码可导入游戏。讲解只转述卡面与作业原文，不模拟打架。
     </div>
   </div>
 
@@ -649,10 +671,8 @@
 <script src="wanxiangqi-data.js"></script>
 <script src="wanxiangqi-lineups.js"></script>
 <script src="wanxiangqi-jobs.js"></script>
-<!-- 连锁：B 规则层 → C 引擎层 → D 界面层，顺序不能换（后者依赖前者） -->
 <script src="wanxiangqi-rules.js"></script>
-<script src="wanxiangqi-engine.js"></script>
-<script src="wanxiangqi-chain.js"></script>
+<script src="wanxiangqi-explain.js"></script>
 <script>
   (function(){
     var M=window.WXQ_META, FACS=window.WXQ_FACTIONS,
@@ -725,21 +745,22 @@
     var grid=document.getElementById('grid');
     function render(){
       var isJobs=state.type==='jobs';
+      var isExplain=state.type==='explain';
       var qEl=document.getElementById('q');
       qEl.style.display = (state.type==='faction')?'none':'block';
-      qEl.placeholder = isJobs ? '搜索阵容 / 作者 / 英雄 / 棋手…' : '搜索名称…';
-      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isJobs)?'none':'inline-block';
-      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isJobs)?'none':'inline-block';
+      qEl.placeholder = isJobs ? '搜索阵容 / 作者 / 英雄 / 棋手…' : (isExplain ? '搜讲解里的阵容名…' : '搜索名称…');
+      document.getElementById('fac').style.display = (state.type==='players'||state.type==='faction'||isJobs||isExplain)?'none':'inline-block';
+      document.getElementById('qual').style.display = (state.type==='players'||state.type==='faction'||isJobs||isExplain)?'none':'inline-block';
       if(isJobs){
         if(window.WXQ_JOBS_UI) return window.WXQ_JOBS_UI.render(grid,state);
         grid.className='jobs-root';
         grid.innerHTML='<div class="empty">作业模块没加载出来</div>';
         return;
       }
-      if(state.type==='chain'){
-        if(window.WXQ_CHAIN) return window.WXQ_CHAIN.render(grid,state);
-        grid.className='chain-root';
-        grid.innerHTML='<div class="empty">连锁模块（wanxiangqi-chain.js）没加载出来</div>';
+      if(state.type==='explain'){
+        if(window.WXQ_EXPLAIN) return window.WXQ_EXPLAIN.render(grid,state);
+        grid.className='jobs-root';
+        grid.innerHTML='<div class="empty">讲解模块没加载出来</div>';
         return;
       }
       if(state.type==='players') return renderPlayers();
@@ -1012,9 +1033,6 @@
       var mini=members.map(function(m){
         return '<div class="mini" data-type="'+m.kind+'" data-id="'+m.c.id+'"><img loading="lazy" src="'+m.c.img+'" alt="'+esc(m.c.name)+'"><div class="mn">'+esc(m.c.name)+'</div></div>';
       }).join('');
-      var filterBtn=(state.type==='chain')
-        ? '<button type="button" class="jbtn pri" data-kw-filter="'+esc(name)+'" style="margin-top:12px">用此词条筛选上场牌</button>'
-        : '<button type="button" class="jbtn" data-kw-filter="'+esc(name)+'" style="margin-top:12px">在连锁里筛选此词条</button>';
       var html='<div class="m-head"><div class="jhead-mark">词</div>'
         +'<div><div class="m-tit">'+esc(name)+'</div><div class="m-sub">词条 · '+(isPhase?'时机（会进时间轴）':'标签')+'</div></div>'
         +'<button class="modal-close" onclick="__wxq.close()" aria-label="返回"><span class="mc-x">×</span><span class="mc-back">← 返回</span></button></div>'
@@ -1022,7 +1040,6 @@
         +(desc?'<div class="desc-box">'+esc(desc)+'</div>':'')
         +'<h4>带此词条的牌 <span class="tag">'+members.length+'</span></h4>'
         +(mini?'<div class="m-grid">'+mini+'</div>':'<div class="jmuted">图鉴里还没有挂上这条词条的牌。</div>')
-        +filterBtn
         +'</div>';
       openModal(html,'#k-'+encodeURIComponent(name));
     }
@@ -1038,12 +1055,8 @@
       }
     }
     function applyKwFilter(name){
-      if(!window.WXQ_CHAIN)return;
-      if(WXQ_CHAIN.toggleKw) WXQ_CHAIN.toggleKw(name);
-      else if(WXQ_CHAIN.openHeroNames){ /* no-op */ }
       closeModal();
-      var ct=document.querySelector('.tab[data-type="chain"]');
-      if(ct&&state.type!=='chain') ct.click();
+      openKeyword(name);
     }
 
     function closeSilent(){
@@ -1051,8 +1064,7 @@
       try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
     }
     window.__wxq={close:closeModal, openPlayer:openPlayer, openCard:openCard, openFaction:openFaction, openKeyword:openKeyword};
-    // 连锁 tab（wanxiangqi-chain.js）用的桥：它只负责画，通用工具从这儿拿，
-    // 避免两个文件各写一套 esc / fmt 导致高亮不一致。
+    // 作业 / 讲解页用的桥：通用 esc / fmt / 弹窗，避免两套高亮。
     window.__wxqUI={
       esc:esc, fmt:fmt, qBadge:qBadge, openCard:openCard, openPlayer:openPlayer, openModal:openModal, closeSilent:closeSilent,
       openKeyword:openKeyword, openTerm:openTerm, linkify:function(el){ linkifyTerms(el); },
@@ -1162,7 +1174,7 @@
       [].forEach.call(this.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
       b.classList.add('active');state.type=b.getAttribute('data-type');state.q='';state.fac='';state.qual='';
       document.getElementById('q').value='';document.getElementById('fac').value='';document.getElementById('qual').value='';
-      if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.state.openKey='';
+      if(window.WXQ_JOBS_UI){window.WXQ_JOBS_UI.state.openKey='';window.WXQ_JOBS_UI.state.view='';}
       render();
     });
     document.getElementById('q').addEventListener('input',function(){state.q=this.value.trim();render();});
@@ -1171,6 +1183,10 @@
     grid.addEventListener('click',function(e){
       hideTip();
       var wt=e.target.closest('.wxq-term'); if(wt){ openTerm(wt.getAttribute('data-k')); return; }
+      if(window.WXQ_EXPLAIN){
+        var er=WXQ_EXPLAIN.onGridClick(e);
+        if(er)return;
+      }
       if(window.WXQ_JOBS_UI){
         var jr=WXQ_JOBS_UI.onGridClick(e);
         if(jr==='rerender'){render();return;}
@@ -1202,6 +1218,15 @@
         var jt2=document.querySelector('.tab[data-type="jobs"]');if(jt2)jt2.click();
         var jk=decodeURIComponent(h.slice(3));
         if(window.WXQ_JOBS_UI)window.WXQ_JOBS_UI.open(jk,true);
+        return;
+      }
+      if(h.indexOf('#x-')===0){
+        var xk=decodeURIComponent(h.slice(3));
+        if(window.WXQ_JOBS_UI&&WXQ_JOBS_UI.openExplain)WXQ_JOBS_UI.openExplain(xk,true);
+        return;
+      }
+      if(h==='#x'||h==='#explain'){
+        var et=document.querySelector('.tab[data-type="explain"]');if(et)et.click();
         return;
       }
       if(h.indexOf('#k-')===0)return openKeyword(decodeURIComponent(h.slice(3)));
