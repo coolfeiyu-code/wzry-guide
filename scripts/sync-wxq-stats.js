@@ -21,7 +21,16 @@ const OUT = path.join(ROOT, 'wanxiangqi-stats.js');
 const DATA = path.join(ROOT, 'wanxiangqi-data.js');
 const JOBS = path.join(ROOT, 'wanxiangqi-lineups.js');
 const API = 'https://api.datatft.com';
-const VERSION = 'v260917';
+function weekVersion() {
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1);
+  const yy = String(monday.getFullYear()).slice(2);
+  const mm = String(monday.getMonth() + 1).padStart(2, '0');
+  const dd = String(monday.getDate()).padStart(2, '0');
+  return 'v' + yy + mm + dd;
+}
+const VERSION = process.env.WXQ_STATS_VERSION || weekVersion();
 const TIME = 7;
 const MIN_COUNT = 80;
 const MIN_TOP3 = 0.40;
@@ -522,7 +531,9 @@ function equipDescOf(lu, pools) {
   const meta = {
     version: '1.1.0',
     capturedAt,
-    source: '万象棋大数据 datawxq.com（api.datatft.com /wzwxq/lineups，近7日 time=7，版本 ' + VERSION + '）',
+    dataVersion: VERSION,
+    dataTime: TIME,
+    source: '万象棋大数据 datawxq.com（api.datatft.com /wzwxq/lineups，近' + TIME + '日 time=' + TIME + '，版本 ' + VERSION + '）',
     note: '前三率/登顶率是第三方对局聚类，不是官方胜率，也不是可导入阵容码。全服热门之外还会按棋手/冷门英雄补搜（否则明先生山鬼流这种低登场套进不来）。能对上官方库的只叠统计，不对上的才单独成卡。讲解按卡面，不编运营。',
     sampleCount: searched.sampleCount,
     clusters: searched.list.length,

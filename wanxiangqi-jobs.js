@@ -59,6 +59,9 @@
     if (t) bits.push('7日前三 ' + t);
     if (f) bits.push('登顶 ' + f);
     if (s.count) bits.push(s.count + ' 场');
+    var m = global.WXQ_STATS && WXQ_STATS.meta;
+    if (m && m.dataVersion) bits.push(m.dataVersion);
+    if (m && m.capturedAt) bits.push('截至 ' + m.capturedAt);
     return bits.join(' · ');
   }
 
@@ -270,8 +273,11 @@
     var play = L.brief || '官方推荐库未写玩法介绍。';
     var eqTx = L.equipDesc || '见下方推荐装备。';
     var st = statsLine(L);
+    var sm = global.WXQ_STATS && WXQ_STATS.meta;
+    var dv = (sm && sm.dataVersion) ? sm.dataVersion : '';
+    var dc = (sm && sm.capturedAt) ? ('截至 ' + sm.capturedAt) : '';
     var sub = L.source === 'datawxq'
-      ? ('来源 · 万象棋大数据近7日' + (st ? ' · ' + st : ''))
+      ? ('来源 · 万象棋大数据近7日' + (dv ? ' · ' + dv : '') + (dc ? ' · ' + dc : '') + (st ? ' · ' + st : ''))
       : ('作者 · ' + esc(L.author || '匿名')
         + (L.badge ? ' · ' + esc(L.badge) : '')
         + ' · ' + wan(L.useNum) + ' 使用'

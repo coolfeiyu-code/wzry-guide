@@ -656,6 +656,9 @@
   #wxqHudToast.on{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
   #wxqHudPanel{position:fixed;z-index:85;display:none;overflow:auto;resize:both;min-width:240px;min-height:180px;
     max-width:none;max-height:none;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lift);padding:10px 12px 12px;}
+  @media (max-width:640px){
+    #wxqHudPanel{left:8px;right:8px;top:auto;bottom:calc(56px + env(safe-area-inset-bottom));resize:none;max-height:62vh;}
+  }
   #wxqHudPanel.on{display:flex;flex-direction:column;}
   #wxqHudPanel .hud{flex:1;min-height:0;height:100%;container-type:inline-size;}
   #wxqHudPanel .hud,body.hud-only .hud{display:flex;flex-direction:column;gap:8px;}
@@ -694,6 +697,15 @@
   #hudTip .ht-d{margin-top:4px;color:var(--ink);}
   #hudTip .ht-d b{color:var(--celadon-deep);margin-right:4px;}
   .hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);}
+  .hcode{display:none;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper-2);}
+  .hcode-t{font-size:11px;color:var(--ink-soft);margin-bottom:6px;}
+  .hcode input{display:block;width:100%;box-sizing:border-box;font-size:18px;letter-spacing:.02em;font-family:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--celadon-deep);background:var(--card);color:var(--ink);}
+  .hcode-n{font-size:11px;color:var(--ink-soft);margin-top:6px;word-break:break-all;}
+  .hud[data-hud-mini="1"] .htips,.hud[data-hud-mini="1"] .hsec,.hud[data-hud-mini="1"] .hsw,.hud[data-hud-mini="1"] .hnote{display:none;}
+  .hud[data-hud-font="1"] .heq-d,.hud[data-hud-font="1"] .hph p,.hud[data-hud-font="1"] .hol li,.hud[data-hud-font="1"] .hul li{font-size:14px;}
+  .hud[data-hud-font="2"] .heq-d,.hud[data-hud-font="2"] .hph p,.hud[data-hud-font="2"] .hol li,.hud[data-hud-font="2"] .hul li{font-size:16px;}
+  .hud[data-hud-mobile="1"] .hbody{flex-direction:column;overflow-y:auto;}
+  .hud[data-hud-mobile="1"] .hside{position:sticky;top:0;background:var(--card);z-index:2;padding-bottom:6px;}
   .htips{flex:1;min-width:0;overflow:auto;}
   .htips .hsec:first-child{margin-top:0;}
   .hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid var(--line);}
