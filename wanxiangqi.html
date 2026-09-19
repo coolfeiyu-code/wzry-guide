@@ -669,10 +669,12 @@
   .hq{position:absolute;top:1px;right:1px;font-size:9px;font-weight:700;font-style:normal;background:var(--accent-fill);color:#fff;border-radius:4px;padding:0 3px;line-height:1.35;}
   .hq-inline{font-style:normal;font-weight:500;font-size:11px;color:var(--ink-soft);margin-left:6px;}
   .hud[data-hud-db="1"] [data-hud-kind]{cursor:help;}
-  #hudTip{position:fixed;z-index:95;display:none;max-width:240px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.6;pointer-events:none;box-shadow:var(--shadow-lift);color:var(--ink);}
+  #hudTip{position:fixed;z-index:95;display:none;max-width:280px;max-height:70vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.6;pointer-events:auto;box-shadow:var(--shadow-lift);color:var(--ink);}
   #hudTip .ht-n{font-weight:700;font-size:13px;}
   #hudTip .ht-s{font-size:11px;color:var(--ink-soft);margin-top:2px;}
-  #hudTip .ht-d{margin-top:6px;color:var(--ink);}
+  #hudTip .ht-l{font-size:11px;color:var(--celadon-deep);margin:8px 0 2px;letter-spacing:.04em;}
+  #hudTip .ht-d{margin-top:4px;color:var(--ink);}
+  #hudTip .ht-d b{color:var(--celadon-deep);margin-right:4px;}
   .hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);}
   .htips{flex:1;overflow:auto;}
   .hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid var(--line);}

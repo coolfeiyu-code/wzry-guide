@@ -40,9 +40,13 @@
     return null;
   }
   function plain(s) {
-    var t = String(s || '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ' ');
+    var t = String(s || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '');
     t = t.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-    return t.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    t = t.replace(/[ \t]+/g, ' ').replace(/\n[ \t]+/g, '\n').replace(/[ \t]+\n/g, '\n');
+    return t.replace(/\n{2,}/g, '\n').replace(/^\s+|\s+$/g, '');
+  }
+  function para(s) {
+    return esc(plain(s)).replace(/\n/g, '<br>');
   }
   function tipsOn() {
     try { return localStorage.getItem('wxq-hud-db') !== '0'; } catch (e) { return true; }
@@ -151,8 +155,8 @@
         if (!h) { cells += '<div class="hcell"></div>'; continue; }
         var card = heroByName(h.name);
         var q = card && card.quality ? card.quality : 0;
-        cells += '<div class="hcell filled" data-hud-kind="hero" data-hud-name="' + esc(h.name) + '" title="' + esc(h.name) + (q ? ' · ' + q + '阶' : '') + '">'
-          + (q ? '<b class="hq">' + q + '阶</b>' : '')
+        cells += '<div class="hcell filled" data-hud-kind="hero" data-hud-name="' + esc(h.name) + '" title="' + esc(h.name) + (q ? ' · ' + q : '') + '">'
+          + (q ? '<b class="hq">' + q + '</b>' : '')
           + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
           + '<span>' + esc(h.name) + '</span></div>';
       }
@@ -183,7 +187,7 @@
         + '<div><div class="heq-n" data-hud-kind="hero" data-hud-name="' + esc(hero.name) + '">' + esc(hero.name)
         + (function () {
           var c = heroByName(hero.name);
-          return c && c.quality ? '<i class="hq-inline">' + c.quality + '阶</i>' : '';
+          return c && c.quality ? '<i class="hq-inline">' + c.quality + '</i>' : '';
         }())
         + '</div>' + items + '</div></div>';
     }).join('');
@@ -300,10 +304,12 @@
       + '.hq{position:absolute;top:1px;right:1px;font-size:9px;font-weight:700;font-style:normal;background:#B4230E;color:#fff;border-radius:4px;padding:0 3px;line-height:1.35;}'
       + '.hq-inline{font-style:normal;font-weight:500;font-size:11px;color:#9A93A6;margin-left:6px;}'
       + '.hud[data-hud-db="1"] [data-hud-kind]{cursor:help;}'
-      + '#hudTip{position:fixed;z-index:30;display:none;max-width:240px;background:#2A2633;border:1px solid #4A4456;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.6;pointer-events:none;box-shadow:0 8px 20px rgba(0,0,0,.45);}'
+      + '#hudTip{position:fixed;z-index:30;display:none;max-width:280px;max-height:70vh;overflow:auto;background:#2A2633;border:1px solid #4A4456;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.6;pointer-events:auto;box-shadow:0 8px 20px rgba(0,0,0,.45);}'
       + '#hudTip .ht-n{font-weight:700;font-size:13px;}'
       + '#hudTip .ht-s{font-size:11px;color:#9A93A6;margin-top:2px;}'
-      + '#hudTip .ht-d{margin-top:6px;color:#E8E4EE;}'
+      + '#hudTip .ht-l{font-size:11px;color:#FF8A73;margin:8px 0 2px;letter-spacing:.04em;}'
+      + '#hudTip .ht-d{margin-top:4px;color:#E8E4EE;}'
+      + '#hudTip .ht-d b{color:#FF8A73;margin-right:4px;}'
       + '.hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;}'
       + '.hbtn.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;}'
       + '.htips{flex:1;overflow:auto;}'
@@ -405,29 +411,51 @@
     if (kind === 'hero') {
       var h = heroByName(name);
       if (!h) return '';
+      var bits = ['<div class="ht-n">' + esc(h.name) + '</div>'];
       var sub = [];
-      if (h.quality) sub.push(h.quality + '阶');
+      if (h.quality) sub.push(String(h.quality));
       if (h.faction) sub.push(h.faction);
-      var d = plain(h.desc);
-      if (d.length > 160) d = d.slice(0, 158) + '…';
-      var kw = (h.kwHelp || []).map(function (k) { return esc(k.name) + '：' + esc(plain(k.desc)); }).join('<br>');
-      return '<div class="ht-n">' + esc(h.name) + '</div>'
-        + (sub.length ? '<div class="ht-s">' + esc(sub.join(' · ')) + '</div>' : '')
-        + (d ? '<div class="ht-d">' + esc(d) + '</div>' : '')
-        + (kw ? '<div class="ht-d">' + kw + '</div>' : '');
+      if (h.cost && h.cost.count) sub.push('商店 ' + h.cost.count + (h.cost.type === 1 ? ' 古币' : ''));
+      if (sub.length) bits.push('<div class="ht-s">' + esc(sub.join(' · ')) + '</div>');
+      if (h.desc) bits.push('<div class="ht-l">卡面</div><div class="ht-d">' + para(h.desc) + '</div>');
+      if (h.awakeDesc) bits.push('<div class="ht-l">觉醒</div><div class="ht-d">' + para(h.awakeDesc) + '</div>');
+      (h.skills || []).forEach(function (s) {
+        bits.push('<div class="ht-l">技能 · ' + esc(s.name) + '</div>');
+        if (s.desc) bits.push('<div class="ht-d">' + para(s.desc) + '</div>');
+        (s.enhance || []).forEach(function (p) {
+          bits.push('<div class="ht-d"><b>' + esc(String(p.level)) + '</b> ' + para(p.desc) + '</div>');
+        });
+      });
+      if (h.kwHelp && h.kwHelp.length) {
+        bits.push('<div class="ht-l">词条</div><div class="ht-d">'
+          + h.kwHelp.map(function (k) { return esc(k.name) + '：' + esc(plain(k.desc)); }).join('<br>')
+          + '</div>');
+      }
+      if (h.stats) {
+        var st = [];
+        if (h.stats.HP != null) st.push('生命 ' + h.stats.HP);
+        if (h.stats.phyAttack) st.push('物攻 ' + h.stats.phyAttack);
+        if (h.stats.magAttack) st.push('法攻 ' + h.stats.magAttack);
+        if (h.stats.phyDefense != null) st.push('物防 ' + h.stats.phyDefense);
+        if (h.stats.attackDistance != null) st.push('攻距 ' + h.stats.attackDistance);
+        if (h.stats.initEnergy != null || h.stats.energy != null) {
+          st.push('能量 ' + (h.stats.initEnergy || 0) + '/' + (h.stats.energy || 0));
+        }
+        if (st.length) bits.push('<div class="ht-s">' + esc(st.join(' · ')) + '</div>');
+      }
+      return bits.join('');
     }
     if (kind === 'equip') {
       var e = equipByName(name);
       if (!e) return '<div class="ht-n">' + esc(name) + '</div>';
       var sube = [];
+      if (e.quality) sube.push(String(e.quality));
       if (e.subType) sube.push(e.subType);
       var craft = craftOf(name);
       if (craft) sube.push(craft);
-      var ed = plain(e.desc);
-      if (ed.length > 160) ed = ed.slice(0, 158) + '…';
       return '<div class="ht-n">' + esc(e.name) + '</div>'
         + (sube.length ? '<div class="ht-s">' + esc(sube.join(' · ')) + '</div>' : '')
-        + (ed ? '<div class="ht-d">' + esc(ed) + '</div>' : '');
+        + (e.desc ? '<div class="ht-d">' + para(e.desc) + '</div>' : '');
     }
     return '';
   }
@@ -500,9 +528,8 @@
       if (el) showTip(doc, el);
     });
     doc.addEventListener('mouseout', function (e) {
-      var el = e.target && e.target.closest && e.target.closest('[data-hud-kind]');
-      if (!el) return;
-      if (e.relatedTarget && el.contains(e.relatedTarget)) return;
+      var to = e.relatedTarget;
+      if (to && to.closest && (to.closest('#hudTip') || to.closest('[data-hud-kind]'))) return;
       hideTip(doc);
     });
   }
@@ -707,6 +734,7 @@
       var L = lineupOf(key);
       return L ? innerHtml(L) : '';
     },
+    tip: tipHtml,
     count: function () { return aliveKeys().length; }
   };
 })(window);
