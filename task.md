@@ -3,7 +3,7 @@
 > 最后更新：2026-09-19
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.19**（多电脑：配置合并/检查更新、复制大码、极简字号、手机抽屉、离线图标、数据版本）。官方阵容库 **v1.2.0**（47 套）。近7日数据阵容 **v1.1.0**。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.20**（助手搬进坚果云子文件夹）。官方阵容库 **v1.2.0**（47 套）。近7日数据阵容 **v1.1.0**。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -44,7 +44,7 @@ wzry-guide/
 │   ├── sync-wxq-lineups.js 万象棋官方阵容库同步（推荐/热门/新手）；入库门槛使用量≥2000 且评分≥4.0
 │   ├── sync-wxq-stats.js   万象棋大数据近7日前三率（datawxq.com → wanxiangqi-stats.js）
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
-│   └── publish-wxq-helper.js 打成单文件写到坚果云根目录 `王者助手.html`（不覆盖 `王者助手.json.js`）
+│   └── publish-wxq-helper.js 打成单文件写到坚果云 `王者万象棋助手/王者助手.html`（不覆盖 `王者助手.json.js`）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的阵容有「讲解这套」。版本只升 WXQ_META
 ├── wanxiangqi-explain.js   讲解：官方卡面 + 阵容原文。识别李信牺牲/木兰复生/三分倒转/大河开团/日落海整备/往生图腾。李信按上场牺牲位拆读法。
@@ -144,11 +144,11 @@ WXQ_GUIDE = {
 ### 5.2f 坚果云王者助手（2026-09-19）
 
 - 网页 localStorage **不会**随坚果云走。做法：发布单文件 HTML + 旁边一份配置脚本。
-- 发布：`node scripts/publish-wxq-helper.js` → `C:\Users\Zhuqi\Nutstore\1\我的坚果云\王者助手.html`。图从 GitHub Pages 拉，电脑要能上网。**不覆盖**已有 `王者助手.json.js`。
-- 各电脑直接打开该 HTML，会自动读同目录 `王者助手.json.js`，**不用导入**。点「保存配置」才写入/覆盖这份文件（后保存的覆盖先保存的）。不点保存，只留在这台浏览器。第一次保存要选坚果云根目录（和 html 放一起的那个）。多电脑同时改：在用取并集，主题以云上为准；左下角「检查更新」带入云上新配置，开着的页面每分钟自动带入一次。发布脚本从坚果云 `UsersMap.json` 反查根目录（`NUTSTORE_ROOT` 仍可覆盖）。
+- 发布：`node scripts/publish-wxq-helper.js` → 坚果云 `王者万象棋助手/王者助手.html`。图优先用同目录 `wxq-icon`，缺的再走 GitHub Pages。**不覆盖**已有 `王者助手.json.js`。
+- 各电脑直接打开该 HTML，会自动读同目录 `王者助手.json.js`，**不用导入**。点「保存配置」才写入/覆盖这份文件（后保存的覆盖先保存的）。不点保存，只留在这台浏览器。第一次保存要选坚果云里的「王者万象棋助手」文件夹。多电脑同时改：在用取并集，主题以云上为准；左下角「检查更新」带入云上新配置，开着的页面每分钟自动带入一次。发布脚本从坚果云 `UsersMap.json` 反查根目录（`NUTSTORE_ROOT` 仍可覆盖）。
 - 浮窗：复制失败弹出大字阵容码（点一下全选再 Ctrl+C）。顶栏「适配屏幕/完整或只看站位/字小字大/图鉴开」。手机（触屏/窄屏）走底部抽屉：站位置顶吸住，下滑看装备/运营/出牌。
 - 浮窗运营空段用该套 brief 顶上；出牌段没有讲解也没关系，最后会跟一句 brief。
-- 助手页脚带版本号和发布日期。坚果云根目录顺带复制 `wxq-icon/{heroes,equips,players}` 常用图标（146 个约 6MB），本地打开也有图。近 7 日脚本的 `version` 按周一自动算（如 v260921），页面显示数据版本和截至日期。
+- 助手页脚带版本号和发布日期。坚果云 `王者万象棋助手` 文件夹顺带复制 `wxq-icon/{heroes,equips,players}` 常用图标（146 个约 6MB），本地打开也有图。近 7 日脚本的 `version` 按周一自动算（如 v260921），页面显示数据版本和截至日期。
 - `wanxiangqi-cloud.js`。改完万象棋后跑一次发布脚本，各电脑坚果云同步完即可用新版。
 
 ### 5.2b 原连锁四层（已下线，仅留档）
@@ -330,7 +330,7 @@ C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhu
 # 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-cards.js
 
-# 打成单文件写到坚果云根目录 王者助手.html
+# 打成单文件写到坚果云 王者万象棋助手/王者助手.html
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/publish-wxq-helper.js
 
 # HTTPS 推送（SSH 被 Clash fake-ip 挡时）

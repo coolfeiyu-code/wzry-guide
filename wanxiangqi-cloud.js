@@ -138,7 +138,7 @@
   function pickFolder() {
     if (!global.showDirectoryPicker) {
       download(snapshot());
-      status(false, '这台浏览器不支持直写文件夹。已下载 ' + FILE + '，覆盖到坚果云根目录即可');
+      status(false, '这台浏览器不支持直写文件夹。已下载 ' + FILE + '，覆盖到坚果云「王者万象棋助手」文件夹即可');
       return Promise.resolve(false);
     }
     return global.showDirectoryPicker({ id: 'wxq-nutstore', mode: 'readwrite' }).then(function (dir) {
@@ -155,7 +155,7 @@
     }).catch(function (err) {
       if (err && err.name === 'AbortError') return false;
       download(snapshot());
-      status(false, '没选到文件夹。已下载配置，覆盖到坚果云根目录');
+      status(false, '没选到文件夹。已下载配置，覆盖到坚果云「王者万象棋助手」文件夹');
       return false;
     });
   }
@@ -267,7 +267,7 @@
         : '打开会自动带上已保存的配置，不用导入')
       + '</span>'
       + '<button type="button" data-cloud-check>检查更新</button>'
-      + '<button type="button" data-cloud-save title="选坚果云根目录（王者助手.html 所在文件夹），会覆盖王者助手.json.js">保存配置</button>';
+      + '<button type="button" data-cloud-save title="选坚果云里的「王者万象棋助手」文件夹，会覆盖王者助手.json.js">保存配置</button>';
     bar.addEventListener('click', function (e) {
       if (e.target.closest && e.target.closest('[data-cloud-save]')) { pickFolder(); return; }
       if (e.target.closest && e.target.closest('[data-cloud-check]')) { checkNow(false); return; }

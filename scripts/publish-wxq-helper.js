@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * 把万象棋页打成单文件，写到坚果云根目录：王者助手.html
- * 图片仍走 GitHub Pages（需要能上网）。配置在旁边的 王者助手.json.js，发布时不覆盖。
+ * 把万象棋页打成单文件，写到坚果云「王者万象棋助手」文件夹：王者助手.html
+ * 图片优先用同目录 wxq-icon（离线也有图），缺的再走 GitHub Pages。配置在旁边的
+ * 王者助手.json.js，发布时不覆盖。
  *
  *   node scripts/publish-wxq-helper.js
  *   NUTSTORE_ROOT=D:\坚果云 node scripts/publish-wxq-helper.js
@@ -13,6 +14,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const HOME = process.env.USERPROFILE || process.env.HOME || '';
+const HELPER_DIR = '王者万象棋助手';
 const BASE = 'https://coolfeiyu-code.github.io/wzry-guide/';
 const SCRIPTS = [
   'wanxiangqi-data.js',
@@ -164,11 +166,13 @@ function metaVersion() {
 }
 
 function main() {
-  const destDir = nutstoreRoot();
-  if (!destDir) {
+  const root = nutstoreRoot();
+  if (!root) {
     console.error('找不到坚果云根目录。请设置环境变量 NUTSTORE_ROOT');
     process.exit(1);
   }
+  const destDir = path.join(root, HELPER_DIR);
+  fs.mkdirSync(destDir, { recursive: true });
   const ver = metaVersion();
   const today = new Date().toISOString().slice(0, 10);
   const htmlPath = path.join(destDir, '王者助手.html');
