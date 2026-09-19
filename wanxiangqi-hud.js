@@ -27,6 +27,23 @@
     try { return new URL(p, location.href).href; } catch (e) { return p; }
   }
   function heroImg(name) { return abs('wxq-icon/heroes/' + encodeURIComponent(name) + '.png'); }
+  function equipImg(name) { return abs('wxq-icon/equips/' + encodeURIComponent(name) + '.png'); }
+
+  function equipByName(name) {
+    var E = global.WXQ_EQUIPS || [];
+    for (var i = 0; i < E.length; i++) if (E[i].name === name) return E[i];
+    return null;
+  }
+  function craftOf(name) {
+    var e = equipByName(name);
+    if (!e || !e.craftFrom || !e.craftFrom.length) return '';
+    var from = [];
+    e.craftFrom.forEach(function (x) {
+      var n = x && x.name;
+      if (n && n !== name && from.indexOf(n) < 0) from.push(n);
+    });
+    return from.length ? '从' + from.join('、') + '合成' : '';
+  }
 
   function load() {
     try {
@@ -103,40 +120,78 @@
       }
       rows += '<div class="hrow">' + cells + '</div>';
     }
-    return '<div class="hboard">' + rows + '</div>';
+    return '<div class="hboard"><div class="hboard-lab">上 = 前排</div>' + rows + '</div>';
   }
 
-  function tipBits(L) {
-    var ns = (L.heroes || []).map(function (h) { return h.name; });
-    var out = [];
-    var arch = global.WXQ_EXPLAIN && WXQ_EXPLAIN.match && WXQ_EXPLAIN.match(L);
-    if (arch) {
-      if (typeof arch.readOf === 'function') {
-        var t = arch.readOf(ns);
-        var i = t.indexOf('搭配上');
-        if (i >= 0) {
-          var chunk = t.slice(i).split('。').slice(0, 2).join('。');
-          if (chunk && chunk.charAt(chunk.length - 1) !== '。') chunk += '。';
-          out.push({ k: '搭配', t: chunk });
-        }
+  function sec(title, body) {
+    if (!body) return '';
+    return '<section class="hsec"><h4>' + esc(title) + '</h4>' + body + '</section>';
+  }
+
+  function equipsBlock(L) {
+    var rows = (L.heroes || []).filter(function (h) { return h.eqs && h.eqs.length; });
+    if (!rows.length && !L.equipDesc) return '';
+    var h = rows.map(function (hero) {
+      var items = hero.eqs.map(function (n) {
+        var craft = craftOf(n);
+        return '<div class="heq-i">'
+          + '<img src="' + equipImg(n) + '" alt="' + esc(n) + '">'
+          + '<span>' + esc(n)
+          + (craft ? '<em>' + esc(craft) + '</em>' : '')
+          + '</span></div>';
+      }).join('');
+      return '<div class="heq-row">'
+        + '<img class="heq-h" src="' + heroImg(hero.name) + '" alt="' + esc(hero.name) + '">'
+        + '<div><div class="heq-n">' + esc(hero.name) + '</div>' + items + '</div></div>';
+    }).join('');
+    if (L.equipDesc) h += '<p class="heq-d">' + esc(L.equipDesc) + '</p>';
+    return h;
+  }
+
+  function opsBlock(L) {
+    var ops = L.ops || [];
+    var parts = [];
+    ops.forEach(function (o, i) {
+      if (!o) return;
+      var who = (o.main || []).concat(o.sub || []);
+      if (!o.desc && !who.length) return;
+      var lab = PHASE[i] || ('阶段' + (i + 1));
+      var round = '';
+      if (o.from && o.to && !(Number(o.from) === 0 && Number(o.to) === 0)) {
+        round = o.from === o.to ? o.from + ' 回合' : o.from + '–' + o.to + ' 回合';
       }
-      var steps = typeof arch.turnOf === 'function' ? arch.turnOf(ns) : [];
+      var faces = who.length
+        ? '<div class="hwho">' + who.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>'
+        : '';
+      parts.push('<div class="hph">'
+        + '<div class="hph-h">' + esc(lab) + (round ? '<i>' + esc(round) + '</i>' : '') + '</div>'
+        + faces
+        + (o.desc ? '<p>' + esc(o.desc) + '</p>' : '')
+        + '</div>');
+    });
+    return parts.join('');
+  }
+
+  function playBlock(L) {
+    var ns = (L.heroes || []).map(function (h) { return h.name; });
+    var bits = [];
+    var arch = global.WXQ_EXPLAIN && WXQ_EXPLAIN.match && WXQ_EXPLAIN.match(L);
+    if (arch && typeof arch.turnOf === 'function') {
+      var steps = arch.turnOf(ns);
       if (steps.length) {
-        out.push({
-          k: '这一回合',
-          t: '<ol>' + steps.map(function (s) { return '<li>' + esc(s.text) + '</li>'; }).join('') + '</ol>'
-        });
+        bits.push('<ol class="hol">' + steps.map(function (s) {
+          return '<li>' + esc(s.text) + '</li>';
+        }).join('') + '</ol>');
       }
     }
-    if (L.brief) out.push({ k: '玩法', t: esc(L.brief) });
-    (L.ops || []).forEach(function (o, idx) {
-      if (!o || !o.desc) return;
-      var lab = PHASE[idx] || ('阶段' + (idx + 1));
-      var d = String(o.desc).replace(/\s+/g, ' ');
-      if (d.length > 72) d = d.slice(0, 70) + '…';
-      out.push({ k: lab, t: esc(d) });
-    });
-    return out;
+    var pulled = (global.WXQ_EXPLAIN && WXQ_EXPLAIN.tips) ? WXQ_EXPLAIN.tips(L) : [];
+    if (pulled.length) {
+      bits.push('<ul class="hul">' + pulled.map(function (t) {
+        return '<li>' + esc(t) + '</li>';
+      }).join('') + '</ul>');
+    }
+    if (L.effectDesc) bits.push('<p>' + esc(L.effectDesc) + '</p>');
+    return bits.join('');
   }
 
   function switcherHtml(cur) {
@@ -150,13 +205,12 @@
   }
 
   function innerHtml(L) {
-    var bits = tipBits(L);
     var lords = (L.lords || []).join(' / ');
-    var tips = bits.map(function (b) {
-      return '<div class="htip"><b>' + esc(b.k) + '</b>'
-        + (b.t.charAt(0) === '<' ? b.t : '<p>' + b.t + '</p>')
-        + '</div>';
-    }).join('');
+    var eq = equipsBlock(L);
+    var op = opsBlock(L);
+    var play = playBlock(L);
+    var body = boardHtml(L) + sec('装备', eq) + sec('前 / 中 / 后期', op) + sec('出牌', play);
+    if (!eq && !op && !play) body += '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>';
     return '<div class="hud" data-hud-cur="' + esc(L.key) + '">'
       + '<div class="hbar" data-hud-drag="1">'
       + '<strong>对局浮窗</strong>'
@@ -168,13 +222,12 @@
       + switcherHtml(L.key)
       + '<div class="hname">' + esc(L.name)
       + (lords ? '<em>' + esc(lords) + '</em>' : '') + '</div>'
-      + boardHtml(L)
-      + '<div class="htips">' + (tips || '<p class="hmuted">这套没有写要点，只看站位。</p>') + '</div>'
+      + '<div class="htips">' + body + '</div>'
       + '<div class="hacts">'
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">贴不到游戏画面里。Chrome / Edge 用「贴在最前」压在窗口上；游戏全屏独占时改成窗口化，把小窗拖到旁边。</p>'
+      + '<p class="hnote">贴不到游戏画面里。Chrome / Edge 用「贴在最前」；全屏独占时改窗口化。</p>'
       + '</div>';
   }
 
@@ -192,19 +245,32 @@
       + '.hname{font-size:16px;font-weight:700;}'
       + '.hname em{display:block;font-style:normal;font-size:12px;font-weight:400;color:#C8C2D2;margin-top:2px;}'
       + '.hboard{display:flex;flex-direction:column;gap:3px;}'
+      + '.hboard-lab{font-size:10px;color:#9A93A6;margin-bottom:2px;}'
       + '.hrow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}'
       + '.hcell{aspect-ratio:1;border-radius:8px;background:#2A2633;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1px;}'
       + '.hcell.filled{background:transparent;}'
       + '.hcell img{width:78%;aspect-ratio:1;object-fit:cover;border-radius:50%;display:block;background:#2A2633;}'
       + '.hcell span{font-size:9px;line-height:1.1;color:#C8C2D2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}'
-      + '.htips{flex:1;overflow:auto;border-top:1px solid #4A4456;padding-top:8px;}'
-      + '.htip{margin:0 0 8px;}'
-      + '.htip b{display:block;font-size:11px;color:#FF8A73;letter-spacing:.04em;margin-bottom:2px;}'
-      + '.htip p,.htip li{margin:0;font-size:12.5px;line-height:1.65;color:#E8E4EE;}'
-      + '.htip ol{margin:0;padding-left:1.15em;}'
-      + '.hacts{display:flex;gap:8px;}'
+      + '.htips{flex:1;overflow:auto;}'
+      + '.hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid #4A4456;}'
+      + '.hsec h4{margin:0 0 6px;font-size:12px;color:#FF8A73;letter-spacing:.04em;}'
+      + '.heq-row{display:flex;gap:8px;margin:0 0 8px;}'
+      + '.heq-h{width:28px;height:28px;border-radius:50%;object-fit:cover;background:#2A2633;flex:none;}'
+      + '.heq-n{font-size:13px;font-weight:600;margin-bottom:2px;}'
+      + '.heq-i{display:flex;align-items:center;gap:6px;margin:2px 0;font-size:12px;}'
+      + '.heq-i img{width:18px;height:18px;border-radius:4px;object-fit:cover;background:#2A2633;flex:none;}'
+      + '.heq-i em{display:block;font-style:normal;font-size:11px;color:#9A93A6;}'
+      + '.heq-d,.hph p,.hol li,.hul li,.hsec p{margin:0;font-size:12.5px;line-height:1.65;color:#E8E4EE;}'
+      + '.heq-d{margin-top:4px;color:#C8C2D2;}'
+      + '.hph{margin:0 0 8px;}'
+      + '.hph-h{font-size:13px;font-weight:700;}'
+      + '.hph-h i{font-style:normal;font-weight:400;color:#9A93A6;margin-left:6px;font-size:11px;}'
+      + '.hwho{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;}'
+      + '.hwho span{font-size:11px;background:#2A2633;border-radius:999px;padding:1px 7px;color:#C8C2D2;}'
+      + '.hol,.hul{margin:0 0 8px;padding-left:1.15em;}'
+      + '.hacts{display:flex;gap:8px;margin-top:8px;}'
       + '.hmuted{font-size:12px;color:#9A93A6;}'
-      + '.hnote{margin:0;font-size:11px;line-height:1.55;color:#9A93A6;}';
+      + '.hnote{margin:4px 0 0;font-size:11px;line-height:1.55;color:#9A93A6;}';
   }
 
   function fillDoc(doc, L) {
@@ -306,7 +372,7 @@
       try { pipWin.focus(); } catch (e) {}
       return Promise.resolve(true);
     }
-    return global.documentPictureInPicture.requestWindow({ width: 380, height: 600 }).then(function (w) {
+    return global.documentPictureInPicture.requestWindow({ width: 420, height: 720 }).then(function (w) {
       pipWin = w;
       fillDoc(w.document, L);
       w.addEventListener('pagehide', function () { if (pipWin === w) pipWin = null; });
@@ -322,7 +388,7 @@
   function openPopup(L) {
     if (!L) return false;
     try {
-      popWin = global.open('', 'wxqHud', 'popup=yes,width=400,height=640,resizable=yes,scrollbars=yes');
+      popWin = global.open('', 'wxqHud', 'popup=yes,width=440,height=760,resizable=yes,scrollbars=yes');
     } catch (e) { popWin = null; }
     if (!popWin) return false;
     fillDoc(popWin.document, L);

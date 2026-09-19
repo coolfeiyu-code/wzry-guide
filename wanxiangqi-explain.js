@@ -355,6 +355,7 @@
     match: matchArch,
     pageHtml: pageHtml,
     render: render,
-    onGridClick: onGridClick
+    onGridClick: onGridClick,
+    tips: pullTips
   };
 })(window);
