@@ -13,7 +13,6 @@
   var COLS = 7;
   var ROWS = 4;
   var PHASE = ['前期', '中期', '后期'];
-  var pipWin = null;
   var popWin = null;
   var panel = null;
   var mainBound = false;
@@ -58,7 +57,6 @@
     try { localStorage.setItem('wxq-hud-db', on ? '1' : '0'); } catch (e) {}
     cloudTouch();
     applyTipsUi(document);
-    if (pipWin && !pipWin.closed) applyTipsUi(pipWin.document);
     if (popWin && !popWin.closed) applyTipsUi(popWin.document);
   }
   function applyTipsUi(doc) {
@@ -388,7 +386,7 @@
       + '<button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button>'
       + '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>'
       + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
-      + (global.documentPictureInPicture ? '<button type="button" class="hbtn" data-hud-pip="1" title="把小窗压在游戏窗口最前">贴在最前</button>' : '')
+      + (isHudWin() ? '<button type="button" class="hbtn" data-hud-front="1" title="把当前小窗切到最前">贴在最前</button>' : '')
       + '<button type="button" class="hbtn" data-hud-close="1">关闭</button>'
       + '</div>'
       + switcherHtml(L.key)
@@ -419,6 +417,7 @@
       + '.hbtn{border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;border-radius:8px;padding:5px 9px;font-size:12px;font-family:inherit;cursor:pointer;}'
       + '.hbtn.pri{background:#B4230E;border-color:transparent;}'
       + '.hbtn.pri.home{font-size:14px;font-weight:700;padding:7px 14px;}'
+      + 'body[data-hud-front] .hud{outline:2px solid #B4230E;outline-offset:-2px;}'
       + '.hsw{display:flex;flex-wrap:wrap;gap:5px;}'
       + '.hsw-b{border:1px solid #4A4456;background:#2A2633;color:#C8C2D2;border-radius:999px;padding:4px 9px;font-size:11.5px;font-family:inherit;cursor:pointer;}'
       + '.hsw-b.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;font-weight:600;}'
@@ -669,7 +668,7 @@
         var L = find(sw.getAttribute('data-hud-key'));
         if (!L) return;
         setLast(L.key);
-        if (document.body.classList.contains('hud-only')) {
+        if (isHudWin()) {
           try { location.hash = 'hud-' + encodeURIComponent(L.key); } catch (e) {}
           enterPage('#hud-' + encodeURIComponent(L.key));
           return;
@@ -677,18 +676,17 @@
         paintWherever(L);
         return;
       }
-      var pip = t.closest('[data-hud-pip]');
-      if (pip) { openPip(currentOf(doc)); return; }
+      var fw = t.closest('[data-hud-front]');
+      if (fw) { frontWin(); return; }
       var pop = t.closest('[data-hud-pop]');
       if (pop) { openPopup(currentOf(doc)); return; }
       var homeBtn = t.closest('[data-hud-home]');
       if (homeBtn) { goHome(); return; }
       var cl = t.closest('[data-hud-close]');
       if (cl) {
-        if (document.body.classList.contains('hud-only')) {
+        if (isHudWin()) {
           pingOpenerUnpark();
           try { global.close(); } catch (e) {}
-          goHome();
           return;
         }
         closeAll(doc);
@@ -724,16 +722,11 @@
 
   function paintWherever(L) {
     if (!L) return;
-    if (pipWin && !pipWin.closed) fillDoc(pipWin.document, L);
     if (popWin && !popWin.closed) fillDoc(popWin.document, L);
     if (panel && panel.parentNode) panel.innerHTML = innerHtml(L);
   }
 
   function closeAll(fromDoc) {
-    if (pipWin && !pipWin.closed && (!fromDoc || fromDoc.defaultView === pipWin)) {
-      try { pipWin.close(); } catch (e) {}
-      pipWin = null;
-    }
     if (popWin && !popWin.closed && (!fromDoc || fromDoc.defaultView === popWin)) {
       try { popWin.close(); } catch (e) {}
       popWin = null;
@@ -754,28 +747,16 @@
     return L || null;
   }
 
-  function openPip(L) {
-    if (!L) return Promise.resolve(false);
-    if (!global.documentPictureInPicture) return Promise.resolve(false);
-    if (pipWin && !pipWin.closed) {
-      fillDoc(pipWin.document, L);
-      try { pipWin.focus(); } catch (e) {}
-      return Promise.resolve(true);
-    }
-    var sz = loadSize(global);
-    return global.documentPictureInPicture.requestWindow({ width: sz.w, height: sz.h }).then(function (w) {
-      pipWin = w;
-      fillDoc(w.document, L);
-      w.addEventListener('pagehide', function () { if (pipWin === w) pipWin = null; });
-      hidePanel();
-      if (popWin && !popWin.closed) {
-        try { popWin.close(); } catch (e2) {}
-        popWin = null;
-      }
-      return true;
-    }).catch(function () { return false; });
+  function isHudWin() {
+    return document.body.classList.contains('hud-only');
   }
-
+  function frontWin() {
+    try { global.focus(); } catch (e) {}
+    try { if (global.document && global.document.body) global.document.body.setAttribute('data-hud-front', '1'); } catch (e2) {}
+    setTimeout(function () {
+      try { if (global.document && global.document.body) global.document.body.removeAttribute('data-hud-front'); } catch (e3) {}
+    }, 900);
+  }
   function hudUrl(L) {
     return location.href.replace(/#.*$/, '') + '#hud-' + encodeURIComponent(L.key);
   }
@@ -898,9 +879,6 @@
     clearSize(global);
     var sz = bestSize(global);
     var dock = dockRight(sz, global);
-    if (pipWin && !pipWin.closed) {
-      try { pipWin.resizeTo(sz.w, sz.h); } catch (e1) {}
-    }
     if (popWin && !popWin.closed) {
       try { popWin.resizeTo(sz.w, sz.h); popWin.moveTo(dock.left, dock.top); } catch (e2) {}
     }
@@ -975,10 +953,7 @@
     }
     setLast(L.key);
     if (openPopup(L)) return;
-    openPip(L).then(function (ok) {
-      if (ok) return;
-      showPanel(L);
-    });
+    showPanel(L);
   }
 
   function enterPage(hash) {

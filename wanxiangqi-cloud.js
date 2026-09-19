@@ -127,29 +127,46 @@
     });
   }
 
+  function rememberHandle(h) {
+    dirHandle = h;
+    try { localStorage.setItem('wxq-cloud-bound', '1'); } catch (e) {}
+    return idbSet(h);
+  }
+  function writeNow(h) {
+    dirHandle = h;
+    return writeHandle(h, snapshot()).then(function () {
+      status(true, '已自动保存');
+      return true;
+    });
+  }
   function pickFolder() {
     if (!global.showDirectoryPicker) {
       download(snapshot());
-      status(false, '这台浏览器不支持直写文件夹。已下载 ' + FILE + '，覆盖到坚果云「王者万象棋助手」文件夹即可');
+      status(false, '这台浏览器不支持直写文件夹。已下载 ' + FILE + '，覆盖到坚果云「王者万象棋助手」即可');
       return Promise.resolve(false);
     }
     return global.showDirectoryPicker({ id: 'wxq-nutstore', mode: 'readwrite' }).then(function (dir) {
-      dirHandle = dir;
-      return idbSet(dir).then(function (stored) {
-        if (!stored) {
-          status(false, '这台记不住文件夹授权（无痕/站点数据被清）。每次保存会再让你选一次，或用下载覆盖');
-        }
-        return writeHandle(dir, snapshot());
-      });
+      return rememberHandle(dir).then(function () { return writeNow(dir); });
     }).then(function () {
-      status(true, '已写入坚果云 · ' + FILE);
+      status(true, '已记住文件夹，之后会自动保存');
       return true;
     }).catch(function (err) {
       if (err && err.name === 'AbortError') return false;
       download(snapshot());
-      status(false, '没选到文件夹。已下载配置，覆盖到坚果云「王者万象棋助手」文件夹');
+      status(false, '没选到文件夹。已下载配置，请放到「王者万象棋助手」');
       return false;
     });
+  }
+  function saveNow() {
+    function withHandle(h) {
+      if (!h) return pickFolder();
+      return ensurePerm(h).then(function (ok) {
+        if (ok) return writeNow(ok);
+        return pickFolder();
+      });
+    }
+    if (dirHandle) return withHandle(dirHandle);
+    return idbGet().then(withHandle);
   }
 
   function flush() {
@@ -157,8 +174,11 @@
     global.WXQ_CLOUD_BOOT = cfg;
     if (!dirHandle) return;
     writeHandle(dirHandle, cfg).then(function () {
-      status(true, '已写入坚果云 · ' + FILE);
-    }).catch(function () {});
+      status(true, '已自动保存');
+    }).catch(function () {
+      dirHandle = null;
+      status(false, '点一次保存配置重新授权，之后又会自动保存');
+    });
   }
   function touch() {
     clearTimeout(timer);
@@ -175,10 +195,10 @@
         ? '已自动载入坚果云里的在用配置'
         : '打开会自动带上已保存的配置，不用导入')
       + '</span>'
-      + '<button type="button" data-cloud-save title="选坚果云里的「王者万象棋助手」文件夹，会覆盖王者助手.json.js">保存配置</button>';
+      + '<button type="button" data-cloud-save title="第一次选「王者万象棋助手」文件夹，之后自动保存">保存配置</button>';
     bar.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-cloud-save]');
-      if (b) pickFolder();
+      if (b) saveNow();
     });
     document.body.appendChild(bar);
   }
@@ -191,15 +211,22 @@
     paintBar();
   }
 
-  idbGet().then(function (h) { return ensurePerm(h); }).then(function (h) {
+  idbGet().then(function (h) {
     if (!h) return;
     dirHandle = h;
-    status(true, '坚果云文件夹已连接');
+    if (!h.queryPermission) {
+      status(true, '已记住文件夹，改收藏会自动保存');
+      return;
+    }
+    return h.queryPermission({ mode: 'readwrite' }).then(function (st) {
+      if (st === 'granted') status(true, '已记住文件夹，改收藏会自动保存');
+      else status(false, '点一次保存配置即可记住，之后自动保存');
+    }).catch(function () {});
   });
 
   global.WXQ_CLOUD = {
     touch: touch,
-    save: pickFolder,
+    save: saveNow,
     snapshot: snapshot
   };
 })(window);
