@@ -54,61 +54,12 @@
   function tipsOn() {
     try { return localStorage.getItem('wxq-hud-db') !== '0'; } catch (e) { return true; }
   }
-  function miniOn() {
-    try { return localStorage.getItem('wxq-hud-mini') === '1'; } catch (e) { return false; }
-  }
-  function fontStep() {
-    try {
-      var n = parseInt(localStorage.getItem('wxq-hud-font') || '0', 10);
-      if (n > 2) return 2;
-      if (n < -2) return -2;
-      return n || 0;
-    } catch (e) { return 0; }
-  }
-  function applyUiAll() {
-    applyTipsUi(document);
-    applyMiniFont(document);
-    if (pipWin && !pipWin.closed) { applyTipsUi(pipWin.document); applyMiniFont(pipWin.document); }
-    if (popWin && !popWin.closed) { applyTipsUi(popWin.document); applyMiniFont(popWin.document); }
-  }
   function setTips(on) {
     try { localStorage.setItem('wxq-hud-db', on ? '1' : '0'); } catch (e) {}
     cloudTouch();
-    applyUiAll();
-  }
-  function setMini(on) {
-    try { localStorage.setItem('wxq-hud-mini', on ? '1' : '0'); } catch (e) {}
-    cloudTouch();
-    applyUiAll();
-  }
-  function setFont(step) {
-    if (step > 2) step = 2;
-    if (step < -2) step = -2;
-    try { localStorage.setItem('wxq-hud-font', String(step)); } catch (e) {}
-    cloudTouch();
-    applyUiAll();
-  }
-  function applyMiniFont(doc) {
-    if (!doc || !doc.querySelector) return;
-    var hud = doc.querySelector('.hud');
-    if (hud) {
-      hud.setAttribute('data-hud-mini', miniOn() ? '1' : '0');
-      hud.setAttribute('data-hud-font', String(fontStep()));
-    }
-    var b = doc.querySelector('[data-hud-mini]');
-    if (b) {
-      b.textContent = miniOn() ? '只看站位' : '完整';
-      if (b.classList) {
-        if (miniOn()) b.classList.add('on');
-        else b.classList.remove('on');
-      }
-    }
-    ['[data-hud-font-dec]', '[data-hud-font-inc]'].forEach(function (sel) {
-      var el = doc.querySelector(sel);
-      if (el) el.textContent = sel === '[data-hud-font-inc]' ? '字大' : '字小';
-    });
-    var tip = doc.getElementById('hudTip');
-    if (tip && !tipsOn()) tip.style.display = 'none';
+    applyTipsUi(document);
+    if (pipWin && !pipWin.closed) applyTipsUi(pipWin.document);
+    if (popWin && !popWin.closed) applyTipsUi(popWin.document);
   }
   function applyTipsUi(doc) {
     if (!doc || !doc.querySelector) return;
@@ -432,14 +383,11 @@
     var eq = equipsBlock(L);
     var op = opsBlock(L);
     var play = playBlock(L);
-    return '<div class="hud" data-hud-cur="' + esc(L.key) + '" data-hud-db="' + (tipsOn() ? '1' : '0') + '" data-hud-mini="' + (miniOn() ? '1' : '0') + '" data-hud-font="' + fontStep() + '" data-hud-mobile="' + (isMobile() ? '1' : '0') + '" data-hud-fit="' + fitBand(screenBox().h) + '">'
+    return '<div class="hud" data-hud-cur="' + esc(L.key) + '" data-hud-db="' + (tipsOn() ? '1' : '0') + '" data-hud-mobile="' + (isMobile() ? '1' : '0') + '" data-hud-fit="' + fitBand(screenBox().h) + '">'
       + '<div class="hbar" data-hud-drag="1">'
       + '<strong>对局浮窗</strong>'
       + '<span class="hsp"></span>'
       + '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>'
-      + '<button type="button" class="hbtn' + (miniOn() ? ' on' : '') + '" data-hud-mini="1" title="只看站位和阵容码">' + (miniOn() ? '只看站位' : '完整') + '</button>'
-      + '<button type="button" class="hbtn" data-hud-font-dec="1" title="字小一点">字小</button>'
-      + '<button type="button" class="hbtn" data-hud-font-inc="1" title="字大一点">字大</button>'
       + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
       + (global.documentPictureInPicture ? '<button type="button" class="hbtn" data-hud-pip="1" title="把小窗压在游戏窗口最前">贴在最前</button>' : '')
       + '<button type="button" class="hbtn" data-hud-pop="1" title="独立小窗，拖到游戏旁边">弹出小窗</button>'
@@ -499,12 +447,6 @@
       + '.hcode-t{font-size:11px;color:#9A93A6;margin-bottom:6px;}'
       + '.hcode input{display:block;width:100%;box-sizing:border-box;font-size:18px;letter-spacing:.02em;font-family:inherit;padding:8px 10px;border-radius:8px;border:1px solid #FF8A73;background:#17141F;color:#F3F1F6;}'
       + '.hcode-n{font-size:11px;color:#9A93A6;margin-top:6px;word-break:break-all;}'
-      + '.hud[data-hud-mini="1"] .htips,.hud[data-hud-mini="1"] .hsec,.hud[data-hud-mini="1"] .hsw,.hud[data-hud-mini="1"] .hnote{display:none;}'
-      + '.hud[data-hud-font="-2"]{font-size:12px;}'
-      + '.hud[data-hud-font="-1"]{font-size:13px;}'
-      + '.hud[data-hud-font="1"] .heq-d,.hud[data-hud-font="1"] .hph p,.hud[data-hud-font="1"] .hol li,.hud[data-hud-font="1"] .hul li{font-size:14px;}'
-      + '.hud[data-hud-mobile="1"] .hbody{flex-direction:column;overflow-y:auto;}'
-      + '.hud[data-hud-mobile="1"] .hside{position:sticky;top:0;background:inherit;z-index:2;padding-bottom:6px;}'
       + '.hbtn.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;}'
       + '.hud[data-hud-fit="md"] .hcell span{font-size:10px;}'
       + '.hud[data-hud-fit="md"] .heq-d,.hud[data-hud-fit="md"] .hph p,.hud[data-hud-fit="md"] .hol li,.hud[data-hud-fit="md"] .hul li{font-size:13px;}'
@@ -740,12 +682,6 @@
       if (cl) { closeAll(doc); return; }
       var fr = t.closest('[data-hud-fitreset]');
       if (fr) { resetFit(); return; }
-      var mb = t.closest('[data-hud-mini]');
-      if (mb) { setMini(!miniOn()); return; }
-      var fd = t.closest('[data-hud-font-dec]');
-      if (fd) { setFont(fontStep() - 1); return; }
-      var fi = t.closest('[data-hud-font-inc]');
-      if (fi) { setFont(fontStep() + 1); return; }
       var tb = t.closest('[data-hud-tips]');
       if (tb) { setTips(!tipsOn()); return; }
       var code = t.closest('[data-hud-codeinput]');

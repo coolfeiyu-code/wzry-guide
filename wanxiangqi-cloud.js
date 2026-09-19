@@ -13,8 +13,6 @@
     hudSize: 'wxq-hud-size',
     hudPos: 'wxq-hud-pos',
     hudDb: 'wxq-hud-db',
-    hudMini: 'wxq-hud-mini',
-    hudFont: 'wxq-hud-font',
     theme: 'wzry-theme'
   };
   var dirHandle = null;
@@ -42,10 +40,6 @@
     if (pos) o.hudPos = pos;
     var db = lsGet(KEYS.hudDb);
     if (db != null) o.hudDb = db;
-    var mini = lsGet(KEYS.hudMini);
-    if (mini != null) o.hudMini = mini;
-    var font = lsGet(KEYS.hudFont);
-    if (font != null) o.hudFont = font;
     var theme = lsGet(KEYS.theme);
     if (theme) o.theme = theme;
     return o;
@@ -56,8 +50,6 @@
     if (cfg.hudSize) lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize));
     if (cfg.hudPos) lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos));
     if (cfg.hudDb != null) lsSet(KEYS.hudDb, String(cfg.hudDb));
-    if (cfg.hudMini != null) lsSet(KEYS.hudMini, String(cfg.hudMini));
-    if (cfg.hudFont != null) lsSet(KEYS.hudFont, String(cfg.hudFont));
     if (cfg.theme) {
       lsSet(KEYS.theme, cfg.theme);
       try { document.documentElement.setAttribute('data-theme', cfg.theme); } catch (e) {}
@@ -206,14 +198,6 @@
     }
     if (cfg.hudDb != null && lsGet(KEYS.hudDb) == null) {
       lsSet(KEYS.hudDb, String(cfg.hudDb));
-      changed = true;
-    }
-    if (cfg.hudMini != null && lsGet(KEYS.hudMini) == null) {
-      lsSet(KEYS.hudMini, String(cfg.hudMini));
-      changed = true;
-    }
-    if (cfg.hudFont != null && lsGet(KEYS.hudFont) == null) {
-      lsSet(KEYS.hudFont, String(cfg.hudFont));
       changed = true;
     }
     if (cfg.hudSize && lsGet(KEYS.hudSize) == null) {
