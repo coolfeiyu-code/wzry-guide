@@ -3,6 +3,7 @@
  * 王者万象棋 · 官方阵容推荐库同步
  * --------------------------------
  * 拉官网 amside 阵容 JSON（推荐 / 热门 / 新手），压成 wanxiangqi-lineups.js。
+ * 入库门槛：使用量 >= 2000 且评分 >= 4.0，其余视为噪声丢掉。
  * 英雄 / 棋手 / 装备 / 效果 / 天赋名对照 wanxiangqi-data.js 官方池。
  *
  *   node scripts/sync-wxq-lineups.js
@@ -18,6 +19,8 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'wanxiangqi-lineups.js');
 const DATA = path.join(ROOT, 'wanxiangqi-data.js');
 const UA = { 'User-Agent': 'Mozilla/5.0 (compatible; wzry-guide lineup sync)' };
+const MIN_USE = 2000;
+const MIN_SCORE = 4.0;
 
 const URLS = {
   rec: (p) => 'https://game.gtimg.cn/images/amside/ide_timer/598252_oslineupbyrecommend_pro_' + p + '.js',
@@ -209,7 +212,19 @@ function collectUnknown(list, pools) {
   ingest(hot, 'hot');
   ingest(beg, 'beg');
 
-  const list = Object.keys(byKey).map((k) => byKey[k]);
+  const rawList = Object.keys(byKey).map((k) => byKey[k]);
+  const dropped = { use: 0, score: 0, both: 0 };
+  const list = rawList.filter((L) => {
+    const use = Number(L.useNum) || 0;
+    const score = parseFloat(L.score);
+    const sc = (score === score) ? score : 0;
+    const badUse = use < MIN_USE;
+    const badScore = sc < MIN_SCORE;
+    if (badUse && badScore) dropped.both += 1;
+    else if (badUse) dropped.use += 1;
+    else if (badScore) dropped.score += 1;
+    return !badUse && !badScore;
+  });
   list.sort((a, b) => {
     if (!!b.hot !== !!a.hot) return b.hot ? 1 : -1;
     if (a.hot && b.hot) return (a.hotRank || 99) - (b.hotRank || 99);
@@ -220,12 +235,17 @@ function collectUnknown(list, pools) {
   const unknown = collectUnknown(list, pools);
   const capturedAt = new Date().toISOString().slice(0, 10);
   const meta = {
-    version: '1.0.0',
+    version: '1.2.0',
     capturedAt: capturedAt,
     source: '王者万象棋官网阵容推荐库（oslineupbyrecommend / oslineupbyhot / oslineupbybeginner）',
-    note: '主播投稿 + 官方推荐。阵容码 = key，可在游戏「阵容 → 我的阵容 → 导入」使用。本页只展示官方库原文，不模拟打架。',
+    note: '主播投稿 + 官方推荐。入库门槛：使用量≥2000 且评分≥4.0，低于此为噪声不收录。阵容码 = key，可在游戏「阵容 → 我的阵容 → 导入」使用。本页只展示官方库原文，不模拟打架。',
     counts: {
       total: list.length,
+      raw: rawList.length,
+      dropped: dropped.use + dropped.score + dropped.both,
+      droppedUse: dropped.use,
+      droppedScore: dropped.score,
+      droppedBoth: dropped.both,
       recommend: rec.length,
       hot: hot.length,
       beginner: beg.length,
@@ -240,7 +260,8 @@ function collectUnknown(list, pools) {
     + 'window.WXQ_JOBS = ' + JSON.stringify(payload) + ';\n';
   fs.writeFileSync(OUT, body);
   console.log('\n写出', path.relative(ROOT, OUT), (Buffer.byteLength(body) / 1024).toFixed(1) + ' KB');
-  console.log('合计', list.length, '套 | 推荐', rec.length, '| 热门', hot.length, '| 新手', beg.length);
+  console.log('合计', list.length, '套（原始', rawList.length, '，丢噪声', meta.counts.dropped, '：用量低', dropped.use, '/ 分低', dropped.score, '/ 双低', dropped.both, ')');
+  console.log('推荐', rec.length, '| 热门', hot.length, '| 新手', beg.length);
   console.log('作者', meta.counts.uniqueAuthors);
   if (Object.keys(unknown).length) {
     console.log('对照官方池未知名：');

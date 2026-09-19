@@ -3,7 +3,7 @@
 > 最后更新：2026-09-18
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.5**（讲解加读法/回合怎么走；用户可见文案不再称「作业」）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.6**；官方阵容库 **v1.2.0**（使用量≥2000 且评分≥4.0，2026-09-19 同步后 47 套）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -41,7 +41,7 @@ wzry-guide/
 ├── items-data.js           装备数据源(121) + items-icon/(108 图) — 由 scripts/sync-items.py 生成（勿手工编辑）
 ├── scripts/
 │   ├── sync-items.py       装备官方数据同步脚本
-│   ├── sync-wxq-lineups.js 万象棋官方阵容推荐库同步（推荐/热门/新手）
+│   ├── sync-wxq-lineups.js 万象棋官方阵容库同步（推荐/热门/新手）；入库门槛使用量≥2000 且评分≥4.0
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的作业有「讲解这套」。版本只升 WXQ_META
@@ -109,6 +109,11 @@ WXQ_GUIDE = {
 - 识别四类（用上场英雄名）：花木兰复生、三分整备倒转、大河开团、日落海整备。
 - 讲解结构：①「读懂这套」按卡面把机制讲明白（例如木兰吃的是使用古币次数、露娜要整备后再打出）②「这一回合怎么走」③ 上场卡面原文 ④ 该套阵容自己的介绍/运营 ⑤ 从原文抽出的实战要点。不编胜率。
 - 深链 `#x-阵容码`。`wanxiangqi-explain.js`。
+
+### 5.2c 阵容入库门槛（2026-09-19）
+
+- `scripts/sync-wxq-lineups.js` 拉全量后过滤：**使用量 ≥ 2000 且评分 ≥ 4.0**，其余当噪声丢掉。以后更新阵容都走这道门槛，不要把低用量/低分套回去。
+- 2026-09-19 实测：原始 449 → 保留 47（丢 402）。
 
 ### 5.2b 原连锁四层（已下线，仅留档）
 
@@ -255,7 +260,7 @@ WXQ_GUIDE = {
 
 0. **改完同步 `task.md`**（版本号、首页 IA、万象棋字段、git 推送方式）。不写等于没交接。
 1. **待手补 opaque 卡**（英雄 49 张含整张全 opaque 45、效果牌 50 张全部）：这些卡当前只显原文不计数字，是下一版活。加卡只在 `wanxiangqi-rules.js` 的 `MANUAL` 加条目，勿动引擎 if-else；改完跑 `wxq_engine_test.cjs`(13/13)+`wxq_chain_test.cjs`(50/50)。
-2. **赛季更新**：重跑英雄技能脚本（GBK）+ 万象棋快照 pulls + `scripts/sync-items.py`（装备）+ `node scripts/sync-wxq-lineups.js`（官方作业库）+ `node scripts/sync-wxq-cards.js`（卡面技能/合成）。重跑前先确认网络。作业库英雄名须 0 未知；棋手「阿离」已按官方 lords 补录。
+2. **赛季更新**：重跑英雄技能脚本（GBK）+ 万象棋快照 pulls + `scripts/sync-items.py`（装备）+ `node scripts/sync-wxq-lineups.js`（官方阵容库，自动丢掉使用量<2000 或评分<4.0）+ `node scripts/sync-wxq-cards.js`（卡面技能/合成）。重跑前先确认网络。阵容库英雄名须 0 未知；棋手「阿离」已按官方 lords 补录。
 3. **新增阵容/联动规范**：机制从官方 `desc` 提炼 → 写进 `lineups[]`/`combos.list[]` → 同步 `factions[x].lineups[]` → 跑第 8 节 1–3 步校验 → 提交（commit 后单独 push） → 轮询 Pages。
 4. **攻略可信度**：专有名词/技能名必须脚本比对官方数据集，0 处不符才算过。
 
@@ -270,7 +275,7 @@ python -c "import re;s=open(r'C:/Users/Zhuqi/Desktop/wzry-guide/heroes-data.js',
 # 同步装备官方数据（赛季更新时）
 cd "C:/Users/Zhuqi/Desktop/wzry-guide" && /c/Users/Zhuqi/.workbuddy/binaries/python/versions/3.13.12/python.exe scripts/sync-items.py
 
-# 同步万象棋官方阵容推荐库（作业 tab）
+# 同步万象棋官方阵容库（使用量≥2000 且评分≥4.0）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-lineups.js
 
 # 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
