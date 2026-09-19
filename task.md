@@ -3,7 +3,7 @@
 > 最后更新：2026-09-19
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.7**（万象棋页弃荷塘月色：冷灰底 + 橙红强调，填充按钮用 `--accent-fill` 保证白字≥4.5:1）。官方阵容库 **v1.2.0**（47 套）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.8**（接入 datawxq.com 近7日前三率：官方套叠统计，对不上的 5 套单独成卡且无导入码）。官方阵容库 **v1.2.0**（47 套）。近7日数据阵容 **v1.0.0**。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -42,6 +42,7 @@ wzry-guide/
 ├── scripts/
 │   ├── sync-items.py       装备官方数据同步脚本
 │   ├── sync-wxq-lineups.js 万象棋官方阵容库同步（推荐/热门/新手）；入库门槛使用量≥2000 且评分≥4.0
+│   ├── sync-wxq-stats.js   万象棋大数据近7日前三率（datawxq.com → wanxiangqi-stats.js）
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的作业有「讲解这套」。版本只升 WXQ_META
@@ -49,6 +50,7 @@ wzry-guide/
 ├── wanxiangqi-data.js      万象棋官方快照只读数据源（WXQ_META + WXQ_PLAYERS(19 含阿离)/HEROES(85)/EFFECTS(98)/EQUIPS(73)/TALENTS(255)/FACTIONS(7)）。**严禁手改**。英雄另有 skills/awakeDesc/stats/kwHelp/cost；装备另有 subType/equipType/craftFrom/craftInto
 ├── wanxiangqi-guide.js     万象棋攻略数据（WXQ_GUIDE，手工维护，改文案改这里）
 ├── wanxiangqi-lineups.js   官方阵容推荐库（WXQ_JOBS，scripts/sync-wxq-lineups.js 生成，**勿手改**）
+├── wanxiangqi-stats.js     近7日数据阵容（WXQ_STATS，scripts/sync-wxq-stats.js 生成，**勿手改**）。overlay 叠到官方套，list 是对不上的无码卡
 ├── wanxiangqi-jobs.js      作业 tab 渲染（只画，不含规则）
 ├── wanxiangqi-rules.js     连锁 B 层：WXQ_RULES（规则+手补 MANUAL）
 ├── wanxiangqi-engine.js    连锁 C 层：WXQ_ENGINE.simulate(board,rules,cards) 纯函数 + selfTest(13 断言)
@@ -114,6 +116,15 @@ WXQ_GUIDE = {
 
 - `scripts/sync-wxq-lineups.js` 拉全量后过滤：**使用量 ≥ 2000 且评分 ≥ 4.0**，其余当噪声丢掉。以后更新阵容都走这道门槛，不要把低用量/低分套回去。
 - 2026-09-19 实测：原始 449 → 保留 47（丢 402）。
+
+### 5.2d 近7日数据阵容（datawxq.com，2026-09-19）
+
+- 源：`https://www.datawxq.com/`，接口 `POST https://api.datatft.com/wzwxq/lineups/search` 与 `/detail`。`time: 7` 是最近 7 天，`version: v260917`。有前三率 `top3Rate`、登顶率 `firstRate`、登场率、平均名次、场次。**没有可导入阵容码**（`lineupCode` 恒为空，`lineupKey` 是 `人数|英雄id…` 聚类键）。
+- 同步：`node scripts/sync-wxq-stats.js` → `wanxiangqi-stats.js`（`WXQ_STATS`）。**勿手改**。专名必须在官方池，未知英雄整套丢掉。
+- 对得上官方 47 套的：只把 7 日统计叠到原卡片（使用量/阵容码仍是官方的），不另开一张。匹配必须含聚类核心英雄（`coreHeroes[0]`），避免木兰统计贴到乔汐司空震上。
+- 对不上的：单独成卡，`nocode: true`，作者「万象棋大数据」，详情写「无导入阵容码」。门槛场次 ≥400 且前三率 ≥40%。2026-09-19：34 聚类 → 叠 36 张官方卡、5 张新卡、1 张过弱丢掉。
+- 讲解仍只走卡面四类（木兰/三分/大河/日落海），不编运营、不编胜率。新 5 套对不上四类就没有讲解按钮。
+- 阵容筛「7日数据」、排序「前三率」。文案必须写清这是 datawxq.com 第三方聚类，不是官方胜率。
 
 ### 5.2b 原连锁四层（已下线，仅留档）
 
@@ -287,6 +298,9 @@ cd "C:/Users/Zhuqi/Desktop/wzry-guide" && /c/Users/Zhuqi/.workbuddy/binaries/pyt
 
 # 同步万象棋官方阵容库（使用量≥2000 且评分≥4.0）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-lineups.js
+
+# 同步近7日前三率（datawxq.com）
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-stats.js
 
 # 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-cards.js

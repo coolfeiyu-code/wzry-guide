@@ -16,7 +16,24 @@
   function ui() { return global.__wxqUI || {}; }
   function esc(s) { return ui().esc ? ui().esc(s) : String(s || ''); }
   function fmt(s) { return ui().fmt ? ui().fmt(s) : esc(s); }
-  function data() { return global.WXQ_JOBS || { meta: {}, list: [] }; }
+  function data() {
+    var jobs = global.WXQ_JOBS || { meta: {}, list: [] };
+    if (jobs._wxqView) return jobs._wxqView;
+    var stats = global.WXQ_STATS || { overlay: [], list: [] };
+    var ov = {};
+    (stats.overlay || []).forEach(function (r) { ov[String(r.officialKey)] = r.stats; });
+    var list = (jobs.list || []).map(function (L) {
+      var s = ov[String(L.key)];
+      if (!s) return L;
+      var o = {};
+      for (var k in L) o[k] = L[k];
+      o.stats7d = s;
+      return o;
+    });
+    (stats.list || []).forEach(function (L) { list.push(L); });
+    jobs._wxqView = { meta: jobs.meta, list: list };
+    return jobs._wxqView;
+  }
 
   function wan(n) {
     n = Number(n) || 0;
@@ -25,6 +42,24 @@
       return (Math.abs(v - Math.round(v)) < 0.05 ? Math.round(v) : v.toFixed(1)) + '万';
     }
     return String(n);
+  }
+
+  function pct(n) {
+    n = Number(n);
+    if (!Number.isFinite(n) || n <= 0) return '';
+    return (Math.round(n * 1000) / 10) + '%';
+  }
+
+  function statsLine(L) {
+    var s = L.stats7d;
+    if (!s) return '';
+    var t = pct(s.top3Rate);
+    var f = pct(s.firstRate);
+    var bits = [];
+    if (t) bits.push('7日前三 ' + t);
+    if (f) bits.push('登顶 ' + f);
+    if (s.count) bits.push(s.count + ' 场');
+    return bits.join(' · ');
   }
 
   function heroImg(name) { return 'wxq-icon/heroes/' + encodeURIComponent(name) + '.png'; }
@@ -56,7 +91,7 @@
   }
 
   function hay(L) {
-    var parts = [L.name, L.author, L.brief, (L.lords || []).join(' '), (L.heroes || []).map(function (h) { return h.name; }).join(' ')];
+    var parts = [L.name, L.author, L.brief, L.source === 'datawxq' ? '7日数据 datawxq' : '', (L.lords || []).join(' '), (L.heroes || []).map(function (h) { return h.name; }).join(' ')];
     return parts.join(' ').toLowerCase();
   }
 
@@ -67,8 +102,14 @@
     if (js.filter === 'hot') list = list.filter(function (L) { return L.hot; });
     else if (js.filter === 'god') list = list.filter(function (L) { return L.badge === '万象棋大神'; });
     else if (js.filter === 'beg') list = list.filter(function (L) { return L.beg; });
+    else if (js.filter === 'd7') list = list.filter(function (L) { return L.source === 'datawxq'; });
     if (js.lord) list = list.filter(function (L) { return (L.lords || []).indexOf(js.lord) >= 0; });
     list.sort(function (a, b) {
+      if (js.filter === 'd7' || js.sort === 'top3') {
+        var ta = (a.stats7d && a.stats7d.top3Rate) || 0;
+        var tb = (b.stats7d && b.stats7d.top3Rate) || 0;
+        if (tb !== ta) return tb - ta;
+      }
       if (js.sort === 'score') {
         var ds = (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0);
         if (ds) return ds;
@@ -107,15 +148,18 @@
     }).join('');
     var tag = (L.hot ? '<span class="jtag hot">热门</span>' : '')
       + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '')
+      + (L.source === 'datawxq' ? '<span class="jtag d7">7日</span>' : '')
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L) ? '<span class="jtag exp">讲解</span>' : '');
     var sc = parseFloat(L.score) || 0;
+    var st = statsLine(L);
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
       + '<div class="jcard-nm">' + esc(L.name) + '</div>'
       + '<div class="jcard-au">' + esc(L.author || '匿名')
       + (tag ? ' ' + tag : '')
-      + ' · ' + wan(L.useNum) + ' 使用'
-      + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
+      + (L.source === 'datawxq'
+        ? (st ? ' · ' + st : '')
+        : ' · ' + wan(L.useNum) + ' 使用' + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '') + (st ? ' · ' + st : ''))
       + '</div></article>';
   }
 
@@ -210,18 +254,24 @@
     var pos = L.positionDesc && L.positionDesc !== '如图所示' ? L.positionDesc : '按图中站位即可。';
     var play = L.brief || '官方推荐库未写玩法介绍。';
     var eqTx = L.equipDesc || '见下方推荐装备。';
+    var st = statsLine(L);
+    var sub = L.source === 'datawxq'
+      ? ('来源 · 万象棋大数据近7日' + (st ? ' · ' + st : ''))
+      : ('作者 · ' + esc(L.author || '匿名')
+        + (L.badge ? ' · ' + esc(L.badge) : '')
+        + ' · ' + wan(L.useNum) + ' 使用'
+        + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
+        + (st ? ' · ' + st : ''));
     return '<article class="jdoc">'
       + '<button type="button" class="jback" data-job-back>← 返回列表</button>'
       + '<header class="jdoc-head">'
       + av(cover, coverName, 'jav lg')
       + '<div class="jdoc-tit"><h1>' + esc(L.name) + '</h1>'
-      + '<div class="jdoc-sub">作者 · ' + esc(L.author || '匿名')
-      + (L.badge ? ' · ' + esc(L.badge) : '')
-      + ' · ' + wan(L.useNum) + ' 使用'
-      + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
-      + '</div></div>'
+      + '<div class="jdoc-sub">' + sub + '</div></div>'
       + '<div class="jdoc-acts">'
-      + '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>'
+      + (L.nocode
+        ? '<span class="jmuted">无导入阵容码</span>'
+        : '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>')
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L)
         ? '<button type="button" class="jbtn" data-job-explain="' + esc(L.key) + '">讲解这套</button>'
         : '')
@@ -364,8 +414,8 @@
       }).join('') + '</select>';
 
     var h = '<div class="jbar">'
-      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + '</div>'
-      + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('new', '时间') + lordSel + '</div>'
+      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据') + '</div>'
+      + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('new', '时间') + lordSel + '</div>'
       + '</div>';
     if (!slice.length) {
       grid.innerHTML = h + '<div class="empty">没有匹配的阵容</div>';
