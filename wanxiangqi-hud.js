@@ -17,6 +17,13 @@
   var popWin = null;
   var panel = null;
   var mainBound = false;
+  var DOCK_TAB = 40;
+  var dockEdge = 'right';
+  var dockHidden = false;
+  var dockOn = true;
+  var dockTimer = 0;
+  var dockWatch = 0;
+  var dockBound = false;
 
   function esc(s) {
     return String(s || '').replace(/[&<>"]/g, function (c) {
@@ -386,6 +393,12 @@
       + '<strong>对局浮窗</strong>'
       + '<span class="hsp"></span>'
       + '<button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button>'
+      + '<span class="hdock-btns">'
+      + '<button type="button" class="hbtn" data-hud-dock="left" title="吸到左边，鼠标移开会缩进">左</button>'
+      + '<button type="button" class="hbtn" data-hud-dock="right" title="吸到右边，鼠标移开会缩进">右</button>'
+      + '<button type="button" class="hbtn" data-hud-dock="top" title="吸到上边，鼠标移开会缩进">上</button>'
+      + '<button type="button" class="hbtn" data-hud-dock="bottom" title="吸到下边，鼠标移开会缩进">下</button>'
+      + '</span>'
       + '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>'
       + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
       + (global.documentPictureInPicture ? '<button type="button" class="hbtn" data-hud-pip="1" title="把小窗压在游戏窗口最前">贴在最前</button>' : '')
@@ -403,7 +416,8 @@
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">关掉原来的助手页，这个小窗还在。点「回到助手」切回完整页面。</p>'
+      + '<p class="hnote">关掉原来的助手页，这个小窗还在。点左/右/上/下吸到那一侧，鼠标移开会缩进，移回来再展开。</p>'
+      + '<div class="hdock-tab" data-hud-undock>' + esc(L.name || '助手') + '</div>'
       + '</div>';
   }
 
@@ -419,6 +433,17 @@
       + '.hbtn{border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;border-radius:8px;padding:5px 9px;font-size:12px;font-family:inherit;cursor:pointer;}'
       + '.hbtn.pri{background:#B4230E;border-color:transparent;}'
       + '.hbtn.pri.home{font-size:14px;font-weight:700;padding:7px 14px;}'
+      + '.hdock-btns{display:inline-flex;gap:2px;}'
+      + '.hdock-btns .hbtn{padding:5px 8px;}'
+      + '.hdock-btns .hbtn.on{background:#F3F1F6;color:#17141F;}'
+      + '.hdock-tab{display:none;position:fixed;z-index:40;background:#B4230E;color:#fff;font-size:13px;font-weight:700;align-items:center;justify-content:center;letter-spacing:.08em;cursor:pointer;}'
+      + 'body.hud-collapsed .hdock-tab{display:flex;}'
+      + 'body.hud-collapsed[data-dock="right"] .hdock-tab,body.hud-collapsed[data-dock="left"] .hdock-tab{top:0;bottom:0;width:40px;writing-mode:vertical-rl;}'
+      + 'body.hud-collapsed[data-dock="right"] .hdock-tab{left:0;}'
+      + 'body.hud-collapsed[data-dock="left"] .hdock-tab{right:0;}'
+      + 'body.hud-collapsed[data-dock="top"] .hdock-tab,body.hud-collapsed[data-dock="bottom"] .hdock-tab{left:0;right:0;height:40px;}'
+      + 'body.hud-collapsed[data-dock="top"] .hdock-tab{bottom:0;}'
+      + 'body.hud-collapsed[data-dock="bottom"] .hdock-tab{top:0;}'
       + '.hsw{display:flex;flex-wrap:wrap;gap:5px;}'
       + '.hsw-b{border:1px solid #4A4456;background:#2A2633;color:#C8C2D2;border-radius:999px;padding:4px 9px;font-size:11.5px;font-family:inherit;cursor:pointer;}'
       + '.hsw-b.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;font-weight:600;}'
@@ -694,6 +719,10 @@
         closeAll(doc);
         return;
       }
+      var dk = t.closest('[data-hud-dock]');
+      if (dk) { setDock(dk.getAttribute('data-hud-dock'), true); return; }
+      var und = t.closest('[data-hud-undock]');
+      if (und) { expandDock(); return; }
       var fr = t.closest('[data-hud-fitreset]');
       if (fr) { resetFit(); return; }
       var tb = t.closest('[data-hud-tips]');
@@ -970,6 +999,112 @@
     });
   }
 
+  function isHudWin() {
+    return document.body.classList.contains('hud-only');
+  }
+  function placeWin(x, y) {
+    try { global.moveTo(Math.round(x), Math.round(y)); } catch (e) {}
+  }
+  function paintDockBtns() {
+    var btns = document.querySelectorAll('[data-hud-dock]');
+    for (var i = 0; i < btns.length; i++) {
+      if (btns[i].getAttribute('data-hud-dock') === dockEdge) btns[i].classList.add('on');
+      else btns[i].classList.remove('on');
+    }
+  }
+  function nearestEdge(limit) {
+    var s = screenBox();
+    var x = global.screenX;
+    var y = global.screenY;
+    var w = global.outerWidth || 0;
+    var h = global.outerHeight || 0;
+    var dl = x - s.left;
+    var dr = (s.left + s.w) - (x + w);
+    var dt = y - s.top;
+    var db = (s.top + s.h) - (y + h);
+    var best = 'right';
+    var m = dr;
+    if (dl < m) { m = dl; best = 'left'; }
+    if (dt < m) { m = dt; best = 'top'; }
+    if (db < m) { m = db; best = 'bottom'; }
+    if (limit != null && m > limit) return '';
+    return best;
+  }
+  function collapseDock() {
+    if (!isHudWin() || !dockOn || !dockEdge) return;
+    var s = screenBox();
+    var w = global.outerWidth || 400;
+    var h = global.outerHeight || 600;
+    var x = global.screenX;
+    var y = global.screenY;
+    if (dockEdge === 'right') x = s.left + s.w - DOCK_TAB;
+    else if (dockEdge === 'left') x = s.left - (w - DOCK_TAB);
+    else if (dockEdge === 'top') y = s.top - (h - DOCK_TAB);
+    else if (dockEdge === 'bottom') y = s.top + s.h - DOCK_TAB;
+    dockHidden = true;
+    document.body.classList.add('hud-collapsed');
+    document.body.setAttribute('data-dock', dockEdge);
+    placeWin(x, y);
+    paintDockBtns();
+  }
+  function expandDock() {
+    if (!isHudWin()) return;
+    var s = screenBox();
+    var w = global.outerWidth || 400;
+    var h = global.outerHeight || 600;
+    var x = global.screenX;
+    var y = global.screenY;
+    if (dockEdge === 'right') x = s.left + s.w - w;
+    else if (dockEdge === 'left') x = s.left;
+    else if (dockEdge === 'top') y = s.top;
+    else if (dockEdge === 'bottom') y = s.top + s.h - h;
+    if (x < s.left - 8) x = s.left;
+    if (y < s.top - 8) y = s.top;
+    dockHidden = false;
+    document.body.classList.remove('hud-collapsed');
+    placeWin(x, y);
+  }
+  function setDock(edge, hideNow) {
+    if (['left', 'right', 'top', 'bottom'].indexOf(edge) < 0) return;
+    dockEdge = edge;
+    dockOn = true;
+    try { localStorage.setItem('wxq-hud-dock', edge); } catch (e) {}
+    expandDock();
+    paintDockBtns();
+    if (hideNow) {
+      clearTimeout(dockTimer);
+      dockTimer = setTimeout(collapseDock, 280);
+    }
+  }
+  function initDock() {
+    if (!isHudWin() || isMobile()) return;
+    try {
+      var saved = localStorage.getItem('wxq-hud-dock');
+      if (saved === 'left' || saved === 'right' || saved === 'top' || saved === 'bottom') dockEdge = saved;
+    } catch (e) {}
+    paintDockBtns();
+    if (dockBound) return;
+    dockBound = true;
+    document.addEventListener('mouseenter', function () {
+      clearTimeout(dockTimer);
+      if (dockHidden) expandDock();
+    });
+    document.addEventListener('mouseleave', function () {
+      if (!dockOn) return;
+      clearTimeout(dockTimer);
+      dockTimer = setTimeout(function () {
+        if (!dockEdge) dockEdge = nearestEdge(160) || 'right';
+        collapseDock();
+      }, 700);
+    });
+    if (dockWatch) clearInterval(dockWatch);
+    dockWatch = setInterval(function () {
+      if (dockHidden || !dockOn) return;
+      var n = nearestEdge(56);
+      if (n) dockEdge = n;
+    }, 400);
+  }
+
   function enterPage(hash) {
     document.body.classList.add('hud-only');
     var key = '';
@@ -986,6 +1121,7 @@
     grid.className = 'jobs-root';
     grid.innerHTML = innerHtml(L);
     bindMain();
+    initDock();
   }
 
   function paintDock() {
