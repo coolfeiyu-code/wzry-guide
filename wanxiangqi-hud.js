@@ -95,6 +95,59 @@
     try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) {}
     paintDock();
   }
+
+  function screenBox(win) {
+    var w = win || global;
+    var sw = (w.screen && (w.screen.availWidth || w.screen.width)) || w.innerWidth || 1280;
+    var sh = (w.screen && (w.screen.availHeight || w.screen.height)) || w.innerHeight || 720;
+    return { w: sw, h: sh };
+  }
+  function bestSize(win) {
+    var s = screenBox(win);
+    var w = Math.round(s.w * 0.34);
+    var h = Math.round(s.h * 0.8);
+    if (s.w >= 1920) w = Math.round(s.w * 0.3);
+    if (s.w >= 2560) w = Math.round(s.w * 0.26);
+    if (w < 360) w = Math.min(s.w - 16, 360);
+    if (h < 480) h = Math.min(s.h - 16, 480);
+    if (w > s.w - 16) w = s.w - 16;
+    if (h > s.h - 16) h = s.h - 16;
+    return { w: w, h: h };
+  }
+  function loadSize(win) {
+    try {
+      var o = JSON.parse(localStorage.getItem('wxq-hud-size') || '');
+      if (o && Number(o.w) >= 200 && Number(o.h) >= 160) return fitToScreen({ w: Number(o.w), h: Number(o.h) }, win);
+    } catch (e) {}
+    return bestSize(win);
+  }
+  function fitToScreen(sz, win) {
+    var w = win || global;
+    var vw = w.innerWidth || (w.screen && w.screen.availWidth) || sz.w;
+    var vh = w.innerHeight || (w.screen && w.screen.availHeight) || sz.h;
+    var outW = sz.w;
+    var outH = sz.h;
+    if (outW > vw - 8) outW = vw - 8;
+    if (outH > vh - 8) outH = vh - 8;
+    if (outW < 200) outW = Math.min(200, vw - 8);
+    if (outH < 160) outH = Math.min(160, vh - 8);
+    return { w: Math.round(outW), h: Math.round(outH) };
+  }
+  function saveSize(w, h) {
+    if (!(w >= 200 && h >= 160)) return;
+    try { localStorage.setItem('wxq-hud-size', JSON.stringify({ w: Math.round(w), h: Math.round(h) })); } catch (e) {}
+  }
+  function rememberWinSize(win) {
+    if (!win) return;
+    try { if (win.__wxqHudListen) return; win.__wxqHudListen = 1; } catch (e0) {}
+    var t = 0;
+    win.addEventListener('resize', function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        try { saveSize(win.innerWidth, win.innerHeight); } catch (e) {}
+      }, 200);
+    });
+  }
   function find(key) {
     if (global.WXQ_JOBS_UI && WXQ_JOBS_UI.find) return WXQ_JOBS_UI.find(key);
     return null;
@@ -258,8 +311,6 @@
     var eq = equipsBlock(L);
     var op = opsBlock(L);
     var play = playBlock(L);
-    var body = boardHtml(L) + sec('装备', eq) + sec('前 / 中 / 后期', op) + sec('出牌', play);
-    if (!eq && !op && !play) body += '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>';
     return '<div class="hud" data-hud-cur="' + esc(L.key) + '" data-hud-db="' + (tipsOn() ? '1' : '0') + '">'
       + '<div class="hbar" data-hud-drag="1">'
       + '<strong>对局浮窗</strong>'
@@ -270,20 +321,28 @@
       + '<button type="button" class="hbtn" data-hud-close="1">关闭</button>'
       + '</div>'
       + switcherHtml(L.key)
-      + '<div class="hname">' + esc(L.name)
+      + '<div class="hbody">'
+      + '<div class="hside"><div class="hname">' + esc(L.name)
       + (lords ? '<em>' + esc(lords) + '</em>' : '') + '</div>'
-      + '<div class="htips">' + body + '</div>'
+      + boardHtml(L) + '</div>'
+      + '<div class="htips">' + sec('装备', eq) + sec('前 / 中 / 后期', op) + sec('出牌', play)
+      + (!eq && !op && !play ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
+      + '</div></div>'
       + '<div class="hacts">'
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">图鉴开时，悬停英雄或装备看出官方卡面。复制失败会弹出阵容码，用 Ctrl+C。全屏独占时改窗口化。</p>'
+      + '<p class="hnote">右下角可拉大小。图鉴开时悬停看出官方卡面。复制失败用 Ctrl+C。全屏独占时改窗口化。</p>'
       + '</div>';
   }
 
   function hudCss() {
     return 'html,body{margin:0;padding:0;background:#17141F;color:#F3F1F6;font-family:"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;}'
-      + '.hud{display:flex;flex-direction:column;gap:8px;padding:8px 10px 10px;min-height:100vh;box-sizing:border-box;}'
+      + 'html,body,.hud{height:100%;}'
+      + '.hud{display:flex;flex-direction:column;gap:8px;padding:8px 10px 10px;min-height:100%;box-sizing:border-box;container-type:inline-size;}'
+      + '.hbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;}'
+      + '.hside{flex:none;}'
+      + '@container (min-width:560px){.hbody{flex-direction:row;align-items:stretch;overflow:hidden;}.hside{flex:0 1 46%;min-width:240px;overflow:auto;}.htips{flex:1 1 54%;}}'
       + '.hbar{display:flex;align-items:center;gap:6px;cursor:move;user-select:none;}'
       + '.hbar strong{font-size:13px;letter-spacing:.04em;}'
       + '.hsp{flex:1;}'
@@ -312,7 +371,8 @@
       + '#hudTip .ht-d b{color:#FF8A73;margin-right:4px;}'
       + '.hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;}'
       + '.hbtn.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;}'
-      + '.htips{flex:1;overflow:auto;}'
+      + '.htips{flex:1;min-width:0;overflow:auto;}'
+      + '.htips .hsec:first-child{margin-top:0;}'
       + '.hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid #4A4456;}'
       + '.hsec h4{margin:0 0 6px;font-size:12px;color:#FF8A73;letter-spacing:.04em;}'
       + '.heq-row{display:flex;gap:8px;margin:0 0 8px;}'
@@ -344,6 +404,7 @@
       + '<style>' + hudCss() + '</style></head><body>' + innerHtml(L) + '</body></html>');
     doc.close();
     bind(doc);
+    if (doc.defaultView) rememberWinSize(doc.defaultView);
   }
 
   function copyFallback(doc, text) {
@@ -579,7 +640,8 @@
       try { pipWin.focus(); } catch (e) {}
       return Promise.resolve(true);
     }
-    return global.documentPictureInPicture.requestWindow({ width: 420, height: 720 }).then(function (w) {
+    var sz = loadSize(global);
+    return global.documentPictureInPicture.requestWindow({ width: sz.w, height: sz.h }).then(function (w) {
       pipWin = w;
       fillDoc(w.document, L);
       w.addEventListener('pagehide', function () { if (pipWin === w) pipWin = null; });
@@ -595,7 +657,8 @@
   function openPopup(L) {
     if (!L) return false;
     try {
-      popWin = global.open('', 'wxqHud', 'popup=yes,width=440,height=760,resizable=yes,scrollbars=yes');
+      var sz = loadSize(global);
+      popWin = global.open('', 'wxqHud', 'popup=yes,resizable=yes,scrollbars=yes,width=' + sz.w + ',height=' + sz.h);
     } catch (e) { popWin = null; }
     if (!popWin) return false;
     fillDoc(popWin.document, L);
@@ -611,20 +674,47 @@
     document.body.appendChild(panel);
     bindMain();
     enableDrag(panel);
+    enablePanelResize(panel);
     return panel;
+  }
+
+  function applyPanelBox(el) {
+    var sz = loadSize(global);
+    sz = fitToScreen(sz, global);
+    el.style.width = sz.w + 'px';
+    el.style.height = sz.h + 'px';
+    el.style.maxWidth = 'none';
+    el.style.maxHeight = 'none';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    var pos;
+    try { pos = JSON.parse(localStorage.getItem('wxq-hud-pos') || ''); } catch (e) { pos = null; }
+    var x = pos && Number.isFinite(pos.x) ? pos.x : Math.max(8, window.innerWidth - sz.w - 16);
+    var y = pos && Number.isFinite(pos.y) ? pos.y : Math.max(8, window.innerHeight - sz.h - 16);
+    if (x + 80 > window.innerWidth) x = Math.max(8, window.innerWidth - sz.w - 8);
+    if (y + 40 > window.innerHeight) y = Math.max(8, window.innerHeight - sz.h - 8);
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
   }
 
   function showPanel(L) {
     var el = ensurePanel();
     el.innerHTML = innerHtml(L);
     el.classList.add('on');
-    var pos;
-    try { pos = JSON.parse(localStorage.getItem('wxq-hud-pos') || ''); } catch (e) { pos = null; }
-    if (pos && Number.isFinite(pos.x) && Number.isFinite(pos.y)) {
-      el.style.left = pos.x + 'px';
-      el.style.top = pos.y + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
+    applyPanelBox(el);
+  }
+
+  function enablePanelResize(el) {
+    if (el.__wxqHudRO) return;
+    el.__wxqHudRO = 1;
+    if (typeof ResizeObserver === 'function') {
+      var t = 0;
+      var ro = new ResizeObserver(function () {
+        if (!el.classList.contains('on')) return;
+        clearTimeout(t);
+        t = setTimeout(function () { saveSize(el.offsetWidth, el.offsetHeight); }, 200);
+      });
+      ro.observe(el);
     }
   }
 
@@ -637,6 +727,8 @@
     el.addEventListener('pointerdown', function (e) {
       var bar = e.target.closest && e.target.closest('[data-hud-drag]');
       if (!bar || e.target.closest('button')) return;
+      var box = el.getBoundingClientRect();
+      if (e.clientX > box.right - 22 && e.clientY > box.bottom - 22) return;
       dragging = true;
       ox = e.clientX - el.offsetLeft;
       oy = e.clientY - el.offsetTop;
