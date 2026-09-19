@@ -1,13 +1,13 @@
 /* ============================================================================
  * 王者万象棋 · 坚果云配置
  * ----------------------------------------------------------------------------
- * 在用阵容 / 浮窗尺寸 / 主题写进 王者助手.json.js，跟着坚果云走。
- * 打开同目录的 王者助手.html 时自动读这份文件。
+ * 在用阵容 / 浮窗尺寸 / 主题写在 王者助手.json.js，跟着坚果云走。
  *
- * 保存要快，所以路径分两档：
- *   1) 已经拿到文件夹授权（本会话内 / 浏览器记住了）→ 点一下就直接写，不等任何异步。
- *   2) 还没有授权 → 才弹一次文件夹选择；选完记住，之后都走第 1 档。
- * 自动保存（改收藏等）在后台合并写入，不会和手动保存抢文件。
+ * 自动读取：发布出来的 王者助手.html 开头会用 <script src="王者助手.json.js">
+ *   载入这份配置，页面跑起来之前就已经生效，不需要点任何东西。
+ * 自动保存：收藏 / 取消收藏、拖动浮窗、改主题都会立刻静默写回文件，
+ *   不弹窗、不点按钮。浏览器要求「写文件夹」必须授权过一次（选一次文件夹），
+ *   授权在首次点击页面任意位置时顺手申请，之后这台机器就一直静默。
  * ========================================================================== */
 (function (global) {
   'use strict';
@@ -21,11 +21,13 @@
     theme: 'wzry-theme'
   };
 
-  var dirHandle = null;
-  var granted = false;   // 句柄已拿到 readwrite 授权，可直接写
-  var writing = false;
-  var dirty = false;
-  var idleTimer = 0;
+  var dirHandle = null;   // 文件夹句柄
+  var granted = false;    // 已可写，之后全程静默
+  var writing = false;    // 正在写
+  var dirty = false;      // 写的时候又改了，写完补一次
+  var flashTimer = 0;
+  var touchTimer = 0;
+  var grantAsked = false;
 
   function lsGet(k) {
     try { return localStorage.getItem(k); } catch (e) { return null; }
@@ -79,19 +81,25 @@
       if (a.parentNode) a.parentNode.removeChild(a);
     }, 800);
   }
-  function status(ok, msg) {
+
+  function msg(text) {
     var el = document.getElementById('wxqCloudBar');
     if (!el) return;
-    el.className = ok ? 'on ok' : 'on';
     var t = el.querySelector('[data-cloud-msg]');
-    if (t) t.textContent = msg;
+    if (t) t.textContent = text;
+    if (el.classList) {
+      if (granted) el.classList.add('ok');
+      else el.classList.remove('ok');
+    }
+    var btn = el.querySelector('[data-cloud-save]');
+    if (btn) btn.style.display = granted ? 'none' : '';
   }
-  function flash(msg) {
-    status(true, msg);
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(function () {
-      status(true, granted ? '自动保存已开启' : '打开会自动带上已保存的配置');
-    }, 1600);
+  function flash(text) {
+    msg(text);
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () {
+      msg(granted ? '已开启自动保存' : '点一下开启自动保存');
+    }, 1500);
   }
 
   function idbOpen() {
@@ -131,27 +139,25 @@
     });
   }
 
-  function writeFile(handle, cfg) {
+  function writeFile(handle, text) {
     return handle.getFileHandle(FILE, { create: true }).then(function (fh) {
       return fh.createWritable().then(function (w) {
-        return w.write(fileText(cfg)).then(function () { return w.close(); });
+        return w.write(text).then(function () { return w.close(); });
       });
     });
   }
 
-  // 一旦在写，就把后续请求合并成一次，写完再补。避免连点排队。
-  // 坚果云客户端偶尔会短暂占用文件，失败后隔一会儿再试一次。
+  // 写的时候又改了，就合并成一次；坚果云偶尔占用文件，失败隔 300ms 再试一次。
   function writeOnce(tries) {
     var cfg = snapshot();
     global.WXQ_CLOUD_BOOT = cfg;
-    return writeFile(dirHandle, cfg).catch(function (err) {
+    return writeFile(dirHandle, fileText(cfg)).catch(function (err) {
       if (tries > 0) {
-        return new Promise(function (r) { setTimeout(r, 400); }).then(function () { return writeOnce(tries - 1); });
+        return new Promise(function (r) { setTimeout(r, 300); }).then(function () { return writeOnce(tries - 1); });
       }
       throw err;
     });
   }
-
   function queueWrite() {
     if (!dirHandle) return Promise.resolve(false);
     if (writing) { dirty = true; return Promise.resolve(true); }
@@ -165,36 +171,36 @@
       writing = false;
       dirty = false;
       granted = false;
+      msg('点一下开启自动保存');
       return false;
     });
   }
 
-  function saveNow() {
-    // 有授权：直接写，不 await 任何东西，点击就是写。
-    if (dirHandle && granted) {
-      status(true, '保存中…');
-      return queueWrite().then(function (ok) {
-        flash(ok ? '已保存' : '保存失败，点一次重新授权');
-        return ok;
-      });
-    }
-    // 有句柄但本会话还没确认授权：同步申请（保留用户手势），授权即写。
-    if (dirHandle && dirHandle.requestPermission) {
-      return dirHandle.requestPermission({ mode: 'readwrite' }).then(function (st) {
-        if (st === 'granted') {
-          granted = true;
-          return queueWrite().then(function () { flash('已保存'); return true; });
-        }
-        return pickFolder();
-      }).catch(function () { return pickFolder(); });
-    }
-    return pickFolder();
+  // 任何一次改动都走这里：已授权就静默写，没授权就先攒着（按钮会提示）。
+  function touch() {
+    if (!granted || !dirHandle) return;
+    clearTimeout(touchTimer);
+    touchTimer = setTimeout(function () {
+      queueWrite().then(function (ok) { if (ok) flash('已自动保存'); });
+    }, 250);
+  }
+
+  function askPermission() {
+    if (!dirHandle || !dirHandle.requestPermission) return Promise.resolve(false);
+    if (grantAsked) return Promise.resolve(false);
+    grantAsked = true;
+    return dirHandle.requestPermission({ mode: 'readwrite' }).then(function (st) {
+      if (st !== 'granted') return false;
+      granted = true;
+      msg('已开启自动保存');
+      return queueWrite();
+    }).catch(function () { return false; });
   }
 
   function pickFolder() {
     if (!global.showDirectoryPicker) {
       download(snapshot());
-      status(false, '这台浏览器不能直写文件夹。已下载 ' + FILE + '，拖到坚果云「王者万象棋助手」即可');
+      msg('这台浏览器不能直写文件夹，已下载 ' + FILE);
       return Promise.resolve(false);
     }
     return global.showDirectoryPicker({ id: 'wxq-nutstore', mode: 'readwrite' }).then(function (dir) {
@@ -202,20 +208,20 @@
       granted = true;
       return idbSet(dir).then(function () { return queueWrite(); });
     }).then(function () {
-      flash('已记住文件夹，之后自动保存');
+      flash('已开启自动保存');
       return true;
-    }).catch(function (err) {
-      if (err && err.name === 'AbortError') return false;
-      return false;
-    });
+    }).catch(function () { return false; });
   }
 
-  function touch() {
-    if (!granted || !dirHandle) return;
-    clearTimeout(touch._t);
-    touch._t = setTimeout(function () {
-      queueWrite().then(function (ok) { if (ok) flash('已自动保存'); });
-    }, 350);
+  // 手动点：已授权时什么都不用做（因为改动已自动写过），仅在未授权时用。
+  function saveNow() {
+    if (granted && dirHandle) return queueWrite();
+    if (dirHandle) {
+      return askPermission().then(function (ok) {
+        return ok ? true : pickFolder();
+      });
+    }
+    return pickFolder();
   }
 
   function paintBar() {
@@ -223,17 +229,14 @@
     var bar = document.createElement('div');
     bar.id = 'wxqCloudBar';
     bar.className = 'on';
-    bar.innerHTML = '<span data-cloud-msg>'
-      + (global.WXQ_CLOUD_BOOT && global.WXQ_CLOUD_BOOT.using && global.WXQ_CLOUD_BOOT.using.keys && global.WXQ_CLOUD_BOOT.using.keys.length
-        ? '已自动载入坚果云里的在用配置'
-        : '打开会自动带上已保存的配置，不用导入')
-      + '</span>'
-      + '<button type="button" data-cloud-save title="第一次选「王者万象棋助手」文件夹，之后点一下即保存">保存配置</button>';
+    bar.innerHTML = '<span data-cloud-msg></span>'
+      + '<button type="button" data-cloud-save title="只需选一次「王者万象棋助手」文件夹">开启自动保存</button>';
     bar.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-cloud-save]');
       if (b) saveNow();
     });
     document.body.appendChild(bar);
+    msg(granted ? '已开启自动保存' : '点一下开启自动保存');
   }
 
   if (global.WXQ_CLOUD_BOOT) apply(global.WXQ_CLOUD_BOOT);
@@ -244,15 +247,30 @@
     paintBar();
   }
 
-  // 启动时把句柄取回内存并确认一次授权，之后的点击就不用再等异步了。
+  // 首次点击页面任意位置时顺手申请授权，用户不用专门去找按钮。
+  function onFirstGesture() {
+    if (granted || !dirHandle) return;
+    askPermission();
+  }
+  document.addEventListener('pointerdown', onFirstGesture, true);
+  document.addEventListener('keydown', onFirstGesture, true);
+
   idbGet().then(function (h) {
-    if (!h) return;
+    if (!h) { msg('点一下开启自动保存'); return; }
     dirHandle = h;
-    if (!h.queryPermission) { granted = true; status(true, '自动保存已开启'); return; }
+    if (!h.queryPermission) {
+      granted = true;
+      msg('已开启自动保存');
+      return;
+    }
     return h.queryPermission({ mode: 'readwrite' }).then(function (st) {
-      if (st === 'granted') { granted = true; status(true, '自动保存已开启'); }
-      else status(true, '点一次「保存配置」授权，之后自动保存');
-    }).catch(function () {});
+      if (st === 'granted') {
+        granted = true;
+        msg('已开启自动保存');
+      } else {
+        msg('点一下页面任意处即开启自动保存');
+      }
+    }).catch(function () { msg('点一下开启自动保存'); });
   });
 
   global.WXQ_CLOUD = {

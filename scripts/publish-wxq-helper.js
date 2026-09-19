@@ -81,7 +81,7 @@ function build(ver, today) {
     /<script src="wanxiangqi-[^"]+"><\/script>\s*/g,
     ''
   );
-  const boot = '<script src="王者助手.json.js"></script>\n';
+  const boot = '<script src="王者助手.json.js" onerror="window.WXQ_CLOUD_BOOT=window.WXQ_CLOUD_BOOT||{v:1};"></script>\n';
   const blobs = SCRIPTS.map(function (name) {
     return '<script>\n' + inlineJs(name) + '\n</script>';
   }).join('\n');
