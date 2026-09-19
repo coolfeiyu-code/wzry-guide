@@ -385,10 +385,10 @@
       + '<div class="hbar" data-hud-drag="1">'
       + '<strong>对局浮窗</strong>'
       + '<span class="hsp"></span>'
+      + '<button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button>'
       + '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>'
       + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
       + (global.documentPictureInPicture ? '<button type="button" class="hbtn" data-hud-pip="1" title="把小窗压在游戏窗口最前">贴在最前</button>' : '')
-      + '<button type="button" class="hbtn" data-hud-pop="1" title="独立小窗，拖到游戏旁边">弹出小窗</button>'
       + '<button type="button" class="hbtn" data-hud-close="1">关闭</button>'
       + '</div>'
       + switcherHtml(L.key)
@@ -403,7 +403,7 @@
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">「贴在最前」把小窗压在游戏窗口上（Chrome/Edge）。打开时按当前屏幕给最佳尺寸，点「适配屏幕」可重新计算。右下角仍可手拉。全屏独占时改窗口化。</p>'
+      + '<p class="hnote">关掉原来的助手页，这个小窗还在。点「回到助手」切回完整页面。</p>'
       + '</div>';
   }
 
@@ -418,6 +418,7 @@
       + '.hsp{flex:1;}'
       + '.hbtn{border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;border-radius:8px;padding:5px 9px;font-size:12px;font-family:inherit;cursor:pointer;}'
       + '.hbtn.pri{background:#B4230E;border-color:transparent;}'
+      + '.hbtn.pri.home{font-size:14px;font-weight:700;padding:7px 14px;}'
       + '.hsw{display:flex;flex-wrap:wrap;gap:5px;}'
       + '.hsw-b{border:1px solid #4A4456;background:#2A2633;color:#C8C2D2;border-radius:999px;padding:4px 9px;font-size:11.5px;font-family:inherit;cursor:pointer;}'
       + '.hsw-b.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;font-weight:600;}'
@@ -668,6 +669,11 @@
         var L = find(sw.getAttribute('data-hud-key'));
         if (!L) return;
         setLast(L.key);
+        if (document.body.classList.contains('hud-only')) {
+          try { location.hash = 'hud-' + encodeURIComponent(L.key); } catch (e) {}
+          enterPage('#hud-' + encodeURIComponent(L.key));
+          return;
+        }
         paintWherever(L);
         return;
       }
@@ -675,8 +681,19 @@
       if (pip) { openPip(currentOf(doc)); return; }
       var pop = t.closest('[data-hud-pop]');
       if (pop) { openPopup(currentOf(doc)); return; }
+      var homeBtn = t.closest('[data-hud-home]');
+      if (homeBtn) { goHome(); return; }
       var cl = t.closest('[data-hud-close]');
-      if (cl) { closeAll(doc); return; }
+      if (cl) {
+        if (document.body.classList.contains('hud-only')) {
+          pingOpenerUnpark();
+          try { global.close(); } catch (e) {}
+          goHome();
+          return;
+        }
+        closeAll(doc);
+        return;
+      }
       var fr = t.closest('[data-hud-fitreset]');
       if (fr) { resetFit(); return; }
       var tb = t.closest('[data-hud-tips]');
@@ -759,17 +776,66 @@
     }).catch(function () { return false; });
   }
 
+  function hudUrl(L) {
+    return location.href.replace(/#.*$/, '') + '#hud-' + encodeURIComponent(L.key);
+  }
+  function pingOpenerUnpark() {
+    try {
+      if (global.opener && !global.opener.closed) {
+        global.opener.postMessage({ type: 'wxq-unpark' }, '*');
+        global.opener.focus();
+      }
+    } catch (e) {}
+  }
+  function parkHome() {
+    if (document.body.classList.contains('hud-only')) return;
+    document.body.classList.add('wxq-parked');
+    var el = document.getElementById('wxqParked');
+    if (el) return;
+    el = document.createElement('div');
+    el.id = 'wxqParked';
+    el.innerHTML = '<div class="park-box"><p>对局浮窗已打开。关掉本页，小窗还在。</p>'
+      + '<button type="button" class="jbtn pri" data-wxq-unpark>回到助手</button></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-wxq-unpark]')) unparkHome();
+    });
+  }
+  function unparkHome() {
+    document.body.classList.remove('wxq-parked');
+    try { global.focus(); } catch (e) {}
+  }
+  function goHome() {
+    pingOpenerUnpark();
+    try {
+      if (global.opener && !global.opener.closed) {
+        try { global.close(); } catch (e1) {}
+        return;
+      }
+    } catch (e) {}
+    document.body.classList.remove('hud-only');
+    try { location.hash = '#j'; } catch (e2) {}
+  }
   function openPopup(L) {
     if (!L) return false;
+    if (document.body.classList.contains('hud-only')) return false;
+    var sz = loadSize(global);
+    var dock = dockRight(sz, global);
+    var url = hudUrl(L);
     try {
-      var sz = loadSize(global);
-      var dock = dockRight(sz, global);
-      popWin = global.open('', 'wxqHud', 'popup=yes,resizable=yes,scrollbars=yes,width=' + sz.w + ',height=' + sz.h + ',left=' + dock.left + ',top=' + dock.top);
+      if (popWin && !popWin.closed) {
+        try { popWin.location.hash = 'hud-' + encodeURIComponent(L.key); } catch (e0) {}
+        try { popWin.focus(); } catch (e1) {}
+        parkHome();
+        hidePanel();
+        return true;
+      }
+      popWin = global.open(url, 'wxqHud', 'popup=yes,resizable=yes,scrollbars=yes,width=' + sz.w + ',height=' + sz.h + ',left=' + dock.left + ',top=' + dock.top);
     } catch (e) { popWin = null; }
     if (!popWin) return false;
-    fillDoc(popWin.document, L);
-    try { popWin.focus(); } catch (e) {}
+    try { popWin.focus(); } catch (e2) {}
     hidePanel();
+    parkHome();
     return true;
   }
 
@@ -912,7 +978,8 @@
     var grid = document.getElementById('grid');
     if (!grid) return;
     if (!L) {
-      grid.innerHTML = '<div class="hud"><p class="hmuted">还没有在用阵容。回图鉴给卡片点星标。</p></div>';
+      grid.innerHTML = '<div class="hud"><p class="hmuted">还没有在用阵容。点「回到助手」给卡片点星标。</p>'
+        + '<p><button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button></p></div>';
       return;
     }
     setLast(L.key);
@@ -942,6 +1009,9 @@
 
   global.addEventListener('storage', function (e) {
     if (e.key === STORE) paintDock();
+  });
+  global.addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'wxq-unpark') unparkHome();
   });
 
   if (document.readyState === 'loading') {

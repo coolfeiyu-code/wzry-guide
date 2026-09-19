@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>王者万象棋 · 图鉴与攻略 | 王者荣耀攻略总集</title>
+<title>王者助手</title>
 <meta name="theme-color" content="#F3F1F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121017" media="(prefers-color-scheme: dark)">
 <meta name="description" content="王者万象棋全图鉴 + 官方阵容库：19 位棋手（含阿离）、85 英雄牌；阵容可复制阵容码、看棋盘摆法，并对上的套打开讲解。">
@@ -541,6 +541,8 @@
   .jbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;
     font-size:13.5px;font-family:inherit;cursor:pointer;min-height:40px;}
   .jbtn.pri{background:var(--accent-fill);color:#fff;border-color:transparent;white-space:nowrap;}
+  .jbtn.loud,.jchip.loud{background:var(--accent-fill);color:#fff;border-color:transparent;font-weight:700;}
+  .jbtn.loud{font-size:15px;padding:10px 18px;min-height:44px;}
   .jav{position:relative;display:inline-flex;width:36px;height:36px;flex:none;}
   .jav img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;background:var(--paper-2);}
   .jav i{display:none;width:100%;height:100%;border-radius:50%;background:linear-gradient(140deg,var(--celadon),var(--celadon-deep));
@@ -638,16 +640,22 @@
   #wxqTip .desc-box{margin-top:2px;font-size:13px;padding:10px 12px;line-height:1.75;}
   [data-theme="dark"] #wxqTip{box-shadow:0 8px 24px rgba(0,0,0,.5);}
   .jbtn.pri:active,.jchip:active,.seg .tab:active,.jstar:active{transform:scale(0.98);}
-  #wxqHudDock{position:fixed;right:16px;bottom:16px;z-index:80;display:none;border:1px solid var(--line);background:var(--ink);color:var(--paper);
-    border-radius:999px;padding:10px 16px;font-size:13px;font-family:inherit;cursor:pointer;box-shadow:var(--shadow-lift);}
+  #wxqHudDock{position:fixed;right:16px;bottom:16px;z-index:80;display:none;border:1px solid var(--line);background:var(--accent-fill);color:#fff;
+    border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:var(--shadow-lift);}
   #wxqHudDock.on{display:block;}
   #wxqCloudBar{position:fixed;left:16px;bottom:16px;z-index:80;display:none;align-items:center;gap:8px;
     border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 12px 8px 14px;
     font-size:12.5px;box-shadow:var(--shadow-lift);}
   #wxqCloudBar.on{display:flex;}
   #wxqCloudBar.ok{border-color:var(--celadon-soft);}
-  #wxqCloudBar button{border:1px solid var(--line);background:var(--ink);color:var(--paper);border-radius:999px;
-    padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer;}
+  #wxqCloudBar button{border:1px solid var(--line);background:var(--accent-fill);color:#fff;border-radius:999px;
+    padding:7px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;}
+  body.wxq-parked .wrap,body.wxq-parked .appbar,body.wxq-parked #wxqHudDock,body.wxq-parked #wxqCloudBar,body.wxq-parked #wxqHudPanel{visibility:hidden !important;}
+  #wxqParked{display:none;}
+  body.wxq-parked #wxqParked{display:flex;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:var(--paper);}
+  .park-box{text-align:center;padding:24px;}
+  .park-box p{margin:0 0 18px;font-size:17px;color:var(--ink);line-height:1.6;}
+  .park-box .jbtn{font-size:16px;padding:12px 28px;min-height:48px;}
   @media (max-width:640px){
     #wxqCloudBar{left:12px;right:12px;bottom:calc(56px + env(safe-area-inset-bottom));}
   }
@@ -727,7 +735,8 @@
   .hud[data-hud-fit="xl"] .hname{font-size:22px;}
   .hud[data-hud-fit="xl"] .hcell span{font-size:13px;}
   .hud[data-hud-fit="xl"] .heq-d,.hud[data-hud-fit="xl"] .hph p,.hud[data-hud-fit="xl"] .hol li,.hud[data-hud-fit="xl"] .hul li{font-size:15px;}
-  body.hud-only .appbar,body.hud-only .hero,body.hud-only .toolbar,body.hud-only .foot,body.hud-only #wxqHudDock{display:none;}
+  body.hud-only .appbar,body.hud-only .hero,body.hud-only .toolbar,body.hud-only .foot,body.hud-only #wxqHudDock,body.hud-only #wxqCloudBar{display:none;}
+  .hbtn.pri.home{font-size:15px;font-weight:700;padding:8px 16px;}
   body.hud-only .wrap{padding:0;max-width:none;width:100%;}
   body.hud-only #grid{display:block;height:100vh;height:100dvh;}
   body.hud-only .hud{height:100%;min-height:100%;container-type:inline-size;}
@@ -745,7 +754,7 @@
 </head>
 <body>
   <div class="appbar"><div class="topbar"><div class="inner">
-    <div class="brand"><span class="mark"><span>象</span></span>王者万象棋</div>
+    <div class="brand"><span class="mark"><span>象</span></span>王者助手</div>
     <a class="back-link" href="index.html">← 首页</a>
     <span class="meta" id="metaLine"></span>
     <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
@@ -757,8 +766,8 @@
   <div class="wrap">
     <section class="hero">
       <div class="hero-card">
-        <h1>王者<span class="accent">万象棋</span>图鉴</h1>
-        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌图鉴。卡片右上角星标收藏成在用，开对局浮窗把站位和要点贴在游戏旁边。</p>
+        <h1>王者万象棋<span class="accent">助手</span></h1>
+        <p class="sub">官方推荐库阵容（玩法、站位、装备、运营）+ 棋手与卡牌。卡片右上角星标收藏成在用，开对局浮窗把站位和要点贴在游戏旁边。</p>
         <div class="chips" id="heroChips"></div>
       </div>
     </section>
@@ -1164,7 +1173,7 @@
         +'<div class="m-scroll">'
         +(desc?'<div class="desc-box">'+esc(desc)+'</div>':'')
         +'<h4>带此词条的牌 <span class="tag">'+members.length+'</span></h4>'
-        +(mini?'<div class="m-grid">'+mini+'</div>':'<div class="jmuted">图鉴里还没有挂上这条词条的牌。</div>')
+        +(mini?'<div class="m-grid">'+mini+'</div>':'<div class="jmuted">助手里还没有挂上这条词条的牌。</div>')
         +'</div>';
       openModal(html,'#k-'+encodeURIComponent(name));
     }

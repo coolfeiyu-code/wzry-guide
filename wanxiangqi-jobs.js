@@ -295,7 +295,7 @@
         : '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>')
       + '<button type="button" class="jbtn' + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? ' on' : '') + '" data-job-using="' + esc(L.key) + '">'
       + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? '已在用' : '收藏为在用') + '</button>'
-      + '<button type="button" class="jbtn" data-hud-open="' + esc(L.key) + '">对局浮窗</button>'
+      + '<button type="button" class="jbtn loud" data-hud-open="' + esc(L.key) + '">对局浮窗</button>'
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L)
         ? '<button type="button" class="jbtn" data-job-explain="' + esc(L.key) + '">讲解这套</button>'
         : '')
@@ -441,7 +441,7 @@
     var h = '<div class="jbar">'
       + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据')
       + fbtn('using', usingN ? ('在用 · ' + usingN) : '在用')
-      + (usingN ? '<button type="button" class="jchip" data-hud-open="">对局浮窗</button>' : '')
+      + (usingN ? '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>' : '')
       + '</div>'
       + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('new', '时间') + lordSel + '</div>'
       + '</div>';
