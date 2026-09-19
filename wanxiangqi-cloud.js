@@ -157,87 +157,12 @@
     global.WXQ_CLOUD_BOOT = cfg;
     if (!dirHandle) return;
     writeHandle(dirHandle, cfg).then(function () {
-      status(true, '已同步 · ' + FILE);
+      status(true, '已写入坚果云 · ' + FILE);
     }).catch(function () {});
   }
-  function newerThan(a, b) {
-    if (!a) return true;
-    if (!b) return false;
-    return String(a) > String(b);
-  }
-  function unionKeys(a, b) {
-    var seen = {};
-    var out = [];
-    [a, b].forEach(function (arr) {
-      (arr || []).forEach(function (k) {
-        k = String(k || '');
-        if (!k || seen[k]) return;
-        seen[k] = 1;
-        out.push(k);
-      });
-    });
-    return out.slice(0, 8);
-  }
-  function mergeCloudIntoLocal(cfg) {
-    if (!cfg || typeof cfg !== 'object') return null;
-    var changed = false;
-    if (cfg.using && cfg.using.keys && cfg.using.keys.length) {
-      var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
-      var merged = unionKeys(local.keys, cfg.using.keys);
-      var last = String(local.last || '');
-      if (merged.indexOf(last) < 0) last = String(cfg.using.last || merged[0] || '');
-      if (merged.join('|') !== (local.keys || []).join('|') || String(local.last || '') !== last) {
-        lsSet(KEYS.using, JSON.stringify({ keys: merged, last: last }));
-        changed = true;
-      }
-    }
-    if (cfg.theme && lsGet(KEYS.theme) !== cfg.theme) {
-      lsSet(KEYS.theme, cfg.theme);
-      try { document.documentElement.setAttribute('data-theme', cfg.theme); } catch (e) {}
-      changed = true;
-    }
-    if (cfg.hudDb != null && lsGet(KEYS.hudDb) == null) {
-      lsSet(KEYS.hudDb, String(cfg.hudDb));
-      changed = true;
-    }
-    if (cfg.hudSize && lsGet(KEYS.hudSize) == null) {
-      lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize));
-      changed = true;
-    }
-    if (cfg.hudPos && lsGet(KEYS.hudPos) == null) {
-      lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos));
-      changed = true;
-    }
-    return changed ? snapshot() : null;
-  }
-  function checkNow(silent) {
-    if (!dirHandle) {
-      if (!silent) status(false, '还没连坚果云文件夹，点保存配置选一次');
-      return Promise.resolve(false);
-    }
-    return dirHandle.getFileHandle(FILE).then(function (fh) { return fh.getFile(); }).then(function (f) { return f.text(); }).then(function (txt) {
-      var m = String(txt).match(/window\.WXQ_CLOUD_BOOT\s*=\s*(\{[\s\S]*\});?/);
-      if (!m) return false;
-      var cfg = parseJson(m[1]);
-      if (!cfg) return false;
-      var boot = global.WXQ_CLOUD_BOOT;
-      var upd = mergeCloudIntoLocal(cfg);
-      if (upd) {
-        global.WXQ_CLOUD_BOOT = upd;
-        if (global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-        status(true, '已带入坚果云新配置');
-        return true;
-      }
-      if (!silent && boot && cfg.updatedAt && newerThan(boot.updatedAt, cfg.updatedAt)) {
-        status(true, '本机更新，可点保存推送到云');
-      } else if (!silent) {
-        status(true, '已是最新');
-      }
-      return false;
-    }).catch(function () {
-      if (!silent) status(false, '读不到 ' + FILE + '，等坚果云同步完再试');
-      return false;
-    });
+  function touch() {
+    clearTimeout(timer);
+    timer = setTimeout(flush, 400);
   }
 
   function paintBar() {
@@ -250,11 +175,10 @@
         ? '已自动载入坚果云里的在用配置'
         : '打开会自动带上已保存的配置，不用导入')
       + '</span>'
-      + '<button type="button" data-cloud-check>检查更新</button>'
       + '<button type="button" data-cloud-save title="选坚果云里的「王者万象棋助手」文件夹，会覆盖王者助手.json.js">保存配置</button>';
     bar.addEventListener('click', function (e) {
-      if (e.target.closest && e.target.closest('[data-cloud-save]')) { pickFolder(); return; }
-      if (e.target.closest && e.target.closest('[data-cloud-check]')) { checkNow(false); return; }
+      var b = e.target.closest && e.target.closest('[data-cloud-save]');
+      if (b) pickFolder();
     });
     document.body.appendChild(bar);
   }
@@ -268,28 +192,14 @@
   }
 
   idbGet().then(function (h) { return ensurePerm(h); }).then(function (h) {
-    if (!h) {
-      autoTimer();
-      return;
-    }
+    if (!h) return;
     dirHandle = h;
     status(true, '坚果云文件夹已连接');
-    return checkNow(true).then(function () { autoTimer(); });
   });
-
-  function autoTimer() {
-    try {
-      setInterval(function () {
-        if (document.hidden || !dirHandle) return;
-        checkNow(true);
-      }, 60000);
-    } catch (e) {}
-  }
 
   global.WXQ_CLOUD = {
     touch: touch,
     save: pickFolder,
-    check: checkNow,
     snapshot: snapshot
   };
 })(window);
