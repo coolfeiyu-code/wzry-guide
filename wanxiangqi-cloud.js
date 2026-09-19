@@ -164,8 +164,12 @@
     var bar = document.createElement('div');
     bar.id = 'wxqCloudBar';
     bar.className = 'on';
-    bar.innerHTML = '<span data-cloud-msg>在用阵容可跟坚果云走</span>'
-      + '<button type="button" data-cloud-save>保存配置</button>';
+    bar.innerHTML = '<span data-cloud-msg>'
+      + (global.WXQ_CLOUD_BOOT && global.WXQ_CLOUD_BOOT.using && global.WXQ_CLOUD_BOOT.using.keys && global.WXQ_CLOUD_BOOT.using.keys.length
+        ? '已自动载入坚果云里的在用配置'
+        : '打开会自动带上已保存的配置，不用导入')
+      + '</span>'
+      + '<button type="button" data-cloud-save title="选坚果云根目录（王者助手.html 所在文件夹），会覆盖王者助手.json.js">保存配置</button>';
     bar.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-cloud-save]');
       if (b) pickFolder();
