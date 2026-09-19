@@ -120,6 +120,14 @@
       if (a.hot && !b.hot) return -1;
       if (!a.hot && b.hot) return 1;
       if (a.hot && b.hot) return (a.hotRank || 99) - (b.hotRank || 99);
+      var ad = a.source === 'datawxq' ? 1 : 0;
+      var bd = b.source === 'datawxq' ? 1 : 0;
+      if (ad !== bd) return bd - ad;
+      if (ad && bd) {
+        var ta = (a.stats7d && a.stats7d.top3Rate) || 0;
+        var tb = (b.stats7d && b.stats7d.top3Rate) || 0;
+        if (tb !== ta) return tb - ta;
+      }
       return (b.useNum || 0) - (a.useNum || 0);
     });
     return list;

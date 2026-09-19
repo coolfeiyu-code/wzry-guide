@@ -23,9 +23,10 @@ const JOBS = path.join(ROOT, 'wanxiangqi-lineups.js');
 const API = 'https://api.datatft.com';
 const VERSION = 'v260917';
 const TIME = 7;
-const MIN_COUNT = 400;
+const MIN_COUNT = 80;
 const MIN_TOP3 = 0.40;
 const PAGE_SIZE = 12;
+const EXTRA_HEROES = ['大司命', '项羽', '蒙恬', '米莱狄', '雅典娜', '刘邦', '韩信', '姬小满', '墨子', '百里玄策', '莱西奥', '杨玉环', '诸葛亮', '司空震'];
 
 function getHttps(url, body) {
   return new Promise((resolve, reject) => {
@@ -158,32 +159,72 @@ function packPayload(extra) {
   }, extra || {});
 }
 
-async function searchAll() {
+async function searchQuery(label, extra) {
   const byKey = Object.create(null);
   let sampleCount = 0;
-  let total = 0;
-  for (let page = 1; page <= 20; page++) {
-    const r = await post('/wzwxq/lineups/search', packPayload({ page }));
+  let reported = 0;
+  for (let page = 1; page <= 4; page++) {
+    const r = await post('/wzwxq/lineups/search', packPayload(Object.assign({
+      page,
+      minimumCount: 20,
+      sortBy: 'top3Rate',
+    }, extra || {})));
     if (!r.json || r.json.code !== 1) {
-      throw new Error('search p' + page + ' ' + (r.json && r.json.message || r.status));
+      console.log('  skip', label, 'p' + page, r.json && r.json.message || r.status);
+      break;
     }
     const d = r.json.data || {};
     sampleCount = d.sampleCount || sampleCount;
-    total = d.total || total;
+    reported = d.total || reported;
     const list = d.lineups || [];
-    console.log('  search p' + page + '  ' + list.length + '  total=' + total);
     list.forEach((lu) => {
       const k = String(lu.lineupKey || '');
       if (!k) return;
       if (!byKey[k] || (lu.count || 0) > (byKey[k].count || 0)) byKey[k] = lu;
     });
-    if (!list.length || page * PAGE_SIZE >= total) break;
+    if (!list.length || page * PAGE_SIZE >= reported) break;
   }
-  return { sampleCount, total, list: Object.keys(byKey).map((k) => byKey[k]) };
+  const n = Object.keys(byKey).length;
+  if (n) console.log('  ' + label + '  ' + n + '  total=' + reported + '  sample=' + sampleCount);
+  return { sampleCount, list: Object.keys(byKey).map((k) => byKey[k]) };
 }
 
-async function detailOf(key) {
-  const r = await post('/wzwxq/lineups/detail', packPayload({ lineupKey: key }));
+async function searchAll(pools, players) {
+  const byKey = Object.create(null);
+  let sampleCount = 0;
+  function ingest(pack) {
+    if (pack.sampleCount > sampleCount) sampleCount = pack.sampleCount;
+    (pack.list || []).forEach((lu) => {
+      const k = String(lu.lineupKey || '');
+      if (!k) return;
+      if (!byKey[k] || (lu.count || 0) > (byKey[k].count || 0)) byKey[k] = lu;
+    });
+  }
+  ingest(await searchQuery('全服', { filters: [], minimumCount: 50 }));
+  ingest(await searchQuery('全服-登场', { filters: [], minimumCount: 50, sortBy: 'appearanceRate' }));
+  for (let i = 0; i < (players || []).length; i++) {
+    const p = players[i];
+    ingest(await searchQuery('棋手 ' + p.name, {
+      filters: [{ type: 'commander', id: String(p.id), switchVal: true }],
+    }));
+  }
+  for (let i = 0; i < EXTRA_HEROES.length; i++) {
+    const name = EXTRA_HEROES[i];
+    const h = pools.heroes[name];
+    if (!h) continue;
+    ingest(await searchQuery('英雄 ' + name, {
+      filters: [{ type: 'hero', id: String(h.id), switchVal: true }],
+    }));
+  }
+  return { sampleCount, total: Object.keys(byKey).length, list: Object.keys(byKey).map((k) => byKey[k]) };
+}
+
+async function detailOf(key, filters) {
+  const r = await post('/wzwxq/lineups/detail', packPayload({
+    lineupKey: key,
+    minimumCount: 1,
+    filters: filters || [],
+  }));
   if (!r.json || r.json.code !== 1) {
     console.log('  detail fail', key, r.json && r.json.message);
     return null;
@@ -278,17 +319,29 @@ function lordNames(lu, pools) {
     .slice(0, 3);
 }
 
+function isShangui(cores) {
+  return cores.indexOf('大司命') >= 0
+    && (cores.indexOf('米莱狄') >= 0 || cores.indexOf('蒙恬') >= 0 || cores.indexOf('项羽') >= 0)
+    && cores.indexOf('虞姬') < 0
+    && cores.indexOf('敖隐') < 0;
+}
+
 function titleOf(lords, cores) {
   const head = lords[0] || '近7日';
+  if (isShangui(cores)) return head + ' · 山鬼流';
   const body = cores.slice(0, 3).join('');
   return body ? head + ' · ' + body : head + '数据阵容';
 }
 
 function briefOf(st, cores) {
+  let extra = '';
+  if (isShangui(cores)) {
+    extra = '卡面是大司命的往生图腾（对局里常叫山鬼）：牺牲给图腾升级，米莱狄/蒙恬提供召唤，项羽牺牲再给图腾加等级。';
+  }
   return '近7日样本 ' + st.count + ' 场，前三率 ' + pct(st.top3Rate) + '%，登顶率 '
     + pct(st.firstRate) + '%，平均名次 ' + (Math.round(st.avgPlacement * 100) / 100)
-    + '。数据来自万象棋大数据 datawxq.com，按英雄组合聚类，不是官方投稿，没有可导入阵容码。核心：'
-    + cores.join('、') + '。';
+    + '。数据来自万象棋大数据 datawxq.com，按英雄组合聚类，不是官方投稿，没有可导入阵容码。'
+    + extra + '核心：' + cores.join('、') + '。';
 }
 
 function equipDescOf(lu, pools) {
@@ -316,36 +369,77 @@ function equipDescOf(lu, pools) {
   const official = (wJobs.WXQ_JOBS && wJobs.WXQ_JOBS.list) || [];
   official.forEach((L) => { L._names = namesOfHeroes(L.heroes); });
 
-  const searched = await searchAll();
-  console.log('unique clusters', searched.list.length, 'sample', searched.sampleCount);
+  const searched = await searchAll(pools, wData.WXQ_PLAYERS || []);
+  console.log('merged clusters', searched.list.length, 'sample', searched.sampleCount);
 
   const overlay = [];
   const unique = [];
   const skipped = [];
+  const uniqueRaw = [];
 
   for (let i = 0; i < searched.list.length; i++) {
     const raw = searched.list[i];
-    const det = await detailOf(raw.lineupKey) || raw;
-    const cores = namesOfHeroes(det.coreHeroes && det.coreHeroes.length ? det.coreHeroes : det.heroes);
-    const board = boardHeroes(det, pools);
-    const boardNames = namesOfHeroes(board);
-    const names = boardNames.length ? boardNames : cores.filter((n) => pools.heroes[n]);
-    const unknown = cores.filter((n) => !pools.heroes[n]);
-    const st = statsOf(det);
-    const carry = carryOf(cores.length ? cores : names);
-    const hits = official.filter((L) => related(names, L._names, carry) || related(cores, L._names, carry));
+    const cores = namesOfHeroes(raw.coreHeroes && raw.coreHeroes.length ? raw.coreHeroes : raw.heroes)
+      .filter((n) => pools.heroes[n]);
+    const unknown = namesOfHeroes(raw.coreHeroes && raw.coreHeroes.length ? raw.coreHeroes : raw.heroes)
+      .filter((n) => n && !pools.heroes[n]);
+    const st = statsOf(raw);
+    const carry = carryOf(cores);
+    const hits = official.filter((L) => related(cores, L._names, carry));
 
     if (unknown.length) {
-      skipped.push({ key: raw.lineupKey, reason: 'unknown ' + unknown.join(','), names });
+      skipped.push({ key: raw.lineupKey, reason: 'unknown ' + unknown.join(','), names: cores });
       continue;
     }
-    if (!names.length) {
+    if (!cores.length) {
       skipped.push({ key: raw.lineupKey, reason: 'no-heroes' });
       continue;
     }
-
     if (hits.length) {
       hits.forEach((L) => {
+        overlay.push({
+          officialKey: String(L.key),
+          officialName: L.name,
+          lineupKey: String(raw.lineupKey),
+          stats: st,
+          overlap: inter(cores, L._names),
+        });
+      });
+      continue;
+    }
+    if (st.count < MIN_COUNT || st.top3Rate < MIN_TOP3) {
+      skipped.push({
+        key: raw.lineupKey,
+        reason: 'weak n=' + st.count + ' top3=' + pct(st.top3Rate),
+        names: cores,
+      });
+      continue;
+    }
+    uniqueRaw.push(raw);
+  }
+  console.log('overlay raw', overlay.length, 'unique candidates', uniqueRaw.length, 'skipped', skipped.length);
+
+  for (let i = 0; i < uniqueRaw.length; i++) {
+    const raw = uniqueRaw[i];
+    const topCmd = (raw.commanders || []).slice().sort((a, b) => (b.appearanceRate || 0) - (a.appearanceRate || 0))[0];
+    const cmdName = topCmd && T(topCmd.name);
+    const cmd = cmdName && pools.players[cmdName];
+    const detFilters = cmd ? [{ type: 'commander', id: String(cmd.id), switchVal: true }] : [];
+    const det = await detailOf(raw.lineupKey, detFilters) || raw;
+    const cores = namesOfHeroes(det.coreHeroes && det.coreHeroes.length ? det.coreHeroes : det.heroes)
+      .filter((n) => pools.heroes[n]);
+    const board = boardHeroes(det, pools);
+    const boardNames = namesOfHeroes(board);
+    const names = boardNames.length ? boardNames : cores;
+    const st = statsOf(det.count ? det : raw);
+    if (st.count < MIN_COUNT || st.top3Rate < MIN_TOP3) {
+      skipped.push({ key: raw.lineupKey, reason: 'weak-detail n=' + st.count + ' top3=' + pct(st.top3Rate), names: cores });
+      continue;
+    }
+    const carry2 = carryOf(cores.length ? cores : names);
+    const hits2 = official.filter((L) => related(names, L._names, carry2) || related(cores, L._names, carry2));
+    if (hits2.length) {
+      hits2.forEach((L) => {
         overlay.push({
           officialKey: String(L.key),
           officialName: L.name,
@@ -354,20 +448,8 @@ function equipDescOf(lu, pools) {
           overlap: inter(names, L._names),
         });
       });
-      console.log('  overlay', cores.join('+'), '→', hits.map((h) => h.name).join(' / '),
-        'top3=' + pct(st.top3Rate) + '% n=' + st.count);
       continue;
     }
-
-    if (st.count < MIN_COUNT || st.top3Rate < MIN_TOP3) {
-      skipped.push({
-        key: raw.lineupKey,
-        reason: 'weak n=' + st.count + ' top3=' + pct(st.top3Rate),
-        names,
-      });
-      continue;
-    }
-
     const lords = lordNames(det, pools);
     const talents = talentNames(det, pools);
     const job = {
@@ -388,7 +470,7 @@ function equipDescOf(lu, pools) {
       effectDesc: '',
       lords: lords,
       recLords: [],
-      heroes: board,
+      heroes: board.length ? board : [],
       talents: talents,
       effects: [],
       ops: [],
@@ -398,12 +480,33 @@ function equipDescOf(lu, pools) {
       nocode: true,
       source: 'datawxq',
       stats7d: st,
+      _cores: cores,
     };
+    if (!job.heroes.length) {
+      skipped.push({ key: raw.lineupKey, reason: 'no-board', names: cores });
+      continue;
+    }
     unique.push(job);
     console.log('  unique', job.name, 'top3=' + pct(st.top3Rate) + '% n=' + st.count, cores.join('+'));
   }
 
-  unique.sort((a, b) => (b.stats7d.top3Rate - a.stats7d.top3Rate) || (b.stats7d.count - a.stats7d.count));
+  unique.sort((a, b) => (b.stats7d.count - a.stats7d.count) || (b.stats7d.top3Rate - a.stats7d.top3Rate));
+  const kept = [];
+  unique.forEach((u) => {
+    const names = u._cores || namesOfHeroes(u.heroes);
+    const dup = kept.some((k) => related(names, k._cores || namesOfHeroes(k.heroes), names[0]));
+    if (dup) {
+      skipped.push({ key: u.key, reason: 'near-unique', names });
+      return;
+    }
+    kept.push(u);
+  });
+  unique.length = 0;
+  kept.sort((a, b) => (b.stats7d.top3Rate - a.stats7d.top3Rate) || (b.stats7d.count - a.stats7d.count));
+  kept.forEach((u) => {
+    delete u._cores;
+    unique.push(u);
+  });
 
   const bestOv = Object.create(null);
   overlay.forEach((row) => {
@@ -417,10 +520,10 @@ function equipDescOf(lu, pools) {
 
   const capturedAt = new Date().toISOString().slice(0, 10);
   const meta = {
-    version: '1.0.0',
+    version: '1.1.0',
     capturedAt,
     source: '万象棋大数据 datawxq.com（api.datatft.com /wzwxq/lineups，近7日 time=7，版本 ' + VERSION + '）',
-    note: '前三率/登顶率是第三方对局聚类，不是官方胜率，也不是可导入阵容码。能对上官方库的只叠统计，不对上的才单独成卡。讲解仍只走卡面四类，不编运营。',
+    note: '前三率/登顶率是第三方对局聚类，不是官方胜率，也不是可导入阵容码。全服热门之外还会按棋手/冷门英雄补搜（否则明先生山鬼流这种低登场套进不来）。能对上官方库的只叠统计，不对上的才单独成卡。讲解按卡面，不编运营。',
     sampleCount: searched.sampleCount,
     clusters: searched.list.length,
     overlay: overlayBest.length,
