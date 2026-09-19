@@ -641,6 +641,16 @@
   #wxqHudDock{position:fixed;right:16px;bottom:16px;z-index:80;display:none;border:1px solid var(--line);background:var(--ink);color:var(--paper);
     border-radius:999px;padding:10px 16px;font-size:13px;font-family:inherit;cursor:pointer;box-shadow:var(--shadow-lift);}
   #wxqHudDock.on{display:block;}
+  #wxqCloudBar{position:fixed;left:16px;bottom:16px;z-index:80;display:none;align-items:center;gap:8px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 12px 8px 14px;
+    font-size:12.5px;box-shadow:var(--shadow-lift);}
+  #wxqCloudBar.on{display:flex;}
+  #wxqCloudBar.ok{border-color:var(--celadon-soft);}
+  #wxqCloudBar button{border:1px solid var(--line);background:var(--ink);color:var(--paper);border-radius:999px;
+    padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer;}
+  @media (max-width:640px){
+    #wxqCloudBar{left:12px;right:12px;bottom:calc(56px + env(safe-area-inset-bottom));}
+  }
   #wxqHudToast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%) translateY(8px);z-index:90;display:none;
     background:var(--ink);color:var(--paper);border-radius:10px;padding:8px 14px;font-size:13px;pointer-events:none;opacity:0;transition:.16s;}
   #wxqHudToast.on{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
@@ -783,6 +793,7 @@
 <script src="wanxiangqi-jobs.js"></script>
 <script src="wanxiangqi-rules.js"></script>
 <script src="wanxiangqi-explain.js"></script>
+<script src="wanxiangqi-cloud.js"></script>
 <script src="wanxiangqi-hud.js"></script>
 <script>
   (function(){
@@ -796,6 +807,7 @@
     document.getElementById('themeToggle').onclick=function(){
       var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
       document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('wzry-theme',c);}catch(e){}
+      if(window.WXQ_CLOUD&&WXQ_CLOUD.touch)WXQ_CLOUD.touch();
     };
 
     // header

@@ -3,7 +3,7 @@
 > 最后更新：2026-09-19
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.16**（浮窗按分辨率算最佳宽高/字号，可贴右）。官方阵容库 **v1.2.0**（47 套）。近7日数据阵容 **v1.1.0**。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.17**（坚果云单文件王者助手 + 配置同步）。官方阵容库 **v1.2.0**（47 套）。近7日数据阵容 **v1.1.0**。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -44,6 +44,7 @@ wzry-guide/
 │   ├── sync-wxq-lineups.js 万象棋官方阵容库同步（推荐/热门/新手）；入库门槛使用量≥2000 且评分≥4.0
 │   ├── sync-wxq-stats.js   万象棋大数据近7日前三率（datawxq.com → wanxiangqi-stats.js）
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
+│   └── publish-wxq-helper.js 打成单文件写到坚果云根目录 `王者助手.html`（不覆盖 `王者助手.json.js`）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的阵容有「讲解这套」。版本只升 WXQ_META
 ├── wanxiangqi-explain.js   讲解：官方卡面 + 阵容原文。识别李信牺牲/木兰复生/三分倒转/大河开团/日落海整备/往生图腾。李信按上场牺牲位拆读法。
@@ -139,6 +140,13 @@ WXQ_GUIDE = {
 - 复制阵容码必须在小窗自己的 document 里写剪贴板（`window.navigator.clipboard` + `execCommand`），点在 PiP/弹出窗上时主页面没有用户手势，直接 `navigator.clipboard` 会失败。再失败就弹出只读框让 Ctrl+C。
 - 「图鉴开/关」存 `localStorage wxq-hud-db`（默认开）。开时悬停英雄弹出官方卡面全文：卡面/觉醒/技能/10·40·100 质变/词条/关键属性；装备弹出效果和合成。格子上的品质只标数字，不写「阶」。不是模拟打架。游戏全屏独占会挡住网页，需窗口化。
 - 文件 `wanxiangqi-hud.js`。
+
+### 5.2f 坚果云王者助手（2026-09-19）
+
+- 网页 localStorage **不会**随坚果云走。做法：发布单文件 HTML + 旁边一份配置脚本。
+- 发布：`node scripts/publish-wxq-helper.js` → `C:\Users\Zhuqi\Nutstore\1\我的坚果云\王者助手.html`。图从 GitHub Pages 拉，电脑要能上网。**不覆盖**已有 `王者助手.json.js`。
+- 各电脑直接打开该 HTML。配置（在用阵容、浮窗尺寸、主题）在 `王者助手.json.js`。改收藏后点左下角「保存配置」：能选文件夹就写回坚果云，否则下载这个文件覆盖到根目录。
+- `wanxiangqi-cloud.js`。改完万象棋后跑一次发布脚本，各电脑坚果云同步完即可用新版。
 
 ### 5.2b 原连锁四层（已下线，仅留档）
 
@@ -318,6 +326,9 @@ C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhu
 
 # 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-cards.js
+
+# 打成单文件写到坚果云根目录 王者助手.html
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/publish-wxq-helper.js
 
 # HTTPS 推送（SSH 被 Clash fake-ip 挡时）
 git -C "C:/Users/Zhuqi/Desktop/wzry-guide" -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main

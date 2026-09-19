@@ -24,7 +24,10 @@
     });
   }
   function abs(p) {
-    try { return new URL(p, location.href).href; } catch (e) { return p; }
+    try { return new URL(p, document.baseURI || location.href).href; } catch (e) { return p; }
+  }
+  function cloudTouch() {
+    if (global.WXQ_CLOUD && WXQ_CLOUD.touch) WXQ_CLOUD.touch();
   }
   function heroImg(name) { return abs('wxq-icon/heroes/' + encodeURIComponent(name) + '.png'); }
   function equipImg(name) { return abs('wxq-icon/equips/' + encodeURIComponent(name) + '.png'); }
@@ -53,6 +56,7 @@
   }
   function setTips(on) {
     try { localStorage.setItem('wxq-hud-db', on ? '1' : '0'); } catch (e) {}
+    cloudTouch();
     applyTipsUi(document);
     if (pipWin && !pipWin.closed) applyTipsUi(pipWin.document);
     if (popWin && !popWin.closed) applyTipsUi(popWin.document);
@@ -94,6 +98,7 @@
   function save(st) {
     try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) {}
     paintDock();
+    cloudTouch();
   }
 
   function screenBox(win) {
@@ -167,6 +172,7 @@
     var map = loadSizeMap();
     map[screenKey(win || global)] = { w: Math.round(w), h: Math.round(h) };
     try { localStorage.setItem('wxq-hud-size', JSON.stringify(map)); } catch (e) {}
+    cloudTouch();
   }
   function clearSize(win) {
     var map = loadSizeMap();
@@ -824,6 +830,7 @@
       dragging = false;
       try {
         localStorage.setItem('wxq-hud-pos', JSON.stringify({ x: el.offsetLeft, y: el.offsetTop }));
+        cloudTouch();
       } catch (err) {}
     }
     el.addEventListener('pointerup', end);
@@ -898,6 +905,13 @@
     toggle: toggle,
     open: open,
     enterPage: enterPage,
+    hydrate: function () {
+      paintDock();
+      var grid = document.getElementById('grid');
+      if (grid && global.WXQ_JOBS_UI && WXQ_JOBS_UI.render && global.__wxqUI) {
+        WXQ_JOBS_UI.render(grid, global.__wxqUI.state || { q: '', type: 'jobs' });
+      }
+    },
     html: function (key) {
       var L = lineupOf(key);
       return L ? innerHtml(L) : '';
