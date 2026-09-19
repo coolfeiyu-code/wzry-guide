@@ -29,10 +29,45 @@
   function heroImg(name) { return abs('wxq-icon/heroes/' + encodeURIComponent(name) + '.png'); }
   function equipImg(name) { return abs('wxq-icon/equips/' + encodeURIComponent(name) + '.png'); }
 
+  function heroByName(name) {
+    var H = global.WXQ_HEROES || [];
+    for (var i = 0; i < H.length; i++) if (H[i].name === name) return H[i];
+    return null;
+  }
   function equipByName(name) {
     var E = global.WXQ_EQUIPS || [];
     for (var i = 0; i < E.length; i++) if (E[i].name === name) return E[i];
     return null;
+  }
+  function plain(s) {
+    var t = String(s || '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ' ');
+    t = t.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    return t.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+  }
+  function tipsOn() {
+    try { return localStorage.getItem('wxq-hud-db') !== '0'; } catch (e) { return true; }
+  }
+  function setTips(on) {
+    try { localStorage.setItem('wxq-hud-db', on ? '1' : '0'); } catch (e) {}
+    applyTipsUi(document);
+    if (pipWin && !pipWin.closed) applyTipsUi(pipWin.document);
+    if (popWin && !popWin.closed) applyTipsUi(popWin.document);
+  }
+  function applyTipsUi(doc) {
+    if (!doc || !doc.querySelector) return;
+    var on = tipsOn();
+    var hud = doc.querySelector('.hud');
+    if (hud) hud.setAttribute('data-hud-db', on ? '1' : '0');
+    var btn = doc.querySelector('[data-hud-tips]');
+    if (btn) {
+      btn.textContent = on ? '图鉴开' : '图鉴关';
+      if (btn.classList) {
+        if (on) btn.classList.add('on');
+        else btn.classList.remove('on');
+      }
+    }
+    var tip = doc.getElementById('hudTip');
+    if (tip && !on) tip.style.display = 'none';
   }
   function craftOf(name) {
     var e = equipByName(name);
@@ -114,7 +149,10 @@
       for (var x = 0; x < COLS; x++) {
         var h = map[x + ',' + z];
         if (!h) { cells += '<div class="hcell"></div>'; continue; }
-        cells += '<div class="hcell filled" title="' + esc(h.name) + '">'
+        var card = heroByName(h.name);
+        var q = card && card.quality ? card.quality : 0;
+        cells += '<div class="hcell filled" data-hud-kind="hero" data-hud-name="' + esc(h.name) + '" title="' + esc(h.name) + (q ? ' · ' + q + '阶' : '') + '">'
+          + (q ? '<b class="hq">' + q + '阶</b>' : '')
           + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
           + '<span>' + esc(h.name) + '</span></div>';
       }
@@ -134,15 +172,20 @@
     var h = rows.map(function (hero) {
       var items = hero.eqs.map(function (n) {
         var craft = craftOf(n);
-        return '<div class="heq-i">'
+        return '<div class="heq-i" data-hud-kind="equip" data-hud-name="' + esc(n) + '">'
           + '<img src="' + equipImg(n) + '" alt="' + esc(n) + '">'
           + '<span>' + esc(n)
           + (craft ? '<em>' + esc(craft) + '</em>' : '')
           + '</span></div>';
       }).join('');
       return '<div class="heq-row">'
-        + '<img class="heq-h" src="' + heroImg(hero.name) + '" alt="' + esc(hero.name) + '">'
-        + '<div><div class="heq-n">' + esc(hero.name) + '</div>' + items + '</div></div>';
+        + '<img class="heq-h" src="' + heroImg(hero.name) + '" alt="' + esc(hero.name) + '" data-hud-kind="hero" data-hud-name="' + esc(hero.name) + '">'
+        + '<div><div class="heq-n" data-hud-kind="hero" data-hud-name="' + esc(hero.name) + '">' + esc(hero.name)
+        + (function () {
+          var c = heroByName(hero.name);
+          return c && c.quality ? '<i class="hq-inline">' + c.quality + '阶</i>' : '';
+        }())
+        + '</div>' + items + '</div></div>';
     }).join('');
     if (L.equipDesc) h += '<p class="heq-d">' + esc(L.equipDesc) + '</p>';
     return h;
@@ -161,7 +204,9 @@
         round = o.from === o.to ? o.from + ' 回合' : o.from + '–' + o.to + ' 回合';
       }
       var faces = who.length
-        ? '<div class="hwho">' + who.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>'
+        ? '<div class="hwho">' + who.map(function (n) {
+          return '<span data-hud-kind="hero" data-hud-name="' + esc(n) + '">' + esc(n) + '</span>';
+        }).join('') + '</div>'
         : '';
       parts.push('<div class="hph">'
         + '<div class="hph-h">' + esc(lab) + (round ? '<i>' + esc(round) + '</i>' : '') + '</div>'
@@ -211,10 +256,11 @@
     var play = playBlock(L);
     var body = boardHtml(L) + sec('装备', eq) + sec('前 / 中 / 后期', op) + sec('出牌', play);
     if (!eq && !op && !play) body += '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>';
-    return '<div class="hud" data-hud-cur="' + esc(L.key) + '">'
+    return '<div class="hud" data-hud-cur="' + esc(L.key) + '" data-hud-db="' + (tipsOn() ? '1' : '0') + '">'
       + '<div class="hbar" data-hud-drag="1">'
       + '<strong>对局浮窗</strong>'
       + '<span class="hsp"></span>'
+      + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
       + (global.documentPictureInPicture ? '<button type="button" class="hbtn" data-hud-pip="1">贴在最前</button>' : '')
       + '<button type="button" class="hbtn" data-hud-pop="1">弹出小窗</button>'
       + '<button type="button" class="hbtn" data-hud-close="1">关闭</button>'
@@ -227,7 +273,7 @@
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">贴不到游戏画面里。Chrome / Edge 用「贴在最前」；全屏独占时改窗口化。</p>'
+      + '<p class="hnote">图鉴开时，悬停英雄或装备看出官方卡面。复制失败会弹出阵容码，用 Ctrl+C。全屏独占时改窗口化。</p>'
       + '</div>';
   }
 
@@ -247,10 +293,19 @@
       + '.hboard{display:flex;flex-direction:column;gap:3px;}'
       + '.hboard-lab{font-size:10px;color:#9A93A6;margin-bottom:2px;}'
       + '.hrow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}'
-      + '.hcell{aspect-ratio:1;border-radius:8px;background:#2A2633;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1px;}'
+      + '.hcell{position:relative;aspect-ratio:1;border-radius:8px;background:#2A2633;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1px;}'
       + '.hcell.filled{background:transparent;}'
       + '.hcell img{width:78%;aspect-ratio:1;object-fit:cover;border-radius:50%;display:block;background:#2A2633;}'
       + '.hcell span{font-size:9px;line-height:1.1;color:#C8C2D2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}'
+      + '.hq{position:absolute;top:1px;right:1px;font-size:9px;font-weight:700;font-style:normal;background:#B4230E;color:#fff;border-radius:4px;padding:0 3px;line-height:1.35;}'
+      + '.hq-inline{font-style:normal;font-weight:500;font-size:11px;color:#9A93A6;margin-left:6px;}'
+      + '.hud[data-hud-db="1"] [data-hud-kind]{cursor:help;}'
+      + '#hudTip{position:fixed;z-index:30;display:none;max-width:240px;background:#2A2633;border:1px solid #4A4456;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.6;pointer-events:none;box-shadow:0 8px 20px rgba(0,0,0,.45);}'
+      + '#hudTip .ht-n{font-weight:700;font-size:13px;}'
+      + '#hudTip .ht-s{font-size:11px;color:#9A93A6;margin-top:2px;}'
+      + '#hudTip .ht-d{margin-top:6px;color:#E8E4EE;}'
+      + '.hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;}'
+      + '.hbtn.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;}'
       + '.htips{flex:1;overflow:auto;}'
       + '.hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid #4A4456;}'
       + '.hsec h4{margin:0 0 6px;font-size:12px;color:#FF8A73;letter-spacing:.04em;}'
@@ -268,7 +323,7 @@
       + '.hwho{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;}'
       + '.hwho span{font-size:11px;background:#2A2633;border-radius:999px;padding:1px 7px;color:#C8C2D2;}'
       + '.hol,.hul{margin:0 0 8px;padding-left:1.15em;}'
-      + '.hacts{display:flex;gap:8px;margin-top:8px;}'
+      + '.hacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}'
       + '.hmuted{font-size:12px;color:#9A93A6;}'
       + '.hnote{margin:4px 0 0;font-size:11px;line-height:1.55;color:#9A93A6;}';
   }
@@ -285,16 +340,129 @@
     bind(doc);
   }
 
-  function copyKey(key, btn) {
-    function done(ok) {
-      if (!btn) return;
-      var old = btn.textContent;
-      btn.textContent = ok ? '已复制' : '复制失败';
-      setTimeout(function () { btn.textContent = old; }, 1200);
+  function copyFallback(doc, text) {
+    try {
+      var d = doc || document;
+      var win = d.defaultView || global;
+      var t = d.createElement('textarea');
+      t.value = text;
+      t.setAttribute('readonly', '');
+      t.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;';
+      d.body.appendChild(t);
+      t.focus();
+      t.select();
+      if (t.setSelectionRange) t.setSelectionRange(0, text.length);
+      var ok = false;
+      try { ok = d.execCommand('copy'); } catch (e1) { ok = false; }
+      if (!ok && win.document && win.document.execCommand) {
+        try { ok = win.document.execCommand('copy'); } catch (e2) { ok = false; }
+      }
+      d.body.removeChild(t);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  function revealCode(doc, btn, text) {
+    var box = doc.querySelector('[data-hud-copybox]');
+    if (!box) {
+      box = doc.createElement('input');
+      box.setAttribute('data-hud-copybox', '1');
+      box.className = 'hcopy';
+      box.readOnly = true;
+      if (btn && btn.parentNode) btn.parentNode.appendChild(box);
+      else if (doc.body) doc.body.appendChild(box);
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(String(key)).then(function () { done(true); }, function () { done(false); });
-    } else done(false);
+    box.value = text;
+    box.style.display = 'block';
+    try { box.focus(); box.select(); } catch (e) {}
+  }
+
+  function copyKey(key, btn, doc) {
+    var text = String(key || '');
+    var d = doc || document;
+    var win = d.defaultView || global;
+    function done(ok) {
+      if (ok) {
+        if (btn) {
+          var old = btn.textContent;
+          btn.textContent = '已复制';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        }
+        return;
+      }
+      if (btn) btn.textContent = '点框内 Ctrl+C';
+      revealCode(d, btn, text);
+    }
+    var clip = win.navigator && win.navigator.clipboard;
+    if (clip && clip.writeText) {
+      clip.writeText(text).then(function () { done(true); }, function () { done(copyFallback(d, text)); });
+      return;
+    }
+    done(copyFallback(d, text));
+  }
+
+  function tipHtml(kind, name) {
+    if (kind === 'hero') {
+      var h = heroByName(name);
+      if (!h) return '';
+      var sub = [];
+      if (h.quality) sub.push(h.quality + '阶');
+      if (h.faction) sub.push(h.faction);
+      var d = plain(h.desc);
+      if (d.length > 160) d = d.slice(0, 158) + '…';
+      var kw = (h.kwHelp || []).map(function (k) { return esc(k.name) + '：' + esc(plain(k.desc)); }).join('<br>');
+      return '<div class="ht-n">' + esc(h.name) + '</div>'
+        + (sub.length ? '<div class="ht-s">' + esc(sub.join(' · ')) + '</div>' : '')
+        + (d ? '<div class="ht-d">' + esc(d) + '</div>' : '')
+        + (kw ? '<div class="ht-d">' + kw + '</div>' : '');
+    }
+    if (kind === 'equip') {
+      var e = equipByName(name);
+      if (!e) return '<div class="ht-n">' + esc(name) + '</div>';
+      var sube = [];
+      if (e.subType) sube.push(e.subType);
+      var craft = craftOf(name);
+      if (craft) sube.push(craft);
+      var ed = plain(e.desc);
+      if (ed.length > 160) ed = ed.slice(0, 158) + '…';
+      return '<div class="ht-n">' + esc(e.name) + '</div>'
+        + (sube.length ? '<div class="ht-s">' + esc(sube.join(' · ')) + '</div>' : '')
+        + (ed ? '<div class="ht-d">' + esc(ed) + '</div>' : '');
+    }
+    return '';
+  }
+
+  function showTip(doc, el) {
+    if (!tipsOn()) return;
+    var html = tipHtml(el.getAttribute('data-hud-kind'), el.getAttribute('data-hud-name'));
+    if (!html) return;
+    var box = doc.getElementById('hudTip');
+    if (!box) {
+      box = doc.createElement('div');
+      box.id = 'hudTip';
+      doc.body.appendChild(box);
+    }
+    box.innerHTML = html;
+    box.style.display = 'block';
+    var win = doc.defaultView || global;
+    var r = el.getBoundingClientRect();
+    var w = box.offsetWidth || 200;
+    var h = box.offsetHeight || 80;
+    var x = r.left;
+    var y = r.bottom + 6;
+    var vw = win.innerWidth || 360;
+    var vh = win.innerHeight || 600;
+    if (x + w > vw - 8) x = vw - w - 8;
+    if (y + h > vh - 8) y = r.top - h - 6;
+    if (x < 8) x = 8;
+    if (y < 8) y = 8;
+    box.style.left = Math.round(x) + 'px';
+    box.style.top = Math.round(y) + 'px';
+  }
+
+  function hideTip(doc) {
+    var box = doc.getElementById('hudTip');
+    if (box) box.style.display = 'none';
   }
 
   function bindMain() {
@@ -322,8 +490,20 @@
       if (pop) { openPopup(currentOf(doc)); return; }
       var cl = t.closest('[data-hud-close]');
       if (cl) { closeAll(doc); return; }
+      var tb = t.closest('[data-hud-tips]');
+      if (tb) { setTips(!tipsOn()); return; }
       var cp = t.closest('[data-hud-copy]');
-      if (cp) { copyKey(cp.getAttribute('data-hud-copy'), cp); }
+      if (cp) { copyKey(cp.getAttribute('data-hud-copy'), cp, doc); }
+    });
+    doc.addEventListener('mouseover', function (e) {
+      var el = e.target && e.target.closest && e.target.closest('[data-hud-kind]');
+      if (el) showTip(doc, el);
+    });
+    doc.addEventListener('mouseout', function (e) {
+      var el = e.target && e.target.closest && e.target.closest('[data-hud-kind]');
+      if (!el) return;
+      if (e.relatedTarget && el.contains(e.relatedTarget)) return;
+      hideTip(doc);
     });
   }
 
