@@ -386,7 +386,6 @@
       + '<button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button>'
       + '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>'
       + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
-      + (isHudWin() ? '<button type="button" class="hbtn" data-hud-front="1" title="把当前小窗切到最前">贴在最前</button>' : '')
       + '<button type="button" class="hbtn" data-hud-close="1">关闭</button>'
       + '</div>'
       + switcherHtml(L.key)
@@ -417,7 +416,6 @@
       + '.hbtn{border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;border-radius:8px;padding:5px 9px;font-size:12px;font-family:inherit;cursor:pointer;}'
       + '.hbtn.pri{background:#B4230E;border-color:transparent;}'
       + '.hbtn.pri.home{font-size:14px;font-weight:700;padding:7px 14px;}'
-      + 'body[data-hud-front] .hud{outline:2px solid #B4230E;outline-offset:-2px;}'
       + '.hsw{display:flex;flex-wrap:wrap;gap:5px;}'
       + '.hsw-b{border:1px solid #4A4456;background:#2A2633;color:#C8C2D2;border-radius:999px;padding:4px 9px;font-size:11.5px;font-family:inherit;cursor:pointer;}'
       + '.hsw-b.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;font-weight:600;}'
@@ -676,8 +674,6 @@
         paintWherever(L);
         return;
       }
-      var fw = t.closest('[data-hud-front]');
-      if (fw) { frontWin(); return; }
       var pop = t.closest('[data-hud-pop]');
       if (pop) { openPopup(currentOf(doc)); return; }
       var homeBtn = t.closest('[data-hud-home]');
@@ -749,13 +745,6 @@
 
   function isHudWin() {
     return document.body.classList.contains('hud-only');
-  }
-  function frontWin() {
-    try { global.focus(); } catch (e) {}
-    try { if (global.document && global.document.body) global.document.body.setAttribute('data-hud-front', '1'); } catch (e2) {}
-    setTimeout(function () {
-      try { if (global.document && global.document.body) global.document.body.removeAttribute('data-hud-front'); } catch (e3) {}
-    }, 900);
   }
   function hudUrl(L) {
     return location.href.replace(/#.*$/, '') + '#hud-' + encodeURIComponent(L.key);
