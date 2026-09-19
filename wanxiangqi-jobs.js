@@ -103,6 +103,10 @@
     else if (js.filter === 'god') list = list.filter(function (L) { return L.badge === '万象棋大神'; });
     else if (js.filter === 'beg') list = list.filter(function (L) { return L.beg; });
     else if (js.filter === 'd7') list = list.filter(function (L) { return L.source === 'datawxq'; });
+    else if (js.filter === 'using') {
+      var using = (global.WXQ_HUD && WXQ_HUD.keys) ? WXQ_HUD.keys() : [];
+      list = list.filter(function (L) { return using.indexOf(String(L.key)) >= 0; });
+    }
     if (js.lord) list = list.filter(function (L) { return (L.lords || []).indexOf(js.lord) >= 0; });
     list.sort(function (a, b) {
       if (js.filter === 'd7' || js.sort === 'top3') {
@@ -154,13 +158,16 @@
     var faces = (L.heroes || []).slice(0, 7).map(function (h) {
       return av(heroImg(h.name), h.name, 'jav sm');
     }).join('');
+    var on = global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key);
     var tag = (L.hot ? '<span class="jtag hot">热门</span>' : '')
       + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '')
       + (L.source === 'datawxq' ? '<span class="jtag d7">7日</span>' : '')
+      + (on ? '<span class="jtag using">在用</span>' : '')
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L) ? '<span class="jtag exp">讲解</span>' : '');
     var sc = parseFloat(L.score) || 0;
     var st = statsLine(L);
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
+      + '<button type="button" class="jstar' + (on ? ' on' : '') + '" data-job-using="' + esc(L.key) + '" title="' + (on ? '取消在用' : '收藏为在用') + '" aria-label="' + (on ? '取消在用' : '收藏为在用') + '">★</button>'
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
       + '<div class="jcard-nm">' + esc(L.name) + '</div>'
       + '<div class="jcard-au">' + esc(L.author || '匿名')
@@ -280,6 +287,9 @@
       + (L.nocode
         ? '<span class="jmuted">无导入阵容码</span>'
         : '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>')
+      + '<button type="button" class="jbtn' + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? ' on' : '') + '" data-job-using="' + esc(L.key) + '">'
+      + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? '已在用' : '收藏为在用') + '</button>'
+      + '<button type="button" class="jbtn" data-hud-open="' + esc(L.key) + '">对局浮窗</button>'
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L)
         ? '<button type="button" class="jbtn" data-job-explain="' + esc(L.key) + '">讲解这套</button>'
         : '')
@@ -421,12 +431,18 @@
         return '<option value="' + esc(x.name) + '"' + (js.lord === x.name ? ' selected' : '') + '>' + esc(x.name) + ' · ' + x.n + '</option>';
       }).join('') + '</select>';
 
+    var usingN = (global.WXQ_HUD && WXQ_HUD.count) ? WXQ_HUD.count() : 0;
     var h = '<div class="jbar">'
-      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据') + '</div>'
+      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据')
+      + fbtn('using', usingN ? ('在用 · ' + usingN) : '在用')
+      + (usingN ? '<button type="button" class="jchip" data-hud-open="">对局浮窗</button>' : '')
+      + '</div>'
       + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('new', '时间') + lordSel + '</div>'
       + '</div>';
     if (!slice.length) {
-      grid.innerHTML = h + '<div class="empty">没有匹配的阵容</div>';
+      grid.innerHTML = h + '<div class="empty">'
+        + (js.filter === 'using' ? '还没有在用阵容。点卡片右上角星标，收藏这几天要打的几套。' : '没有匹配的阵容')
+        + '</div>';
       return;
     }
     h += '<div class="jgrid">' + slice.map(cardHtml).join('') + '</div>';
@@ -443,6 +459,16 @@
 
   function onGridClick(e) {
     var t = e.target;
+    var usingBtn = t.closest && t.closest('[data-job-using]');
+    if (usingBtn && global.WXQ_HUD) {
+      global.WXQ_HUD.toggle(usingBtn.getAttribute('data-job-using'));
+      return 'rerender';
+    }
+    var hudBtn = t.closest && t.closest('[data-hud-open]');
+    if (hudBtn && global.WXQ_HUD) {
+      global.WXQ_HUD.open(hudBtn.getAttribute('data-hud-open') || '');
+      return 'open';
+    }
     var back = t.closest && t.closest('[data-job-back]');
     if (back) { closeDetail(false); return 'open'; }
     var hero = t.closest && t.closest('[data-job-hero]');
