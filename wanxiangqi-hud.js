@@ -130,16 +130,13 @@
     if (H >= 1000) cell = 52;
     if (H >= 1300) cell = 60;
     if (H >= 2000) cell = 72;
-    var boardW = 7 * cell + 24;
-    var twoCol = W >= 1440;
-    var textW = twoCol ? Math.round(Math.min(H >= 2000 ? 560 : 440, Math.max(300, W * 0.18))) : 0;
-    var w = twoCol ? boardW + textW + 32 : Math.min(W - 20, Math.max(380, boardW + 20));
-    var h = Math.round(H * (H >= 2000 ? 0.88 : H >= 1300 ? 0.86 : H >= 1000 ? 0.84 : 0.9));
-    if (w > W - 16) w = W - 16;
-    if (h > H - 24) h = H - 24;
-    if (w < 280) w = Math.min(280, W - 16);
-    if (h < 320) h = Math.min(320, H - 16);
-    return { w: Math.round(w), h: Math.round(h), fit: fitBand(H), twoCol: twoCol, left: s.left, top: s.top, sw: W, sh: H };
+    var w = Math.min(W - 16, Math.max(380, 7 * cell + 36));
+    var h = Math.max(480, H - 48);
+    if (w > W - 8) w = W - 8;
+    if (h > H - 8) h = H - 8;
+    if (w < 280) w = Math.min(280, W - 8);
+    if (h < 320) h = Math.min(320, H - 8);
+    return { w: Math.round(w), h: Math.round(h), fit: fitBand(H), left: s.left, top: s.top, sw: W, sh: H };
   }
   function loadSizeMap() {
     try {
@@ -153,6 +150,7 @@
     var map = loadSizeMap();
     var o = map[screenKey(win)];
     if (o && Number(o.w) >= 200 && Number(o.h) >= 160) {
+      if (Number(o.h) < best.h * 0.55 || Number(o.w) > best.w * 1.65) return best;
       return fitToScreen({ w: Number(o.w), h: Number(o.h) }, win);
     }
     return best;
@@ -415,7 +413,6 @@
       + '.hud{display:flex;flex-direction:column;gap:8px;padding:8px 10px 10px;min-height:100%;box-sizing:border-box;container-type:inline-size;}'
       + '.hbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;}'
       + '.hside{flex:none;}'
-      + '@container (min-width:560px){.hbody{flex-direction:row;align-items:stretch;overflow:hidden;}.hside{flex:0 1 46%;min-width:240px;overflow:auto;}.htips{flex:1 1 54%;}}'
       + '.hbar{display:flex;align-items:center;gap:6px;cursor:move;user-select:none;}'
       + '.hbar strong{font-size:13px;letter-spacing:.04em;}'
       + '.hsp{flex:1;}'
@@ -801,7 +798,7 @@
     }
     var sz = forceBest ? bestSize(global) : loadSize(global);
     if (sz.w > window.innerWidth - 8) sz.w = window.innerWidth - 8;
-    if (sz.h > window.innerHeight - 8) sz.h = window.innerHeight - 8;
+    if (sz.h > window.innerHeight - 8) sz.h = Math.max(320, window.innerHeight - 8);
     el.style.width = sz.w + 'px';
     el.style.height = sz.h + 'px';
     el.style.maxWidth = 'none';
@@ -900,9 +897,9 @@
       return;
     }
     setLast(L.key);
+    if (openPopup(L)) return;
     openPip(L).then(function (ok) {
       if (ok) return;
-      if (openPopup(L)) return;
       showPanel(L);
     });
   }
