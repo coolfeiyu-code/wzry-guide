@@ -98,44 +98,87 @@
 
   function screenBox(win) {
     var w = win || global;
-    var sw = (w.screen && (w.screen.availWidth || w.screen.width)) || w.innerWidth || 1280;
-    var sh = (w.screen && (w.screen.availHeight || w.screen.height)) || w.innerHeight || 720;
-    return { w: sw, h: sh };
+    var sc = w.screen || {};
+    return {
+      w: sc.availWidth || sc.width || w.innerWidth || 1280,
+      h: sc.availHeight || sc.height || w.innerHeight || 720,
+      left: sc.availLeft || 0,
+      top: sc.availTop || 0
+    };
+  }
+  function screenKey(win) {
+    var s = screenBox(win);
+    return s.w + 'x' + s.h;
+  }
+  function fitBand(h) {
+    if (h >= 2000) return 'xl';
+    if (h >= 1300) return 'lg';
+    if (h >= 900) return 'md';
+    return 'sm';
   }
   function bestSize(win) {
     var s = screenBox(win);
-    var w = Math.round(s.w * 0.34);
-    var h = Math.round(s.h * 0.8);
-    if (s.w >= 1920) w = Math.round(s.w * 0.3);
-    if (s.w >= 2560) w = Math.round(s.w * 0.26);
-    if (w < 360) w = Math.min(s.w - 16, 360);
-    if (h < 480) h = Math.min(s.h - 16, 480);
-    if (w > s.w - 16) w = s.w - 16;
-    if (h > s.h - 16) h = s.h - 16;
-    return { w: w, h: h };
+    var W = s.w;
+    var H = s.h;
+    var cell = 42;
+    if (H >= 800) cell = 46;
+    if (H >= 1000) cell = 52;
+    if (H >= 1300) cell = 60;
+    if (H >= 2000) cell = 72;
+    var boardW = 7 * cell + 24;
+    var twoCol = W >= 1440;
+    var textW = twoCol ? Math.round(Math.min(H >= 2000 ? 560 : 440, Math.max(300, W * 0.18))) : 0;
+    var w = twoCol ? boardW + textW + 32 : Math.min(W - 20, Math.max(380, boardW + 20));
+    var h = Math.round(H * (H >= 2000 ? 0.88 : H >= 1300 ? 0.86 : H >= 1000 ? 0.84 : 0.9));
+    if (w > W - 16) w = W - 16;
+    if (h > H - 24) h = H - 24;
+    if (w < 280) w = Math.min(280, W - 16);
+    if (h < 320) h = Math.min(320, H - 16);
+    return { w: Math.round(w), h: Math.round(h), fit: fitBand(H), twoCol: twoCol, left: s.left, top: s.top, sw: W, sh: H };
+  }
+  function loadSizeMap() {
+    try {
+      var raw = JSON.parse(localStorage.getItem('wxq-hud-size') || '');
+      if (!raw || typeof raw !== 'object' || raw.w) return {};
+      return raw;
+    } catch (e) { return {}; }
   }
   function loadSize(win) {
-    try {
-      var o = JSON.parse(localStorage.getItem('wxq-hud-size') || '');
-      if (o && Number(o.w) >= 200 && Number(o.h) >= 160) return fitToScreen({ w: Number(o.w), h: Number(o.h) }, win);
-    } catch (e) {}
-    return bestSize(win);
+    var best = bestSize(win);
+    var map = loadSizeMap();
+    var o = map[screenKey(win)];
+    if (o && Number(o.w) >= 200 && Number(o.h) >= 160) {
+      return fitToScreen({ w: Number(o.w), h: Number(o.h) }, win);
+    }
+    return best;
   }
   function fitToScreen(sz, win) {
-    var w = win || global;
-    var vw = w.innerWidth || (w.screen && w.screen.availWidth) || sz.w;
-    var vh = w.innerHeight || (w.screen && w.screen.availHeight) || sz.h;
+    var s = screenBox(win);
     var outW = sz.w;
     var outH = sz.h;
-    if (outW > vw - 8) outW = vw - 8;
-    if (outH > vh - 8) outH = vh - 8;
-    if (outW < 200) outW = Math.min(200, vw - 8);
-    if (outH < 160) outH = Math.min(160, vh - 8);
+    if (outW > s.w - 8) outW = s.w - 8;
+    if (outH > s.h - 8) outH = s.h - 8;
+    if (outW < 200) outW = Math.min(200, s.w - 8);
+    if (outH < 160) outH = Math.min(160, s.h - 8);
     return { w: Math.round(outW), h: Math.round(outH) };
   }
-  function saveSize(w, h) {
+  function saveSize(w, h, win) {
     if (!(w >= 200 && h >= 160)) return;
-    try { localStorage.setItem('wxq-hud-size', JSON.stringify({ w: Math.round(w), h: Math.round(h) })); } catch (e) {}
+    var map = loadSizeMap();
+    map[screenKey(win || global)] = { w: Math.round(w), h: Math.round(h) };
+    try { localStorage.setItem('wxq-hud-size', JSON.stringify(map)); } catch (e) {}
+  }
+  function clearSize(win) {
+    var map = loadSizeMap();
+    delete map[screenKey(win || global)];
+    try { localStorage.setItem('wxq-hud-size', JSON.stringify(map)); } catch (e) {}
+  }
+  function dockRight(sz, win) {
+    var s = screenBox(win);
+    return {
+      left: Math.max(s.left, s.left + s.w - sz.w - 12),
+      top: Math.max(s.top, s.top + Math.round((s.h - sz.h) * 0.08))
+    };
   }
   function rememberWinSize(win) {
     if (!win) return;
@@ -144,7 +187,7 @@
     win.addEventListener('resize', function () {
       clearTimeout(t);
       t = setTimeout(function () {
-        try { saveSize(win.innerWidth, win.innerHeight); } catch (e) {}
+        try { saveSize(win.innerWidth, win.innerHeight, win); } catch (e) {}
       }, 200);
     });
   }
@@ -311,10 +354,11 @@
     var eq = equipsBlock(L);
     var op = opsBlock(L);
     var play = playBlock(L);
-    return '<div class="hud" data-hud-cur="' + esc(L.key) + '" data-hud-db="' + (tipsOn() ? '1' : '0') + '">'
+    return '<div class="hud" data-hud-cur="' + esc(L.key) + '" data-hud-db="' + (tipsOn() ? '1' : '0') + '" data-hud-fit="' + fitBand(screenBox().h) + '">'
       + '<div class="hbar" data-hud-drag="1">'
       + '<strong>对局浮窗</strong>'
       + '<span class="hsp"></span>'
+      + '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>'
       + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
       + (global.documentPictureInPicture ? '<button type="button" class="hbtn" data-hud-pip="1">贴在最前</button>' : '')
       + '<button type="button" class="hbtn" data-hud-pop="1">弹出小窗</button>'
@@ -332,7 +376,7 @@
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">右下角可拉大小。图鉴开时悬停看出官方卡面。复制失败用 Ctrl+C。全屏独占时改窗口化。</p>'
+      + '<p class="hnote">打开时按当前屏幕给最佳尺寸，点「适配屏幕」可重新计算。右下角仍可手拉。全屏独占时改窗口化。</p>'
       + '</div>';
   }
 
@@ -371,6 +415,18 @@
       + '#hudTip .ht-d b{color:#FF8A73;margin-right:4px;}'
       + '.hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid #4A4456;background:#2A2633;color:#F3F1F6;}'
       + '.hbtn.on{background:#F3F1F6;color:#17141F;border-color:#F3F1F6;}'
+      + '.hud[data-hud-fit="md"] .hcell span{font-size:10px;}'
+      + '.hud[data-hud-fit="md"] .heq-d,.hud[data-hud-fit="md"] .hph p,.hud[data-hud-fit="md"] .hol li,.hud[data-hud-fit="md"] .hul li{font-size:13px;}'
+      + '.hud[data-hud-fit="lg"] .hname{font-size:18px;}'
+      + '.hud[data-hud-fit="lg"] .hcell span{font-size:11px;}'
+      + '.hud[data-hud-fit="lg"] .hsec h4{font-size:13px;}'
+      + '.hud[data-hud-fit="lg"] .heq-d,.hud[data-hud-fit="lg"] .hph p,.hud[data-hud-fit="lg"] .hol li,.hud[data-hud-fit="lg"] .hul li{font-size:14px;}'
+      + '.hud[data-hud-fit="xl"] .hname{font-size:22px;}'
+      + '.hud[data-hud-fit="xl"] .hcell span{font-size:13px;}'
+      + '.hud[data-hud-fit="xl"] .hsec h4{font-size:14px;}'
+      + '.hud[data-hud-fit="xl"] .heq-d,.hud[data-hud-fit="xl"] .hph p,.hud[data-hud-fit="xl"] .hol li,.hud[data-hud-fit="xl"] .hul li{font-size:15px;}'
+      + 'html[data-hud-fit="lg"] #hudTip{max-width:360px;}'
+      + 'html[data-hud-fit="xl"] #hudTip{max-width:440px;font-size:14px;}'
       + '.htips{flex:1;min-width:0;overflow:auto;}'
       + '.htips .hsec:first-child{margin-top:0;}'
       + '.hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid #4A4456;}'
@@ -398,7 +454,8 @@
     var theme = 'dark';
     try { theme = document.documentElement.getAttribute('data-theme') || 'dark'; } catch (e) {}
     doc.open();
-    doc.write('<!DOCTYPE html><html data-theme="' + theme + '"><head><meta charset="utf-8">'
+    var fit = fitBand(screenBox().h);
+    doc.write('<!DOCTYPE html><html data-theme="' + theme + '" data-hud-fit="' + fit + '"><head><meta charset="utf-8">'
       + '<title>对局浮窗 · ' + esc(L.name) + '</title>'
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<style>' + hudCss() + '</style></head><body>' + innerHtml(L) + '</body></html>');
@@ -579,6 +636,8 @@
       if (pop) { openPopup(currentOf(doc)); return; }
       var cl = t.closest('[data-hud-close]');
       if (cl) { closeAll(doc); return; }
+      var fr = t.closest('[data-hud-fitreset]');
+      if (fr) { resetFit(); return; }
       var tb = t.closest('[data-hud-tips]');
       if (tb) { setTips(!tipsOn()); return; }
       var cp = t.closest('[data-hud-copy]');
@@ -658,7 +717,8 @@
     if (!L) return false;
     try {
       var sz = loadSize(global);
-      popWin = global.open('', 'wxqHud', 'popup=yes,resizable=yes,scrollbars=yes,width=' + sz.w + ',height=' + sz.h);
+      var dock = dockRight(sz, global);
+      popWin = global.open('', 'wxqHud', 'popup=yes,resizable=yes,scrollbars=yes,width=' + sz.w + ',height=' + sz.h + ',left=' + dock.left + ',top=' + dock.top);
     } catch (e) { popWin = null; }
     if (!popWin) return false;
     fillDoc(popWin.document, L);
@@ -678,23 +738,39 @@
     return panel;
   }
 
-  function applyPanelBox(el) {
-    var sz = loadSize(global);
-    sz = fitToScreen(sz, global);
+  function applyPanelBox(el, forceBest) {
+    var sz = forceBest ? bestSize(global) : loadSize(global);
+    if (sz.w > window.innerWidth - 8) sz.w = window.innerWidth - 8;
+    if (sz.h > window.innerHeight - 8) sz.h = window.innerHeight - 8;
     el.style.width = sz.w + 'px';
     el.style.height = sz.h + 'px';
     el.style.maxWidth = 'none';
     el.style.maxHeight = 'none';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
-    var pos;
-    try { pos = JSON.parse(localStorage.getItem('wxq-hud-pos') || ''); } catch (e) { pos = null; }
-    var x = pos && Number.isFinite(pos.x) ? pos.x : Math.max(8, window.innerWidth - sz.w - 16);
-    var y = pos && Number.isFinite(pos.y) ? pos.y : Math.max(8, window.innerHeight - sz.h - 16);
+    var pos = null;
+    if (!forceBest) {
+      try { pos = JSON.parse(localStorage.getItem('wxq-hud-pos') || ''); } catch (e) { pos = null; }
+    }
+    var x = pos && Number.isFinite(pos.x) ? pos.x : Math.max(8, window.innerWidth - sz.w - 12);
+    var y = pos && Number.isFinite(pos.y) ? pos.y : Math.max(8, Math.round((window.innerHeight - sz.h) * 0.08));
     if (x + 80 > window.innerWidth) x = Math.max(8, window.innerWidth - sz.w - 8);
     if (y + 40 > window.innerHeight) y = Math.max(8, window.innerHeight - sz.h - 8);
     el.style.left = x + 'px';
     el.style.top = y + 'px';
+  }
+
+  function resetFit() {
+    clearSize(global);
+    var sz = bestSize(global);
+    var dock = dockRight(sz, global);
+    if (pipWin && !pipWin.closed) {
+      try { pipWin.resizeTo(sz.w, sz.h); } catch (e1) {}
+    }
+    if (popWin && !popWin.closed) {
+      try { popWin.resizeTo(sz.w, sz.h); popWin.moveTo(dock.left, dock.top); } catch (e2) {}
+    }
+    if (panel && panel.classList.contains('on')) applyPanelBox(panel, true);
   }
 
   function showPanel(L) {
@@ -712,7 +788,7 @@
       var ro = new ResizeObserver(function () {
         if (!el.classList.contains('on')) return;
         clearTimeout(t);
-        t = setTimeout(function () { saveSize(el.offsetWidth, el.offsetHeight); }, 200);
+        t = setTimeout(function () { saveSize(el.offsetWidth, el.offsetHeight, global); }, 200);
       });
       ro.observe(el);
     }
@@ -827,6 +903,7 @@
       return L ? innerHtml(L) : '';
     },
     tip: tipHtml,
+    bestSize: bestSize,
     count: function () { return aliveKeys().length; }
   };
 })(window);
