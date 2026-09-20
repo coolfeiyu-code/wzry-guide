@@ -680,11 +680,13 @@
   .hname em{display:block;font-style:normal;font-size:12px;font-weight:400;color:var(--ink-soft);margin-top:2px;}
   .hboard{display:flex;flex-direction:column;gap:3px;}
   .hboard-lab{font-size:10px;color:var(--ink-soft);margin-bottom:2px;}
-  .hrow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-  .hcell{position:relative;aspect-ratio:1;border-radius:8px;background:var(--paper-2);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1px;}
+  .hrow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  /* 高度跟着内容走（图 + 名字），不要锁死正方形：窄窗口下锁死会把名字裁掉 */
+  .hcell{position:relative;border-radius:8px;background:var(--paper-2);display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 1px 3px;}
   .hcell.filled{background:transparent;}
-  .hcell img{width:78%;aspect-ratio:1;object-fit:cover;border-radius:50%;display:block;background:var(--paper-2);}
-  .hcell span{font-size:9px;line-height:1.1;color:var(--ink-soft);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .hcell img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;display:block;background:var(--paper-2);}
+  /* 名字字号固定：格子宽度由 7 列决定，跟着屏幕放大会把四个字的名字截断 */
+  .hcell span{font-size:10px;line-height:1.2;color:var(--ink-soft);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .hq{position:absolute;top:1px;right:1px;font-size:9px;font-weight:700;font-style:normal;background:var(--accent-fill);color:#fff;border-radius:4px;padding:0 3px;line-height:1.35;}
   .hq-inline{font-style:normal;font-weight:500;font-size:11px;color:var(--ink-soft);margin-left:6px;}
   .hud[data-hud-db="1"] [data-hud-kind]{cursor:help;}
@@ -721,13 +723,10 @@
   .hcodewrap:empty{display:none;}
   .hmuted{font-size:12px;color:var(--ink-soft);}
   .hnote{margin:0;font-size:11px;line-height:1.5;color:var(--ink-soft);opacity:.72;}
-  .hud[data-hud-fit="md"] .hcell span{font-size:10px;}
   .hud[data-hud-fit="md"] .heq-d,.hud[data-hud-fit="md"] .hph p,.hud[data-hud-fit="md"] .hol li,.hud[data-hud-fit="md"] .hul li{font-size:13px;}
   .hud[data-hud-fit="lg"] .hname{font-size:18px;}
-  .hud[data-hud-fit="lg"] .hcell span{font-size:11px;}
   .hud[data-hud-fit="lg"] .heq-d,.hud[data-hud-fit="lg"] .hph p,.hud[data-hud-fit="lg"] .hol li,.hud[data-hud-fit="lg"] .hul li{font-size:14px;}
   .hud[data-hud-fit="xl"] .hname{font-size:22px;}
-  .hud[data-hud-fit="xl"] .hcell span{font-size:13px;}
   .hud[data-hud-fit="xl"] .heq-d,.hud[data-hud-fit="xl"] .hph p,.hud[data-hud-fit="xl"] .hol li,.hud[data-hud-fit="xl"] .hul li{font-size:15px;}
   body.hud-only .appbar,body.hud-only .hero,body.hud-only .toolbar,body.hud-only .foot,body.hud-only #wxqHudDock,body.hud-only #wxqCloudBar{display:none;}
   .hbtn.pri.home{font-size:15px;font-weight:700;padding:8px 16px;}
