@@ -108,6 +108,7 @@
     if (qq) list = list.filter(function (L) { return hay(L).indexOf(qq) >= 0; });
     if (js.filter === 'hot') list = list.filter(function (L) { return L.hot; });
     else if (js.filter === 'god') list = list.filter(function (L) { return L.badge === '万象棋大神'; });
+    else if (js.filter === 'official') list = list.filter(function (L) { return L.official; });
     else if (js.filter === 'beg') list = list.filter(function (L) { return L.beg; });
     else if (js.filter === 'd7') list = list.filter(function (L) { return L.source === 'datawxq'; });
     else if (js.filter === 'using') {
@@ -127,6 +128,13 @@
       } else if (js.sort === 'new') {
         var dt = (b.ts || 0) - (a.ts || 0);
         if (dt) return dt;
+      }
+      // 默认（使用量）排序：官方教学套置顶 —— 它们使用量是 0，
+      // 300 套的规模下否则会沉到最后一页，新手根本看不到。
+      if (js.sort === 'use') {
+        var ao = a.official ? 1 : 0;
+        var bo = b.official ? 1 : 0;
+        if (ao !== bo) return bo - ao;
       }
       if (a.hot && !b.hot) return -1;
       if (!a.hot && b.hot) return 1;
@@ -166,7 +174,9 @@
       return av(heroImg(h.name), h.name, 'jav sm');
     }).join('');
     var on = global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key);
-    var tag = (L.hot ? '<span class="jtag hot">热门</span>' : '')
+    var tag = (L.official ? '<span class="jtag god">官方</span>' : '')
+      + (L.hot ? '<span class="jtag hot">热门</span>' : '')
+      + (L.beg ? '<span class="jtag beg">新手</span>' : '')
       + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '')
       + (L.source === 'datawxq' ? '<span class="jtag d7">7日</span>' : '')
       + (on ? '<span class="jtag using">在用</span>' : '')
@@ -446,7 +456,7 @@
     var usingN = (global.WXQ_HUD && WXQ_HUD.count) ? WXQ_HUD.count() : 0;
     var phone = phoneView();
     var h = '<div class="jbar">'
-      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据')
+      + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('official', '官方') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据')
       + (phone ? '' : fbtn('using', usingN ? ('在用 · ' + usingN) : '在用'))
       + (phone || !usingN ? '' : '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>')
       + '</div>'
