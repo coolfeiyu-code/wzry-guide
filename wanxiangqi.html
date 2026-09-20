@@ -656,15 +656,23 @@
   #wxqHudToast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%) translateY(8px);z-index:90;display:none;
     background:var(--ink);color:var(--paper);border-radius:10px;padding:8px 14px;font-size:13px;pointer-events:none;opacity:0;transition:.16s;}
   #wxqHudToast.on{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
-  body.hud-only .hud{display:flex;flex-direction:column;gap:8px;height:100%;min-height:100%;}
-  .hbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;}
+  body.hud-only .hud{display:flex;flex-direction:column;gap:12px;height:100%;min-height:100%;padding:16px 18px 20px;box-sizing:border-box;overflow:hidden;}
+  .hbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;overflow:auto;scrollbar-width:none;}
+  .hbody::-webkit-scrollbar,.htips::-webkit-scrollbar{width:0;height:0;}
   .hside{flex:none;}
-  .hbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;user-select:none;}
-  .hbar strong{font-size:13px;letter-spacing:.04em;}
-  .hsp{flex:1;}
-  .hbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:12px;font-family:inherit;cursor:pointer;}
+  .hbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;user-select:none;padding-bottom:2px;row-gap:6px;}
+  .hbar strong{font-size:12px;letter-spacing:.08em;color:var(--ink-soft);font-weight:600;flex:none;}
+  .hsp{flex:1 1 auto;min-width:8px;}
+  .hbtn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer;}
   .hbtn.pri{background:var(--accent-fill);color:#fff;border-color:transparent;}
-  .hbtn.on{border-color:var(--ink);background:var(--ink);color:var(--paper);}
+  .hbtn.on{border-color:var(--ink);background:var(--paper-2);color:var(--ink);}
+  .hbtn.ghost{border-color:transparent;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;padding:2px 0;}
+  .hbtn.ghost:hover{color:var(--ink);}
+  /* 标题下的一行小字：阵容码复制入口，不做成常驻大按钮 */
+  .hsub{margin:4px 0 0;font-size:11.5px;color:var(--ink-soft);}
+  .hlink{border:0;background:transparent;padding:0;margin-left:2px;font:inherit;color:var(--celadon-deep);
+    text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+  .hlink:hover{color:var(--ink);}
   .hsw{display:flex;flex-wrap:wrap;gap:5px;}
   .hsw-b{border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);border-radius:999px;padding:4px 9px;font-size:11.5px;font-family:inherit;cursor:pointer;}
   .hsw-b.on{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600;}
@@ -686,16 +694,14 @@
   #hudTip .ht-l{font-size:11px;color:var(--celadon-deep);margin:8px 0 2px;letter-spacing:.04em;}
   #hudTip .ht-d{margin-top:4px;color:var(--ink);}
   #hudTip .ht-d b{color:var(--celadon-deep);margin-right:4px;}
-  .hcopy{display:none;width:100%;margin-top:6px;font-size:12px;font-family:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);}
   .hcode{display:none;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper-2);}
-  .hcode-t{font-size:11px;color:var(--ink-soft);margin-bottom:6px;}
-  .hcode input{display:block;width:100%;box-sizing:border-box;font-size:18px;letter-spacing:.02em;font-family:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--celadon-deep);background:var(--card);color:var(--ink);}
-  .hcode-n{font-size:11px;color:var(--ink-soft);margin-top:6px;word-break:break-all;}
+  .hcode input{display:block;width:100%;box-sizing:border-box;font-size:16px;font-family:inherit;padding:7px 9px;border-radius:8px;border:1px solid var(--celadon-deep);background:var(--card);color:var(--ink);}
+  .hcode-n{font-size:11px;color:var(--ink-soft);margin-top:6px;}
   .hud[data-hud-mobile="1"] .hbody{flex-direction:column;overflow-y:auto;}
   .hud[data-hud-mobile="1"] .hside{position:sticky;top:0;background:var(--card);z-index:2;padding-bottom:6px;}
-  .htips{flex:1;min-width:0;overflow:auto;}
+  .htips{flex:1;min-width:0;overflow:auto;scrollbar-width:none;}
   .htips .hsec:first-child{margin-top:0;}
-  .hsec{margin:10px 0 0;padding-top:8px;border-top:1px solid var(--line);}
+  .hsec{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line);}
   .hsec h4{margin:0 0 6px;font-size:12px;color:var(--celadon-deep);letter-spacing:.04em;}
   .heq-row{display:flex;gap:8px;margin:0 0 8px;}
   .heq-h{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--paper-2);flex:none;}
@@ -711,9 +717,10 @@
   .hwho{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;}
   .hwho span{font-size:11px;background:var(--paper-2);border-radius:999px;padding:1px 7px;color:var(--ink-soft);}
   .hol,.hul{margin:0 0 8px;padding-left:1.15em;}
-  .hacts{display:flex;gap:8px;margin-top:8px;}
+  .hacts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:2px;}
+  .hcodewrap:empty{display:none;}
   .hmuted{font-size:12px;color:var(--ink-soft);}
-  .hnote{margin:4px 0 0;font-size:11px;line-height:1.55;color:var(--ink-soft);}
+  .hnote{margin:0;font-size:11px;line-height:1.5;color:var(--ink-soft);opacity:.72;}
   .hud[data-hud-fit="md"] .hcell span{font-size:10px;}
   .hud[data-hud-fit="md"] .heq-d,.hud[data-hud-fit="md"] .hph p,.hud[data-hud-fit="md"] .hol li,.hud[data-hud-fit="md"] .hul li{font-size:13px;}
   .hud[data-hud-fit="lg"] .hname{font-size:18px;}
@@ -974,13 +981,18 @@
     function openModal(html,hash,opt){
       mstack.push({html:html,hash:hash||'',wide:!!(opt&&opt.wide)});
       paintModal();
-      try{history.pushState({wxq:mstack.length},'',hash||location.pathname+location.search);}catch(e){}
+      // 用 replaceState，不用 pushState：窗口历史一旦超过 1 条，
+      // 助手就再也不能靠脚本关掉自己，浮窗就会和助手页同时留着。
+      try{history.replaceState({wxq:mstack.length},'',hash||location.pathname+location.search);}catch(e){}
     }
     // 回退后地址栏可能残留 #p-/ #c-/ #f-/ #j-，清掉它，免得刷新时又弹出弹窗
     function cleanModalHash(){
       if(/^#(p|c|f|j|k)-/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
     }
     // 点 × / 返回 / Esc / 点遮罩：统一交给系统回退处理，保证和手势返回行为一致
+    // 点 × / Esc / 点遮罩：直接关这一层。
+    // 不用 history.back()：助手页刻意保持对话历史只有 1 条（否则浮窗无法接管窗口），
+    // 而 history.back() 在 file:// 下也常常无效。
     function closeModal(){
       if(!mstack.length){paintModal();return;}
       mstack.pop();

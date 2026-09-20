@@ -317,10 +317,12 @@
       + '</article>';
   }
 
+  // 只用 replaceState 改地址，不用 pushState。
+  // Chrome 规定：窗口的会话历史只要超过 1 条，脚本就再也关不掉它。
+  // 助手要靠「开浮窗后关掉本窗口」来保证只留一个窗口，所以这里绝不能压历史。
   function setHash(h, push) {
     try {
-      if (push) history.pushState({ wxqJobs: 1 }, '', h);
-      else history.replaceState({ wxqJobs: 1 }, '', h);
+      history.replaceState({ wxqJobs: 1 }, '', h);
     } catch (e) {}
   }
 

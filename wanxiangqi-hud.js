@@ -65,10 +65,8 @@
     var hud = document.querySelector('.hud');
     if (hud) hud.setAttribute('data-hud-db', on ? '1' : '0');
     var btn = document.querySelector('[data-hud-tips]');
-    if (btn) {
-      btn.textContent = on ? '图鉴开' : '图鉴关';
-      btn.classList[on ? 'add' : 'remove']('on');
-    }
+    // 文字保持两个字的宽度，状态靠底色，避免顶栏在窄窗里被挤出去
+    if (btn) btn.classList[on ? 'add' : 'remove']('on');
     var tip = document.getElementById('hudTip');
     if (tip && !on) tip.style.display = 'none';
   }
@@ -368,22 +366,21 @@
       + '<strong>对局浮窗</strong>'
       + '<span class="hsp"></span>'
       + '<button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button>'
-      + (resizable ? '<button type="button" class="hbtn" data-hud-fitreset="1">适配屏幕</button>' : '')
-      + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">' + (tipsOn() ? '图鉴开' : '图鉴关') + '</button>'
+      + '<button type="button" class="hbtn' + (tipsOn() ? ' on' : '') + '" data-hud-tips="1">图鉴</button>'
+      + (resizable ? '<button type="button" class="hbtn" data-hud-fitreset="1">适配</button>' : '')
       + '</div>'
+      + '<div class="hcodewrap"></div>'
       + switcherHtml(L.key)
       + '<div class="hbody">'
       + '<div class="hside"><div class="hname">' + esc(L.name)
       + (lords ? '<em>' + esc(lords) + '</em>' : '') + '</div>'
+      + (L.nocode
+        ? '<p class="hsub">第三方数据，无可导入阵容码</p>'
+        : '<p class="hsub">阵容码 <button type="button" class="hlink" data-hud-copy="' + esc(L.key) + '">复制</button></p>')
       + boardHtml(L) + '</div>'
       + '<div class="htips">' + sec('装备', eq) + sec('前 / 中 / 后期', op) + sec('出牌', play)
       + (!eq && !op && !play ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
       + '</div></div>'
-      + '<div class="hacts">'
-      + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
-        : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
-      + '</div>'
-      + '<p class="hnote">这是一个独立的小窗，可以拖到游戏旁边。点「回到助手」切回完整页面。</p>'
       + '</div>';
   }
 
@@ -405,21 +402,21 @@
       return ok;
     } catch (e) { return false; }
   }
+  // 复制失败（小窗没手势权限）才展开一个只读框，平时不占地方。
   function revealCode(btn, text) {
-    var box = document.querySelector('[data-hud-copybox]');
+    var wrap = document.querySelector('.hcodewrap');
+    if (!wrap) return;
+    var box = wrap.querySelector('[data-hud-copybox]');
     if (!box) {
       box = document.createElement('div');
       box.setAttribute('data-hud-copybox', '1');
       box.className = 'hcode';
-      if (btn && btn.parentNode) btn.parentNode.parentNode.insertBefore(box, btn.parentNode.nextSibling);
-      else document.body.appendChild(box);
+      wrap.appendChild(box);
     }
-    box.innerHTML = '<div class="hcode-t">阵容码（点一下全选，再 Ctrl+C）</div>'
-      + '<input data-hud-codeinput value="' + esc(text) + '" readonly>'
-      + '<div class="hcode-n">' + esc(text.length > 40 ? text.slice(0, 40) + '…' : text) + '</div>';
+    box.innerHTML = '<input data-hud-codeinput value="' + esc(text) + '" readonly>'
+      + '<div class="hcode-n">点一下全选，再 Ctrl+C</div>';
     box.style.display = 'block';
     var input = box.querySelector('[data-hud-codeinput]');
-    try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}
     if (input) {
       try {
         input.focus();
@@ -439,7 +436,7 @@
         }
         return;
       }
-      if (btn) btn.textContent = '点框内 Ctrl+C';
+      if (btn) btn.textContent = '手动复制';
       revealCode(btn, text);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -608,18 +605,17 @@
     }
   }
 
-  // 点「对局浮窗」：开一个真正的小窗口，然后把这个助手窗口收起来。
-  // 关闭成功 → 只剩浮窗；关不掉（助手页动过历史）→ 收成占位页，不再显示内容。
+  // 点「对局浮窗」：开一个真正的小窗口，再关掉当前这个助手窗口。
+  // Chrome 允许脚本关掉自己开的窗口，也允许关掉「用户直接打开、且没压过历史记录」的
+  // 窗口；但一旦这个窗口 pushState 过（比如点开过阵容详情），就关不掉了。所以先真关
+  // 一次，关不掉才收成占位页 —— 至少不会把整套内容继续摆在那儿。
   function startHud(L) {
     if (!L || isHudView()) return;
     var pop = openHudWindow(L);
     if (!pop) { enterHudInto(L); return; }
     try { pop.focus(); } catch (e0) {}
-    if (canResizeSelf()) {
-      closeSelfOrPark(parkHome);
-      return;
-    }
-    parkHome();
+    parkHome();                 // 先藏起来：关失败也不会和浮窗抢注意力
+    closeSelfOrPark(function () {});
   }
   // 浮窗点「回到助手」：优先唤醒原来那个助手窗口，其次开一个大的，最后才就地切回。
   function goHome() {
