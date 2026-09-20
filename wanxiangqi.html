@@ -650,29 +650,16 @@
   #wxqCloudBar.ok{border-color:var(--celadon-soft);}
   #wxqCloudBar button{border:1px solid var(--line);background:var(--accent-fill);color:#fff;border-radius:999px;
     padding:7px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;}
-  body.wxq-parked .wrap,body.wxq-parked .appbar,body.wxq-parked #wxqHudDock,body.wxq-parked #wxqCloudBar,body.wxq-parked #wxqHudPanel{visibility:hidden !important;}
-  #wxqParked{display:none;}
-  body.wxq-parked #wxqParked{display:flex;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:var(--paper);}
-  .park-box{text-align:center;padding:24px;}
-  .park-box p{margin:0 0 18px;font-size:17px;color:var(--ink);line-height:1.6;}
-  .park-box .jbtn{font-size:16px;padding:12px 28px;min-height:48px;}
   @media (max-width:640px){
     #wxqCloudBar{left:12px;right:12px;bottom:calc(56px + env(safe-area-inset-bottom));}
   }
   #wxqHudToast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%) translateY(8px);z-index:90;display:none;
     background:var(--ink);color:var(--paper);border-radius:10px;padding:8px 14px;font-size:13px;pointer-events:none;opacity:0;transition:.16s;}
   #wxqHudToast.on{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
-  #wxqHudPanel{position:fixed;z-index:85;display:none;overflow:auto;resize:both;min-width:240px;min-height:180px;
-    max-width:none;max-height:none;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lift);padding:10px 12px 12px;}
-  @media (max-width:640px){
-    #wxqHudPanel{left:8px;right:8px;top:auto;bottom:calc(56px + env(safe-area-inset-bottom));resize:none;max-height:62vh;}
-  }
-  #wxqHudPanel.on{display:flex;flex-direction:column;}
-  #wxqHudPanel .hud{flex:1;min-height:0;height:100%;container-type:inline-size;}
-  #wxqHudPanel .hud,body.hud-only .hud{display:flex;flex-direction:column;gap:8px;}
+  body.hud-only .hud{display:flex;flex-direction:column;gap:8px;height:100%;min-height:100%;}
   .hbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;}
   .hside{flex:none;}
-  .hbar{display:flex;align-items:center;gap:6px;cursor:move;user-select:none;}
+  .hbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;user-select:none;}
   .hbar strong{font-size:13px;letter-spacing:.04em;}
   .hsp{flex:1;}
   .hbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:12px;font-family:inherit;cursor:pointer;}
@@ -740,6 +727,13 @@
   body.hud-only .wrap{padding:0;max-width:none;width:100%;}
   body.hud-only #grid{display:block;height:100vh;height:100dvh;}
   body.hud-only .hud{height:100%;min-height:100%;container-type:inline-size;}
+  /* 关不掉也缩不了的那种窗口（双击打开的）：浮窗居中成一块，别拉满整屏 */
+  body.hud-only.hud-wide{background:var(--paper-2);}
+  body.hud-only.hud-wide #grid{display:flex;align-items:flex-start;justify-content:center;padding:0 16px;}
+  body.hud-only.hud-wide .hud{max-width:460px;width:100%;height:auto;max-height:calc(100vh - 24px);
+    margin:12px 0;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow-lift);padding:12px 14px 14px;overflow:auto;}
+  body.hud-only.hud-wide .htips{overflow:visible;}
   @media (max-width:640px){
     #wxqHudDock{right:12px;bottom:calc(12px + env(safe-area-inset-bottom));}
   }
