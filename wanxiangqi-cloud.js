@@ -49,6 +49,17 @@
   function parseJson(s) {
     try { return JSON.parse(s); } catch (e) { return null; }
   }
+  // 手机只用来翻阵容：坚果云同步、选文件夹、浮窗都用不上，
+  // 整条链路直接不启用（不探桥、不显示云条、不请求任何授权）。
+  function isPhone() {
+    try {
+      if (global.WXQ_HUD && WXQ_HUD.touch) return WXQ_HUD.touch();
+      if (global.matchMedia && global.matchMedia('(pointer:coarse)').matches) return true;
+      var ua = navigator.userAgent || '';
+      if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true;
+      return Math.min(screen.width || 0, screen.height || 0) <= 480;
+    } catch (e) { return false; }
+  }
   function snapshot() {
     var o = { v: 1, updatedAt: new Date().toISOString() };
     var using = parseJson(lsGet(KEYS.using));
@@ -338,6 +349,7 @@
   }
 
   function paintBar() {
+    if (isPhone()) return;   // 手机上不显示云同步条
     if (document.getElementById('wxqCloudBar')) return;
     var bar = document.createElement('div');
     bar.id = 'wxqCloudBar';
@@ -359,6 +371,18 @@
     document.addEventListener('DOMContentLoaded', paintBar);
   } else {
     paintBar();
+  }
+
+  // 手机上到此为止：不探桥、不读文件、不请求授权、不挂手势监听。
+  if (isPhone()) {
+    global.WXQ_CLOUD = {
+      touch: function () {},
+      save: function () { return Promise.resolve(false); },
+      pull: function () { return Promise.resolve(false); },
+      snapshot: snapshot,
+      mode: function () { return 'off'; }
+    };
+    return;
   }
 
   // 首次点击页面任意位置时顺手申请文件授权（仅退路模式需要）

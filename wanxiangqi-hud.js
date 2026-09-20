@@ -716,6 +716,12 @@
 
   function paintDock() {
     if (isHudView()) return;
+    // 手机上不显示「对局浮窗」码头：游戏在电脑上，手机上点开也没意义
+    if (isMobile()) {
+      var old = document.getElementById('wxqHudDock');
+      if (old) old.classList.remove('on');
+      return;
+    }
     var n = aliveKeys().length;
     var d = document.getElementById('wxqHudDock');
     if (!n) {
@@ -752,6 +758,8 @@
     toggle: toggle,
     open: open,
     enterPage: enterPage,
+    // 触屏手机：浮窗和收藏在用都不适用（游戏在电脑上，手机只是看）
+    touch: isMobile,
     hydrate: function () {
       paintDock();
       var grid = document.getElementById('grid');

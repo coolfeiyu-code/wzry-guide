@@ -14,6 +14,10 @@
   var js = { filter: 'all', sort: 'use', page: 1, lord: '', openKey: '', view: '' };
 
   function ui() { return global.__wxqUI || {}; }
+  // 触屏手机只看阵容：星标、「在用」筛选、对局浮窗都没有意义（游戏在电脑上）
+  function phoneView() {
+    return !!(global.WXQ_HUD && WXQ_HUD.touch && WXQ_HUD.touch());
+  }
   function esc(s) { return ui().esc ? ui().esc(s) : String(s || ''); }
   function fmt(s) { return ui().fmt ? ui().fmt(s) : esc(s); }
   function data() {
@@ -170,7 +174,7 @@
     var sc = parseFloat(L.score) || 0;
     var st = statsLine(L);
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
-      + '<button type="button" class="jstar' + (on ? ' on' : '') + '" data-job-using="' + esc(L.key) + '" title="' + (on ? '取消在用' : '收藏为在用') + '" aria-label="' + (on ? '取消在用' : '收藏为在用') + '">★</button>'
+      + (phoneView() ? '' : '<button type="button" class="jstar' + (on ? ' on' : '') + '" data-job-using="' + esc(L.key) + '" title="' + (on ? '取消在用' : '收藏为在用') + '" aria-label="' + (on ? '取消在用' : '收藏为在用') + '">★</button>')
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
       + '<div class="jcard-nm">' + esc(L.name) + '</div>'
       + '<div class="jcard-au">' + esc(L.author || '匿名')
@@ -293,9 +297,9 @@
       + (L.nocode
         ? '<span class="jmuted">无导入阵容码</span>'
         : '<button type="button" class="jbtn pri" data-copy-key="' + esc(L.key) + '">复制阵容码</button>')
-      + '<button type="button" class="jbtn' + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? ' on' : '') + '" data-job-using="' + esc(L.key) + '">'
-      + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? '已在用' : '收藏为在用') + '</button>'
-      + '<button type="button" class="jbtn loud" data-hud-open="' + esc(L.key) + '">对局浮窗</button>'
+      + (phoneView() ? '' : '<button type="button" class="jbtn' + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? ' on' : '') + '" data-job-using="' + esc(L.key) + '">'
+        + (global.WXQ_HUD && WXQ_HUD.has && WXQ_HUD.has(L.key) ? '已在用' : '收藏为在用') + '</button>'
+        + '<button type="button" class="jbtn loud" data-hud-open="' + esc(L.key) + '">对局浮窗</button>')
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L)
         ? '<button type="button" class="jbtn" data-job-explain="' + esc(L.key) + '">讲解这套</button>'
         : '')
@@ -440,10 +444,11 @@
       }).join('') + '</select>';
 
     var usingN = (global.WXQ_HUD && WXQ_HUD.count) ? WXQ_HUD.count() : 0;
+    var phone = phoneView();
     var h = '<div class="jbar">'
       + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据')
-      + fbtn('using', usingN ? ('在用 · ' + usingN) : '在用')
-      + (usingN ? '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>' : '')
+      + (phone ? '' : fbtn('using', usingN ? ('在用 · ' + usingN) : '在用'))
+      + (phone || !usingN ? '' : '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>')
       + '</div>'
       + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('new', '时间') + lordSel + '</div>'
       + '</div>';
