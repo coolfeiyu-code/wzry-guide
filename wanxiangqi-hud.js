@@ -383,7 +383,7 @@
       + (L.nocode ? '<span class="hmuted">无导入阵容码</span>'
         : '<button type="button" class="hbtn pri" data-hud-copy="' + esc(L.key) + '">复制阵容码</button>')
       + '</div>'
-      + '<p class="hnote">助手和浮窗只开一个。点「回到助手」切回完整页面。</p>'
+      + '<p class="hnote">这是一个独立的小窗，可以拖到游戏旁边。点「回到助手」切回完整页面。</p>'
       + '</div>';
   }
 
@@ -537,9 +537,7 @@
   function isHudView() {
     return document.body.classList.contains('hud-only');
   }
-  // 只要当前窗口不是脚本开出来的，就关不掉自己（浏览器限制）。
-  // 所以不开新窗口，直接把本窗口就地切成浮窗：任何情况下都只有一个窗口，
-  // 也不存在「关掉后回退定时器又把它拉回来」这类竞态。
+  // 脚本 window.open 出来的窗口：能自己关、也能自己改大小。双击打开的不行。
   function canResizeSelf() {
     try {
       var n = String(global.name || '');
@@ -552,51 +550,99 @@
   function baseUrl() {
     return location.href.replace(/#.*$/, '');
   }
+  function hudWindowFeatures() {
+    var sz = loadSize(global);
+    var s = screenBox(global);
+    var left = Math.max(s.left, s.left + s.w - sz.w - 12);
+    var top = Math.max(s.top, s.top + Math.round((s.h - sz.h) * 0.08));
+    return 'popup=yes,resizable=yes,scrollbars=yes,width=' + sz.w + ',height=' + sz.h
+      + ',left=' + left + ',top=' + top;
+  }
+  function openHudWindow(L) {
+    try { return global.open(hudHash(L), HUD_NAME, hudWindowFeatures()); } catch (e) { return null; }
+  }
+  // 关自己。Chrome 允许脚本关掉「自己 open 出来的」窗口，前提是窗口没压过历史记录
+  // （history.length 仍是 1）。压过历史就关不掉，这时才退回占位页。
+  function closeSelfOrPark(park) {
+    try { global.close(); } catch (e) {}
+    setTimeout(function () {
+      if (global.closed) return;
+      park();
+    }, 380);
+  }
+  // 主窗口被顶掉时先藏起来，别和浮窗抢注意力；「回到助手」会把它放回来。
+  function parkHome() {
+    if (isHudView()) return;
+    document.body.classList.add('wxq-parked');
+    var el = document.getElementById('wxqParked');
+    if (el) return;
+    el = document.createElement('div');
+    el.id = 'wxqParked';
+    el.innerHTML = '<div class="park-box"><p>对局浮窗已打开。</p>'
+      + '<button type="button" class="jbtn pri loud" data-wxq-unpark>回到助手</button></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-wxq-unpark]')) unparkHome();
+    });
+  }
+  function unparkHome() {
+    document.body.classList.remove('wxq-parked');
+    try { global.focus(); } catch (e) {}
+  }
 
-  // 本窗口就地切成浮窗。窗口能缩就缩成小窗贴右；缩不了（双击打开的）就用居中卡片。
+  // 本窗口就地切成浮窗（深链直接打开、或另一个窗口打不开时的兜底）。
+  // 用 replaceState 而不是 pushState：一旦压过历史记录，这个窗口就关不掉自己了。
   function enterHudInto(L) {
     try { history.replaceState(null, '', hudHash(L)); } catch (e) { try { location.hash = 'hud-' + encodeURIComponent(L.key); } catch (e2) {} }
     enterPage('#hud-' + encodeURIComponent(L.key));
-    if (!canResizeSelf()) return;
-    var sz = loadSize(global);
-    var s = screenBox(global);
-    try {
-      if ((global.outerWidth || s.w) > sz.w * 1.35) {
-        global.resizeTo(sz.w, sz.h);
-        global.moveTo(s.left + s.w - sz.w - 12, s.top + Math.round((s.h - sz.h) * 0.08));
-      }
-    } catch (e3) {}
   }
-  // 本窗口就地切回完整助手：把窗口放回大尺寸。
+  // 本窗口就地切回完整助手。
   function exitHudInto() {
     try { history.replaceState(null, '', baseUrl() + '#j'); } catch (e) { try { location.hash = '#j'; } catch (e2) {} }
     document.body.classList.remove('hud-only');
-    document.body.classList.remove('hud-wide');
     if (global.WXQ_JOBS_UI && WXQ_JOBS_UI.closeDetail) WXQ_JOBS_UI.closeDetail(true);
     if (global.WXQ_JOBS_UI) {
       var grid = document.getElementById('grid');
       var st = (global.__wxqUI && global.__wxqUI.state) || { q: '', type: 'jobs' };
       if (grid) WXQ_JOBS_UI.render(grid, st);
     }
-    if (!canResizeSelf()) return;
-    var s = screenBox(global);
-    try {
-      if (global.outerWidth < 900) {
-        global.resizeTo(Math.max(1100, s.w - 48), Math.max(760, s.h - 80));
-        global.moveTo(s.left, s.top);
-      }
-    } catch (e3) {}
   }
 
-  // 浮窗和助手在同一个窗口里切换：点浮窗就把窗口缩成小窗，点回到助手就放大回来。
-  // 全程只有一个窗口。刻意不新开窗口 —— 用户双击打开的窗口浏览器不让脚本关掉，
-  // 只要存在「关旧窗、开新窗」这种两步操作，就可能出现两个窗口同时挂着的中间态。
+  // 点「对局浮窗」：开一个真正的小窗口，然后把这个助手窗口收起来。
+  // 关闭成功 → 只剩浮窗；关不掉（助手页动过历史）→ 收成占位页，不再显示内容。
   function startHud(L) {
     if (!L || isHudView()) return;
-    enterHudInto(L);
+    var pop = openHudWindow(L);
+    if (!pop) { enterHudInto(L); return; }
+    try { pop.focus(); } catch (e0) {}
+    if (canResizeSelf()) {
+      closeSelfOrPark(parkHome);
+      return;
+    }
+    parkHome();
   }
+  // 浮窗点「回到助手」：优先唤醒原来那个助手窗口，其次开一个大的，最后才就地切回。
   function goHome() {
     if (!isHudView()) return;
+    try {
+      if (global.opener && !global.opener.closed) {
+        global.opener.postMessage({ type: 'wxq-unpark' }, '*');
+        try { global.opener.focus(); } catch (e0) {}
+        try { global.close(); } catch (e1) {}
+        return;
+      }
+    } catch (e) {}
+    var s = screenBox(global);
+    try {
+      var main = global.open(baseUrl() + '#j', MAIN_NAME,
+        'resizable=yes,scrollbars=yes,width=' + Math.max(1100, s.w - 48) + ',height=' + Math.max(760, s.h - 80)
+        + ',left=' + s.left + ',top=' + s.top);
+      if (main) {
+        try { main.focus(); } catch (e2) {}
+        closeSelfOrPark(function () { exitHudInto(); });
+        return;
+      }
+    } catch (e3) {}
     exitHudInto();
   }
 
@@ -652,14 +698,7 @@
 
   function enterPage(hash) {
     document.body.classList.add('hud-only');
-    // 能缩成小窗的窗口（脚本开的、或本来就是小窗）拉满即可；
-    // 既关不掉又缩不了的窗口（双击打开的大窗）才用居中窄卡片，否则整屏都是空白。
-    var willShrink = canResizeSelf();
-    if (!willShrink) {
-      var s = screenBox(global);
-      var roomy = (global.innerWidth || s.w) >= 900 && global.innerWidth <= 1000 + 2200;
-      if (roomy) document.body.classList.add('hud-wide');
-    }
+    document.body.classList.remove('wxq-parked');
     var key = '';
     if (hash && hash.indexOf('#hud-') === 0) key = decodeURIComponent(hash.slice(5));
     var grid = document.getElementById('grid');
@@ -700,6 +739,9 @@
 
   global.addEventListener('storage', function (e) {
     if (e.key === STORE) paintDock();
+  });
+  global.addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'wxq-unpark') unparkHome();
   });
 
   if (document.readyState === 'loading') {
