@@ -55,16 +55,43 @@
     if (theme) o.theme = theme;
     return o;
   }
-  function apply(cfg) {
-    if (!cfg || typeof cfg !== 'object') return;
-    if (cfg.using) lsSet(KEYS.using, JSON.stringify(cfg.using));
-    if (cfg.hudSize) lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize));
-    if (cfg.hudPos) lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos));
-    if (cfg.hudDb != null) lsSet(KEYS.hudDb, String(cfg.hudDb));
-    if (cfg.theme) {
-      lsSet(KEYS.theme, cfg.theme);
-      try { document.documentElement.setAttribute('data-theme', cfg.theme); } catch (e) {}
+  // 多台机器时两边都可能收藏过：并起来，别让后打开的那台把对方的冲掉。
+  function mergeUsing(a, b) {
+    var out = [];
+    var seen = {};
+    var last = '';
+    [a, b].forEach(function (o) {
+      if (!o) return;
+      (o.keys || []).forEach(function (k) {
+        k = String(k || '');
+        if (!k || seen[k]) return;
+        seen[k] = 1;
+        out.push(k);
+      });
+      if (o.last && out.indexOf(String(o.last)) >= 0) last = String(o.last);
+    });
+    if (!last) last = out[out.length - 1] || '';
+    return { keys: out.slice(0, 8), last: last };
+  }
+  // 云端配置合进本机：并集收藏，其余字段本机没有才采纳。
+  function mergeBoot(cfg) {
+    if (!cfg || typeof cfg !== 'object') return false;
+    var changed = false;
+    if (cfg.using && cfg.using.keys && cfg.using.keys.length) {
+      var local = parseJson(lsGet(KEYS.using));
+      var merged = mergeUsing(local, cfg.using);
+      var before = local ? JSON.stringify({ k: local.keys || [], l: local.last || '' }) : '';
+      var after = JSON.stringify({ k: merged.keys, l: merged.last });
+      if (before !== after) {
+        lsSet(KEYS.using, JSON.stringify(merged));
+        changed = true;
+      }
     }
+    if (cfg.theme && lsGet(KEYS.theme) == null) { lsSet(KEYS.theme, cfg.theme); changed = true; }
+    if (cfg.hudSize && lsGet(KEYS.hudSize) == null) { lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize)); changed = true; }
+    if (cfg.hudPos && lsGet(KEYS.hudPos) == null) { lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos)); changed = true; }
+    if (cfg.hudDb != null && lsGet(KEYS.hudDb) == null) { lsSet(KEYS.hudDb, String(cfg.hudDb)); changed = true; }
+    return changed;
   }
   function fileText(cfg) {
     return 'window.WXQ_CLOUD_BOOT = ' + JSON.stringify(cfg) + ';\n';
@@ -176,13 +203,38 @@
     });
   }
 
-  // 任何一次改动都走这里：已授权就静默写，没授权就先攒着（按钮会提示）。
+  // HUD 的收藏变了：先给页面刷新，再静默写回。
   function touch() {
     if (!granted || !dirHandle) return;
     clearTimeout(touchTimer);
     touchTimer = setTimeout(function () {
       queueWrite().then(function (ok) { if (ok) flash('已自动保存'); });
     }, 250);
+  }
+
+  // 打开时读一次云上配置并合进本机，两边收藏取并集。
+  // 云端比合并结果旧（或本机有云上没有的）时回写一次，让各台收敛到同一份。
+  function pull() {
+    if (!dirHandle) return Promise.resolve(false);
+    return dirHandle.getFileHandle(FILE).then(function (fh) { return fh.getFile(); }).then(function (f) { return f.text(); })
+      .then(function (txt) {
+        var m = String(txt).match(/window\.WXQ_CLOUD_BOOT\s*=\s*(\{[\s\S]*\});?/);
+        var cfg = m ? parseJson(m[1]) : null;
+        if (!cfg) cfg = { v: 1 };
+        var cloudKeys = (cfg.using && cfg.using.keys) || [];
+        var merged = mergeBoot(cfg);
+        var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
+        var union = mergeUsing({ keys: cloudKeys, last: cfg.using && cfg.using.last }, local);
+        var stale = union.keys.join('|') !== cloudKeys.join('|');
+        if (merged && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
+        if (merged || stale) {
+          return queueWrite().then(function () {
+            msg('已并入坚果云里的在用配置');
+            return true;
+          });
+        }
+        return false;
+      }).catch(function () { return false; });
   }
 
   function askPermission() {
@@ -239,7 +291,9 @@
     msg(granted ? '已开启自动保存' : '点一下开启自动保存');
   }
 
-  if (global.WXQ_CLOUD_BOOT) apply(global.WXQ_CLOUD_BOOT);
+  // 注意这里是 merge 而不是 apply：本机可能已经攒了别的收藏，
+  // 直接覆盖会把另一台机器上的收藏冲掉（这正是之前丢配置的原因）。
+  if (global.WXQ_CLOUD_BOOT) mergeBoot(global.WXQ_CLOUD_BOOT);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', paintBar);
@@ -261,21 +315,21 @@
     if (!h.queryPermission) {
       granted = true;
       msg('已开启自动保存');
-      return;
+      return pull();
     }
     return h.queryPermission({ mode: 'readwrite' }).then(function (st) {
       if (st === 'granted') {
         granted = true;
-        msg('已开启自动保存');
-      } else {
-        msg('点一下页面任意处即开启自动保存');
+        return pull().then(function () { if (!flashTimer) msg('已开启自动保存'); });
       }
+      msg('点一下页面任意处即开启自动保存');
     }).catch(function () { msg('点一下开启自动保存'); });
   });
 
   global.WXQ_CLOUD = {
     touch: touch,
     save: saveNow,
+    pull: pull,
     snapshot: snapshot
   };
 })(window);

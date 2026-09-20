@@ -15,7 +15,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const HOME = process.env.USERPROFILE || process.env.HOME || '';
 const HELPER_DIR = '王者万象棋助手';
-const BASE = 'https://coolfeiyu-code.github.io/wzry-guide/';
+const HELPER_FILE = '王者助手.html';
+const BOOT_FILE = '王者助手.json.js';
 const SCRIPTS = [
   'wanxiangqi-data.js',
   'wanxiangqi-lineups.js',
@@ -69,84 +70,47 @@ function inlineJs(name) {
   return raw.replace(/<\/script/gi, '<\\/script');
 }
 
+/*
+ * 注意：不能加 <base href="...">。页面里所有资源（wxq-icon 图标、王者助手.json.js
+ * 配置）都是相对路径，用 file:// 打开时要解析到坚果云这份文件旁边。加了 <base>
+ * 会把配置脚本指到网上去，本机配置永远读不到，还会把云端配置覆盖掉。
+ */
 function build(ver, today) {
   let html = fs.readFileSync(path.join(ROOT, 'wanxiangqi.html'), 'utf8');
   html = html.replace(/<title>[^<]*<\/title>/, '<title>王者助手</title>');
   html = html.replace('<link rel="manifest" href="manifest.json">', '');
-  html = html.replace(
-    '<meta charset="utf-8">',
-    '<meta charset="utf-8">\n<base href="' + BASE + '">'
-  );
+  html = html.replace(/\n<base href="[^"]*">/g, '');
   html = html.replace(
     /<script src="wanxiangqi-[^"]+"><\/script>\s*/g,
     ''
   );
-  const boot = '<script src="王者助手.json.js" onerror="window.WXQ_CLOUD_BOOT=window.WXQ_CLOUD_BOOT||{v:1};"></script>\n';
+  // 配置脚本放最前面：页面任何脚本跑之前，window.WXQ_CLOUD_BOOT 就已经有了。
+  const boot = '<script src="./' + BOOT_FILE + '"></script>\n';
+  const bootHint = '<script>window.WXQ_CLOUD_BOOT=window.WXQ_CLOUD_BOOT||{v:1,using:{keys:[],last:""}};</script>\n';
   const blobs = SCRIPTS.map(function (name) {
     return '<script>\n' + inlineJs(name) + '\n</script>';
   }).join('\n');
-  html = html.replace(/<script>\r?\n  \(function\(\)\{/, boot + blobs + '\n<script>\n  (function(){');
+  html = html.replace(/<script>\r?\n  \(function\(\)\{/, boot + bootHint + blobs + '\n<script>\n  (function(){');
   html = html.replace('卡面与数值均来自官方公开数据；阵容码可导入游戏。',
     '卡面与数值均来自官方公开数据；阵容码可导入游戏。助手版本 <b>v' + ver + '</b> · 发布 <b>' + today + '</b>。');
   return html;
 }
 
-function collectUsedNames() {
-  const vm = require('vm');
-  function loadWindow(file) {
-    const src = fs.readFileSync(file, 'utf8');
-    const sandbox = { window: {} };
-    vm.createContext(sandbox);
-    vm.runInContext(src, sandbox);
-    return sandbox.window;
-  }
-  const names = Object.create(null);
-  function add(name, dir) {
-    if (name) names[name + '|' + dir] = 1;
-  }
-  const W = loadWindow(path.join(ROOT, 'wanxiangqi-data.js'));
-  const J = loadWindow(path.join(ROOT, 'wanxiangqi-lineups.js'));
-  (J.WXQ_JOBS.list || []).forEach(function (L) {
-    (L.heroes || []).forEach(function (h) {
-      add(h.name, 'heroes');
-      (h.eqs || []).forEach(function (e) { add(e, 'equips'); });
-    });
-    (L.lords || []).forEach(function (n) { add(n, 'players'); });
-  });
-  let S = null;
-  try { S = loadWindow(path.join(ROOT, 'wanxiangqi-stats.js')); } catch (e) {}
-  ((S && S.WXQ_STATS && S.WXQ_STATS.list) || []).forEach(function (L) {
-    (L.heroes || []).forEach(function (h) {
-      add(h.name, 'heroes');
-      (h.eqs || []).forEach(function (e) { add(e, 'equips'); });
-    });
-    (L.lords || []).forEach(function (n) { add(n, 'players'); });
-  });
-  return names;
-}
-
+// 直接整目录复制图标：去掉 <base> 后所有 wxq-icon/... 都是本地相对路径，
+// 复制全量才能保证离线、断网、各台显示一致（总计约 11MB）。
 function copyIcons(destDir) {
-  const used = collectUsedNames();
   const iconRoot = path.join(ROOT, 'wxq-icon');
   const destRoot = path.join(destDir, 'wxq-icon');
   let files = 0;
   let bytes = 0;
-  const jobs = [
-    { dir: 'heroes', suffix: '.png' },
-    { dir: 'equips', suffix: '.png' },
-    { dir: 'players', suffix: '_icon.png' }
-  ];
-  jobs.forEach(function (job) {
-    const srcDir = path.join(iconRoot, job.dir);
-    if (!exists(srcDir)) return;
+  if (!exists(iconRoot)) return { files: 0, bytes: 0 };
+  fs.readdirSync(iconRoot).forEach(function (dir) {
+    const srcDir = path.join(iconRoot, dir);
+    if (!fs.statSync(srcDir).isDirectory()) return;
     fs.readdirSync(srcDir).forEach(function (f) {
-      let key = f;
-      if (job.dir === 'players' && /_icon\.png$/.test(f)) key = f.replace(/_icon\.png$/, '');
-      else if (/\.png$/.test(f)) key = f.replace(/\.png$/, '');
-      else return;
-      if (!used[key + '|' + job.dir] && !(job.dir === 'players' && used[key + '|players'])) return;
       const src = path.join(srcDir, f);
-      const dst = path.join(destRoot, job.dir, f);
+      if (!fs.statSync(src).isFile()) return;
+      const dst = path.join(destRoot, dir, f);
       fs.mkdirSync(path.dirname(dst), { recursive: true });
       const buf = fs.readFileSync(src);
       fs.writeFileSync(dst, buf);
@@ -175,8 +139,8 @@ function main() {
   fs.mkdirSync(destDir, { recursive: true });
   const ver = metaVersion();
   const today = new Date().toISOString().slice(0, 10);
-  const htmlPath = path.join(destDir, '王者助手.html');
-  const jsPath = path.join(destDir, '王者助手.json.js');
+  const htmlPath = path.join(destDir, HELPER_FILE);
+  const jsPath = path.join(destDir, BOOT_FILE);
   fs.writeFileSync(htmlPath, build(ver, today), 'utf8');
   if (!exists(jsPath)) {
     fs.writeFileSync(jsPath, 'window.WXQ_CLOUD_BOOT = {"v":1,"using":{"keys":[],"last":""}};\n', 'utf8');
