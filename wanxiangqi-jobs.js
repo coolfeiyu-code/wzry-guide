@@ -54,15 +54,18 @@
     return (Math.round(n * 1000) / 10) + '%';
   }
 
+  // 登顶率和前三率分开上色：登顶更稀有，用更重的色；前三用次一级的色。
+  // 只在卡片副行用，详情页沿用同样标记，避免两处观感不一致。
   function statsLine(L) {
     var s = L.stats7d;
     if (!s) return '';
     var t = pct(s.top3Rate);
     var f = pct(s.firstRate);
     var bits = [];
-    if (t) bits.push('7日前三 ' + t);
-    if (f) bits.push('登顶 ' + f);
-    if (s.count) bits.push(s.count + ' 场');
+    if (t) bits.push('<i class="st top3">7日前三 ' + t + '</i>');
+    if (f) bits.push('<i class="st first">登顶 ' + f + '</i>');
+    // 场次少时比率容易偏高，标出来别当成稳定结论
+    if (s.count) bits.push((s.count < 150 ? '<i class="st thin">' + s.count + ' 场·样本少</i>' : s.count + ' 场'));
     var m = global.WXQ_STATS && WXQ_STATS.meta;
     if (m && m.dataVersion) bits.push(m.dataVersion);
     if (m && m.capturedAt) bits.push('截至 ' + m.capturedAt);
@@ -121,6 +124,11 @@
         var ta = (a.stats7d && a.stats7d.top3Rate) || 0;
         var tb = (b.stats7d && b.stats7d.top3Rate) || 0;
         if (tb !== ta) return tb - ta;
+      }
+      if (js.sort === 'first') {
+        var fa = (a.stats7d && a.stats7d.firstRate) || 0;
+        var fb = (b.stats7d && b.stats7d.firstRate) || 0;
+        if (fb !== fa) return fb - fa;
       }
       if (js.sort === 'score') {
         var ds = (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0);
@@ -460,7 +468,7 @@
       + (phone ? '' : fbtn('using', usingN ? ('在用 · ' + usingN) : '在用'))
       + (phone || !usingN ? '' : '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>')
       + '</div>'
-      + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('new', '时间') + lordSel + '</div>'
+      + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('first', '登顶率') + sbtn('new', '时间') + lordSel + '</div>'
       + '</div>';
     if (!slice.length) {
       grid.innerHTML = h + '<div class="empty">'

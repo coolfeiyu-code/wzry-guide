@@ -261,6 +261,9 @@
   [data-theme="dark"] .seg .tab.active{background:var(--accent-fill);color:#fff;}
   [data-theme="dark"] .tab.jtab.active,[data-theme="dark"] .tab.ctab.active{color:#fff;}
   [data-theme="dark"] .jchip.on{background:var(--accent-fill);color:#fff;border-color:var(--accent-fill);}
+  /* 深色底上把两组比率调亮，否则青绿/琥珀都糊在背景里 */
+  [data-theme="dark"] .st.top3{color:#5FD0B0;}
+  [data-theme="dark"] .st.first{color:#FFC24A;}
   [data-theme="dark"] .jbtn.pri{background:var(--accent-fill);color:#fff;}
   [data-theme="dark"] .chchip.on,[data-theme="dark"] .chj.on{background:var(--accent-fill);color:#fff;border-color:var(--accent-fill);}
   [data-theme="dark"] .skill{background:var(--card);}
@@ -509,6 +512,11 @@
   .jcard-avs{display:flex;gap:4px;margin-bottom:10px;min-height:36px;}
   .jcard-nm{font-family:var(--font-kai);font-size:17px;font-weight:700;color:var(--ink);letter-spacing:.02em;}
   .jcard-au{font-size:12px;color:var(--ink-soft);margin-top:4px;line-height:1.6;}
+  /* 前三率 / 登顶率分开上色：登顶是打赢全场的概率，比前三稀有得多，给更重的琥珀色 */
+  .st{font-style:normal;}
+  .st.top3{color:#2E7D6B;font-weight:600;}
+  .st.first{color:#C77B12;font-weight:700;}
+  .st.thin{color:var(--ink-soft);font-style:italic;}
   .jtag{font-size:10.5px;color:#fff;border-radius:5px;padding:0 6px;margin-left:4px;vertical-align:1px;}
   .jtag.hot,.jtag.god,.jtag.exp,.jtag.d7,.jtag.using{background:var(--accent-fill);}
   .jtag.official{background:var(--ink);}
