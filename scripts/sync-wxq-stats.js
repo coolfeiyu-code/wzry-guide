@@ -21,16 +21,10 @@ const OUT = path.join(ROOT, 'wanxiangqi-stats.js');
 const DATA = path.join(ROOT, 'wanxiangqi-data.js');
 const JOBS = path.join(ROOT, 'wanxiangqi-lineups.js');
 const API = 'https://api.datatft.com';
-function weekVersion() {
-  const now = new Date();
-  const day = now.getDay() || 7;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1);
-  const yy = String(monday.getFullYear()).slice(2);
-  const mm = String(monday.getMonth() + 1).padStart(2, '0');
-  const dd = String(monday.getDate()).padStart(2, '0');
-  return 'v' + yy + mm + dd;
-}
-const VERSION = process.env.WXQ_STATS_VERSION || weekVersion();
+// datawxq 的接口现在不带 version 才能拿到当前数据：传旧版本号（如 v260917）会返回
+// code 42000「该版本数据暂无」。所以默认不传版本，让服务端用最新一期；
+// 想锁定某期仍可用环境变量 WXQ_STATS_VERSION 覆盖。
+const VERSION = process.env.WXQ_STATS_VERSION || '';
 const TIME = 7;
 const MIN_COUNT = 80;
 const MIN_TOP3 = 0.40;
@@ -154,8 +148,7 @@ function setOf(arr) {
 }
 
 function packPayload(extra) {
-  return Object.assign({
-    version: VERSION,
+  var p = {
     time: TIME,
     operator: 'AND',
     advancedMode: false,
@@ -165,7 +158,9 @@ function packPayload(extra) {
     pageSize: PAGE_SIZE,
     minimumCount: 50,
     sortBy: 'top3Rate',
-  }, extra || {});
+  };
+  if (VERSION) p.version = VERSION;   // 留空表示用服务端最新一期
+  return Object.assign(p, extra || {});
 }
 
 async function searchQuery(label, extra) {
@@ -533,7 +528,8 @@ function equipDescOf(lu, pools) {
     capturedAt,
     dataVersion: VERSION,
     dataTime: TIME,
-    source: '万象棋大数据 datawxq.com（api.datatft.com /wzwxq/lineups，近' + TIME + '日 time=' + TIME + '，版本 ' + VERSION + '）',
+    source: '万象棋大数据 datawxq.com（api.datatft.com /wzwxq/lineups，近' + TIME + '日 time=' + TIME
+      + (VERSION ? '，版本 ' + VERSION : '，服务端最新一期') + '）',
     note: '前三率/登顶率是第三方对局聚类，不是官方胜率，也不是可导入阵容码。全服热门之外还会按棋手/冷门英雄补搜（否则明先生山鬼流这种低登场套进不来）。能对上官方库的只叠统计，不对上的才单独成卡。讲解按卡面，不编运营。',
     sampleCount: searched.sampleCount,
     clusters: searched.list.length,
