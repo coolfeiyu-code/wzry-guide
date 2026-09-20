@@ -1,18 +1,23 @@
 /* ============================================================================
- * 王者万象棋 · 坚果云配置
+ * 王者万象棋 · 配置同步
  * ----------------------------------------------------------------------------
- * 在用阵容 / 浮窗尺寸 / 主题写在 王者助手.json.js，跟着坚果云走。
+ * 在用阵容 / 浮窗尺寸 / 主题写在坚果云的 王者助手.json.js，跟着坚果云走。
  *
- * 自动读取：发布出来的 王者助手.html 开头会用 <script src="王者助手.json.js">
- *   载入这份配置，页面跑起来之前就已经生效，不需要点任何东西。
- * 自动保存：收藏 / 取消收藏、拖动浮窗、改主题都会立刻静默写回文件，
- *   不弹窗、不点按钮。浏览器要求「写文件夹」必须授权过一次（选一次文件夹），
- *   授权在首次点击页面任意位置时顺手申请，之后这台机器就一直静默。
+ * 两条路，优先第一条：
+ *  1) 本机同步桥（scripts/wxq-cloud-bridge.js，127.0.0.1:17871）
+ *     页面用 fetch 读写，**不需要任何授权、没有任何弹窗**，开机即静默。
+ *     桥没开时自动退回第 2 条。
+ *  2) 浏览器文件授权（File System Access）
+ *     需要点一次「开启自动保存」并选文件夹。注意 file:// 下浏览器不会记住
+ *     这个授权，所以每次重开页面都要再点一次 —— 这正是同步桥要解决的问题。
+ *
+ * 打开页面时先读云上配置，与本机收藏取并集，再静默写回，各台电脑收敛到同一份。
  * ========================================================================== */
 (function (global) {
   'use strict';
 
   var FILE = '王者助手.json.js';
+  var BRIDGE_PORT = 17871;
   var KEYS = {
     using: 'wxq-using-v1',
     hudSize: 'wxq-hud-size',
@@ -21,13 +26,16 @@
     theme: 'wzry-theme'
   };
 
-  var dirHandle = null;   // 文件夹句柄
-  var granted = false;    // 已可写，之后全程静默
-  var writing = false;    // 正在写
-  var dirty = false;      // 写的时候又改了，写完补一次
+  var bridge = '';        // 同步桥的地址，空 = 不可用
+  var mode = 'none';      // 'bridge' | 'file' | 'none'
+  var dirHandle = null;
+  var granted = false;
+  var writing = false;
+  var dirty = false;
   var flashTimer = 0;
   var touchTimer = 0;
   var grantAsked = false;
+  var bootAt = Date.now();
 
   function lsGet(k) {
     try { return localStorage.getItem(k); } catch (e) { return null; }
@@ -55,25 +63,28 @@
     if (theme) o.theme = theme;
     return o;
   }
-  // 多台机器时两边都可能收藏过：并起来，别让后打开的那台把对方的冲掉。
-  function mergeUsing(a, b) {
-    var out = [];
+  function unionKeys(a, b) {
     var seen = {};
-    var last = '';
-    [a, b].forEach(function (o) {
-      if (!o) return;
-      (o.keys || []).forEach(function (k) {
+    var out = [];
+    [a, b].forEach(function (arr) {
+      (arr || []).forEach(function (k) {
         k = String(k || '');
         if (!k || seen[k]) return;
         seen[k] = 1;
         out.push(k);
       });
-      if (o.last && out.indexOf(String(o.last)) >= 0) last = String(o.last);
     });
-    if (!last) last = out[out.length - 1] || '';
-    return { keys: out.slice(0, 8), last: last };
+    return out.slice(0, 8);
   }
-  // 云端配置合进本机：并集收藏，其余字段本机没有才采纳。
+  // 两边都可能收藏过：并起来，别让后打开的那台把对方的冲掉。
+  function mergeUsing(a, b) {
+    var keys = unionKeys(a && a.keys, b && b.keys);
+    var last = String((b && b.last) || '');
+    if (keys.indexOf(last) < 0) last = String((a && a.last) || '');
+    if (keys.indexOf(last) < 0) last = keys[keys.length - 1] || '';
+    return { keys: keys, last: last };
+  }
+  // 云端配置合进本机：收藏取并集，其余字段本机没有才采纳。
   function mergeBoot(cfg) {
     if (!cfg || typeof cfg !== 'object') return false;
     var changed = false;
@@ -81,8 +92,7 @@
       var local = parseJson(lsGet(KEYS.using));
       var merged = mergeUsing(local, cfg.using);
       var before = local ? JSON.stringify({ k: local.keys || [], l: local.last || '' }) : '';
-      var after = JSON.stringify({ k: merged.keys, l: merged.last });
-      if (before !== after) {
+      if (before !== JSON.stringify({ k: merged.keys, l: merged.last })) {
         lsSet(KEYS.using, JSON.stringify(merged));
         changed = true;
       }
@@ -109,26 +119,85 @@
     }, 800);
   }
 
-  function msg(text) {
+  function msg(text, ok) {
     var el = document.getElementById('wxqCloudBar');
     if (!el) return;
     var t = el.querySelector('[data-cloud-msg]');
     if (t) t.textContent = text;
-    if (el.classList) {
-      if (granted) el.classList.add('ok');
-      else el.classList.remove('ok');
-    }
+    var good = ok == null ? (granted || mode === 'bridge') : !!ok;
+    if (el.classList) el.classList[good ? 'add' : 'remove']('ok');
     var btn = el.querySelector('[data-cloud-save]');
-    if (btn) btn.style.display = granted ? 'none' : '';
+    if (btn) btn.style.display = good ? 'none' : '';
+  }
+  function idleText() {
+    if (mode === 'bridge') return '自动保存已开启（静默同步）';
+    if (granted) return '已开启自动保存';
+    return '点一下开启自动保存（或双击文件夹里的 安装同步桥.cmd 免掉这一步）';
   }
   function flash(text) {
     msg(text);
     clearTimeout(flashTimer);
-    flashTimer = setTimeout(function () {
-      msg(granted ? '已开启自动保存' : '点一下开启自动保存');
-    }, 1500);
+    flashTimer = setTimeout(function () { msg(idleText()); }, 1500);
   }
 
+  /* ---------- 同步桥 ---------- */
+  // 页面由桥本身托管时同源，直接用相对地址；否则探本机端口。
+  function bridgeBase() {
+    try {
+      if (location.hostname === '127.0.0.1' && Number(location.port) === BRIDGE_PORT) return '';
+      return 'http://127.0.0.1:' + BRIDGE_PORT;
+    } catch (e) { return 'http://127.0.0.1:' + BRIDGE_PORT; }
+  }
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(function () { reject(new Error('timeout')); }, ms);
+      promise.then(function (v) { clearTimeout(t); resolve(v); }, function (e) { clearTimeout(t); reject(e); });
+    });
+  }
+  function bridgeCall(pathname, opt, ms) {
+    return withTimeout(fetch(bridge + pathname, opt), ms || 2500).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    });
+  }
+  function detectBridge() {
+    if (typeof fetch !== 'function') return Promise.resolve(false);
+    var base = bridgeBase();
+    return withTimeout(fetch(base + '/api/health'), 1800)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.ok) return false;
+        bridge = base;
+        mode = 'bridge';
+        return true;
+      }).catch(function () { return false; });
+  }
+  function bridgePull() {
+    if (mode !== 'bridge') return Promise.resolve(false);
+    return bridgeCall('/api/cloud', null, 3000).then(function (j) {
+      if (!j || !j.ok) return false;
+      var cfg = j.cfg || { v: 1 };
+      var cloudKeys = (cfg.using && cfg.using.keys) || [];
+      var merged = mergeBoot(cfg);
+      var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
+      var union = mergeUsing({ keys: cloudKeys, last: cfg.using && cfg.using.last }, local);
+      var stale = union.keys.join('|') !== cloudKeys.join('|');
+      if (merged && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
+      if (merged || stale) return queueWrite();
+      return false;
+    }).catch(function () { return false; });
+  }
+  function bridgeWrite() {
+    var cfg = snapshot();
+    global.WXQ_CLOUD_BOOT = cfg;
+    return bridgeCall('/api/cloud', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    }, 3500).then(function (j) { return !!(j && j.ok); });
+  }
+
+  /* ---------- 文件授权（桥不可用时的退路） ---------- */
   function idbOpen() {
     return new Promise(function (resolve) {
       try {
@@ -165,58 +234,60 @@
       });
     });
   }
-
-  function writeFile(handle, text) {
-    return handle.getFileHandle(FILE, { create: true }).then(function (fh) {
+  function writeFileHandle(text) {
+    return dirHandle.getFileHandle(FILE, { create: true }).then(function (fh) {
       return fh.createWritable().then(function (w) {
         return w.write(text).then(function () { return w.close(); });
       });
     });
   }
-
-  // 写的时候又改了，就合并成一次；坚果云偶尔占用文件，失败隔 300ms 再试一次。
-  function writeOnce(tries) {
+  function fileWrite() {
     var cfg = snapshot();
     global.WXQ_CLOUD_BOOT = cfg;
-    return writeFile(dirHandle, fileText(cfg)).catch(function (err) {
-      if (tries > 0) {
-        return new Promise(function (r) { setTimeout(r, 300); }).then(function () { return writeOnce(tries - 1); });
-      }
-      throw err;
-    });
-  }
-  function queueWrite() {
-    if (!dirHandle) return Promise.resolve(false);
-    if (writing) { dirty = true; return Promise.resolve(true); }
-    writing = true;
-    return writeOnce(1).then(function () {
-      writing = false;
-      granted = true;
-      if (dirty) { dirty = false; return queueWrite(); }
-      return true;
-    }).catch(function () {
-      writing = false;
-      dirty = false;
-      granted = false;
-      msg('点一下开启自动保存');
-      return false;
-    });
+    return writeFileHandle(fileText(cfg));
   }
 
-  // HUD 的收藏变了：先给页面刷新，再静默写回。
-  function touch() {
-    if (!granted || !dirHandle) return;
+  /* ---------- 统一的读写 ---------- */
+  function queueWrite(tries) {
+    if (mode === 'bridge') {
+      if (writing) { dirty = true; return Promise.resolve(true); }
+      writing = true;
+      return bridgeWrite().then(function (ok) {
+        writing = false;
+        if (dirty) { dirty = false; return queueWrite(); }
+        return ok;
+      }).catch(function () {
+        writing = false;
+        dirty = false;
+        return false;
+      });
+    }
+    if (granted && dirHandle) {
+      return fileWrite().then(function () { return true; }, function () {
+        granted = false;
+        msg('点一下开启自动保存');
+        return false;
+      });
+    }
+    return Promise.resolve(false);
+  }
+  function scheduledWrite(text) {
     clearTimeout(touchTimer);
     touchTimer = setTimeout(function () {
-      queueWrite().then(function (ok) { if (ok) flash('已自动保存'); });
+      queueWrite().then(function (ok) { if (ok) flash(text || '已自动保存'); });
     }, 250);
   }
+  // 收藏 / 尺寸 / 主题变了
+  function touch() {
+    if (mode !== 'bridge' && !(granted && dirHandle)) return;
+    scheduledWrite('已自动保存');
+  }
 
-  // 打开时读一次云上配置并合进本机，两边收藏取并集。
-  // 云端比合并结果旧（或本机有云上没有的）时回写一次，让各台收敛到同一份。
   function pull() {
+    if (mode === 'bridge') return bridgePull();
     if (!dirHandle) return Promise.resolve(false);
-    return dirHandle.getFileHandle(FILE).then(function (fh) { return fh.getFile(); }).then(function (f) { return f.text(); })
+    return dirHandle.getFileHandle(FILE).then(function (fh) { return fh.getFile(); })
+      .then(function (f) { return f.text(); })
       .then(function (txt) {
         var m = String(txt).match(/window\.WXQ_CLOUD_BOOT\s*=\s*(\{[\s\S]*\});?/);
         var cfg = m ? parseJson(m[1]) : null;
@@ -227,12 +298,7 @@
         var union = mergeUsing({ keys: cloudKeys, last: cfg.using && cfg.using.last }, local);
         var stale = union.keys.join('|') !== cloudKeys.join('|');
         if (merged && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-        if (merged || stale) {
-          return queueWrite().then(function () {
-            msg('已并入坚果云里的在用配置');
-            return true;
-          });
-        }
+        if (merged || stale) return queueWrite();
         return false;
       }).catch(function () { return false; });
   }
@@ -244,11 +310,10 @@
     return dirHandle.requestPermission({ mode: 'readwrite' }).then(function (st) {
       if (st !== 'granted') return false;
       granted = true;
-      msg('已开启自动保存');
+      msg(idleText());
       return queueWrite();
     }).catch(function () { return false; });
   }
-
   function pickFolder() {
     if (!global.showDirectoryPicker) {
       download(snapshot());
@@ -258,21 +323,17 @@
     return global.showDirectoryPicker({ id: 'wxq-nutstore', mode: 'readwrite' }).then(function (dir) {
       dirHandle = dir;
       granted = true;
+      mode = 'file';
       return idbSet(dir).then(function () { return queueWrite(); });
     }).then(function () {
       flash('已开启自动保存');
       return true;
     }).catch(function () { return false; });
   }
-
-  // 手动点：已授权时什么都不用做（因为改动已自动写过），仅在未授权时用。
   function saveNow() {
+    if (mode === 'bridge') return queueWrite();
     if (granted && dirHandle) return queueWrite();
-    if (dirHandle) {
-      return askPermission().then(function (ok) {
-        return ok ? true : pickFolder();
-      });
-    }
+    if (dirHandle) return askPermission().then(function (ok) { return ok ? true : pickFolder(); });
     return pickFolder();
   }
 
@@ -282,17 +343,16 @@
     bar.id = 'wxqCloudBar';
     bar.className = 'on';
     bar.innerHTML = '<span data-cloud-msg></span>'
-      + '<button type="button" data-cloud-save title="只需选一次「王者万象棋助手」文件夹">开启自动保存</button>';
+      + '<button type="button" data-cloud-save title="装了同步桥就无需这一步；否则选一次「王者万象棋助手」文件夹">开启自动保存</button>';
     bar.addEventListener('click', function (e) {
-      var b = e.target.closest && e.target.closest('[data-cloud-save]');
-      if (b) saveNow();
+      if (e.target.closest && e.target.closest('[data-cloud-save]')) saveNow();
     });
     document.body.appendChild(bar);
-    msg(granted ? '已开启自动保存' : '点一下开启自动保存');
+    msg(idleText());
   }
 
-  // 注意这里是 merge 而不是 apply：本机可能已经攒了别的收藏，
-  // 直接覆盖会把另一台机器上的收藏冲掉（这正是之前丢配置的原因）。
+  // 注意是 merge 而不是覆盖：本机可能已经攒了别的收藏，
+  // 直接覆盖会把另一台机器上的收藏冲掉（2026-07 丢配置就是这个原因）。
   if (global.WXQ_CLOUD_BOOT) mergeBoot(global.WXQ_CLOUD_BOOT);
 
   if (document.readyState === 'loading') {
@@ -301,35 +361,44 @@
     paintBar();
   }
 
-  // 首次点击页面任意位置时顺手申请授权，用户不用专门去找按钮。
+  // 首次点击页面任意位置时顺手申请文件授权（仅退路模式需要）
   function onFirstGesture() {
-    if (granted || !dirHandle) return;
+    if (mode === 'bridge' || granted || !dirHandle) return;
     askPermission();
   }
   document.addEventListener('pointerdown', onFirstGesture, true);
   document.addEventListener('keydown', onFirstGesture, true);
 
-  idbGet().then(function (h) {
-    if (!h) { msg('点一下开启自动保存'); return; }
-    dirHandle = h;
-    if (!h.queryPermission) {
-      granted = true;
-      msg('已开启自动保存');
-      return pull();
+  detectBridge().then(function (ok) {
+    if (ok) {
+      msg(idleText());
+      return bridgePull();
     }
-    return h.queryPermission({ mode: 'readwrite' }).then(function (st) {
-      if (st === 'granted') {
+    // 桥没开：走文件授权这条老路
+    return idbGet().then(function (h) {
+      if (!h) { msg('点一下开启自动保存'); return; }
+      dirHandle = h;
+      mode = 'file';
+      if (!h.queryPermission) {
         granted = true;
-        return pull().then(function () { if (!flashTimer) msg('已开启自动保存'); });
+        msg(idleText());
+        return pull();
       }
-      msg('点一下页面任意处即开启自动保存');
-    }).catch(function () { msg('点一下开启自动保存'); });
+      return h.queryPermission({ mode: 'readwrite' }).then(function (st) {
+        if (st === 'granted') {
+          granted = true;
+          return pull().then(function () { msg(idleText()); });
+        }
+        msg('点一下页面任意处即开启自动保存');
+      }).catch(function () { msg('点一下开启自动保存'); });
+    });
   });
 
   global.WXQ_CLOUD = {
     touch: touch,
     save: saveNow,
     pull: pull,
-    snapshot: snapshot
+    snapshot: snapshot,
+    mode: function () { return mode; }
   };
 })(window);

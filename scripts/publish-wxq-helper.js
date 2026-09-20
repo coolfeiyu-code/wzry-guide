@@ -121,6 +121,40 @@ function copyIcons(destDir) {
   return { files, bytes };
 }
 
+// 把「本机同步桥 + 安装脚本」也放到坚果云文件夹里：
+// 别的电脑拿到这个文件夹后，跑一次 安装同步桥.cmd 就能静默同步，不用再点授权。
+function copyBridge(destDir) {
+  const files = [
+    ['scripts/wxq-cloud-bridge.js', '同步桥.js'],
+    ['scripts/install-wxq-bridge.js', '安装同步桥.js']
+  ];
+  let n = 0;
+  files.forEach(function (pair) {
+    const src = path.join(ROOT, pair[0]);
+    if (!exists(src)) return;
+    fs.copyFileSync(src, path.join(destDir, pair[1]));
+    n++;
+  });
+  const cmd = [
+    '@echo off',
+    'setlocal',
+    'set NODE=%NODE%',
+    'if "%NODE%"=="" set NODE=node',
+    '"%NODE%" "%~dp0\\安装同步桥.js"',
+    'if errorlevel 1 (',
+    '  echo.',
+    '  echo 没找到 node。请先装 Node.js，或把下面这行里的路径改成你的 node.exe 再双击本文件：',
+    '  echo   "C:\\Program Files\\nodejs\\node.exe" "%~dp0\\安装同步桥.js"',
+    ')',
+    'echo.',
+    'pause',
+    ''
+  ].join('\r\n');
+  fs.writeFileSync(path.join(destDir, '安装同步桥.cmd'), cmd, 'utf8');
+  n++;
+  return n;
+}
+
 function metaVersion() {
   try {
     const src = fs.readFileSync(path.join(ROOT, 'wanxiangqi-data.js'), 'utf8');
@@ -154,6 +188,10 @@ function main() {
     const pack = copyIcons(destDir);
     console.log('离线图标', pack.files + ' 个', Math.round(pack.bytes / 1024) + 'KB', '→ wxq-icon/');
   } catch (e) { console.error('图标复制失败', e.message); }
+  try {
+    const n = copyBridge(destDir);
+    console.log('同步桥文件', n, '个 → 安装同步桥.cmd / 同步桥.js / 安装同步桥.js');
+  } catch (e) { console.error('同步桥复制失败', e.message); }
 }
 
 main();
