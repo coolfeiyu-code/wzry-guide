@@ -90,28 +90,49 @@
     return null;
   }
 
-  // 19 位棋手各给一个固定色（按官方 WXQ_PLAYERS 顺序取），不用黑色，
-  // 也不随主题变，方便一眼认出「这套是谁的」。深色底上这些中彩度色都还看得清。
+  // 19 位棋手各给一对固定色（按官方 WXQ_PLAYERS 顺序取）：
+  // [浅色主题: 深底白字, 深色主题: 亮底深字]。深浅各一套是因为单一色值
+  // 在另一套主题上必然糊掉（之前就是这个问题）。两套都不含黑、不重复。
   var LORD_COLORS = [
-    '#C2410C', '#0E7490', '#7C3AED', '#B45309', '#BE185D',
-    '#15803D', '#A21CAF', '#0369A1', '#CA8A04', '#DC2626',
-    '#0F766E', '#6D28D9', '#C026D3', '#047857', '#B91C1C',
-    '#2563EB', '#9333EA', '#D97706', '#E11D48'
+    ['#B91C1C', '#F2A0A0'],
+    ['#C2410C', '#F5B57F'],
+    ['#A16207', '#EFCC6A'],
+    ['#4D7C0F', '#BCE06E'],
+    ['#15803D', '#7FDFA6'],
+    ['#0F766E', '#6ED9CB'],
+    ['#0E7490', '#74CBE2'],
+    ['#0369A1', '#8BC0EE'],
+    ['#1D4ED8', '#9CABF0'],
+    ['#4338CA', '#AEA6EE'],
+    ['#6D28D9', '#C1ACEE'],
+    ['#7E22CE', '#D3ACEE'],
+    ['#A21CAF', '#E5A4E8'],
+    ['#BE185D', '#EE9FC0'],
+    ['#BE123C', '#F0A3AC'],
+    ['#78350F', '#D8AE8A'],
+    ['#334155', '#BCC9DA'],
+    ['#155E75', '#93D0DC'],
+    ['#9D174D', '#EE99B8']
   ];
   var lordColorMap = null;
-  function lordColor(name) {
+  function lordThemePair(name) {
     if (!lordColorMap) {
       lordColorMap = {};
       var P = (ui().PLAYERS) || global.WXQ_PLAYERS || [];
       P.forEach(function (p, i) {
-        lordColorMap[p.name] = LORD_COLORS[i % LORD_COLORS.length];
+        var pair = LORD_COLORS[i % LORD_COLORS.length];
+        lordColorMap[p.name] = { light: pair[0], dark: pair[1] };
       });
     }
-    return lordColorMap[name] || '#57606A';
+    return lordColorMap[name] || { light: '#52525B', dark: '#D4D4D8' };
   }
+  function lordColor(name) { return lordThemePair(name).light; }
   function lordChip(name) {
-    return '<i class="lc" style="background:' + lordColor(name) + '">' + esc(name) + '</i>';
+    var pair = lordThemePair(name);
+    return '<i class="lc" style="--lc-l:' + pair.light + ';--lc-d:' + pair.dark + '">' + esc(name) + '</i>';
   }
+  // 浮窗没有 jobs 的 ui() 上下文，配色表要能被它拿到
+  global.WXQ_LORD_COLORS = { pairs: LORD_COLORS, themePair: lordThemePair };
   function talentByName(name) {
     var T = global.WXQ_TALENTS || [];
     for (var i = 0; i < T.length; i++) if (T[i].name === name) return T[i];

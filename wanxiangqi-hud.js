@@ -368,7 +368,7 @@
         + '</div>');
     }
     line('棋手', d.lords, function (r) {
-      return esc(r.name) + ' 登场' + pctText(r.app) + (r.top3 ? ' · 前三' + pctText(r.top3) : '');
+      return lordChip(r.name) + ' 登场' + pctText(r.app) + (r.top3 ? ' · 前三' + pctText(r.top3) : '');
     });
     line('天赋', d.talents, function (r) {
       return esc(r.name) + (r.top3 ? ' 前三' + pctText(r.top3) : '') + (r.count ? '（' + r.count + '场）' : '');
@@ -393,8 +393,43 @@
     return Math.round(n * 1000) / 10 + '%';
   }
 
+  // 棋手色标：和助手页共用同一套配色（jobs 导出在 WXQ_LORD_COLORS），
+  // 浅色主题一套、深色主题一套，避免在深色浮窗上糊成一片。
+  function lordChip(name) {
+    var pair = null;
+    if (global.WXQ_LORD_COLORS && global.WXQ_LORD_COLORS.themePair) {
+      pair = global.WXQ_LORD_COLORS.themePair(name);
+    }
+    if (!pair) {
+      // jobs 还没加载（理论上不会）：退化成中性色，不写成黑色
+      return '<i class="lc">' + esc(name) + '</i>';
+    }
+    return '<i class="lc" style="--lc-l:' + pair.light + ';--lc-d:' + pair.dark + '">' + esc(name) + '</i>';
+  }
+  function lordChips(names) {
+    return (names || []).map(lordChip).join('');
+  }
+
+  // 适配棋手：官方套用 overlay.bestLords（近7日各棋手用自己的成绩），
+  // 7 日卡用 d7.lords。有就按前三率展示，没有就不显示这一块。
+  function adaptBlock(L) {
+    var rows = (L.bestLords && L.bestLords.length) ? L.bestLords
+      : ((L.d7 && L.d7.lords) ? L.d7.lords : []);
+    if (!rows.length) return '';
+    return rows.slice(0, 4).map(function (r) {
+      return '<div class="hadapt">'
+        + '<div class="hadapt-h">' + lordChip(r.name)
+        + '<span>' + (r.app != null ? '登场' + pctText(r.app) : '')
+        + (r.count ? ' · ' + r.count + ' 场' : '') + '</span></div>'
+        + '<div class="hadapt-s">'
+        + (r.top3 ? '<i class="rt top3">前三' + pctText(r.top3) + '</i>' : '')
+        + (r.first ? '<i class="rt first">登顶' + pctText(r.first) + '</i>' : '')
+        + (r.avg ? '<i class="rt n">平均' + (Math.round(Number(r.avg) * 100) / 100) + '</i>' : '')
+        + '</div></div>';
+    }).join('');
+  }
+
   function innerHtml(L) {
-    var lords = (L.lords || []).join(' / ');
     var eq = equipsBlock(L);
     var op = opsBlock(L);
     var play = playBlock(L);
@@ -410,14 +445,14 @@
       + '<div class="hcodewrap"></div>'
       + switcherHtml(L.key)
       + '<div class="hbody">'
-      + '<div class="hside"><div class="hname">' + esc(L.name)
-      + (lords ? '<em>' + esc(lords) + '</em>' : '') + '</div>'
+      + '<div class="hside"><div class="hname">' + esc(L.name) + '</div>'
+      + ((L.lords || []).length ? '<div class="hlords">' + lordChips(L.lords) + '</div>' : '')
       + (L.nocode
         ? '<p class="hsub">第三方数据，无可导入阵容码</p>'
         : '<p class="hsub">阵容码 <button type="button" class="hlink" data-hud-copy="' + esc(L.key) + '">复制</button></p>')
       + boardHtml(L) + '</div>'
-      + '<div class="htips">' + sec('装备', eq) + sec('7日数据', d7Block(L)) + sec('前 / 中 / 后期', op) + sec('出牌', play)
-      + (!eq && !op && !play && !L.d7 ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
+      + '<div class="htips">' + sec('装备', eq) + sec('这套谁最适配', adaptBlock(L)) + sec('7日数据', d7Block(L)) + sec('前 / 中 / 后期', op) + sec('出牌', play)
+      + (!eq && !op && !play && !L.d7 && !(L.bestLords || []).length ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
       + '</div></div>'
       + '</div>';
   }
