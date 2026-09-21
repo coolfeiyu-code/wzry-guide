@@ -183,6 +183,40 @@ function copyBridge(destDir) {
   fs.writeFileSync(shPath, sh, 'utf8');
   try { fs.chmodSync(shPath, 0o755); } catch (e) {}
   n++;
+
+  // 卸载开机自启：Windows 双击 .cmd、macOS 双击 .command，都调 安装同步桥.js --remove
+  const unCmd = [
+    '@echo off',
+    'setlocal',
+    'set NODE=%NODE%',
+    'if "%NODE%"=="" set NODE=node',
+    '"%NODE%" "%~dp0\安装同步桥.js" --remove',
+    'if errorlevel 1 (',
+    '  echo.',
+    '  echo 没找到 node 或卸载失败。请先装 Node.js，或把下面这行改成你的 node.exe 再跑：',
+    '  echo   "C:\Program Files\nodejs\node.exe" "%~dp0\安装同步桥.js" --remove',
+    ')',
+    'echo.',
+    'pause',
+    ''
+  ].join('\r\n');
+  fs.writeFileSync(path.join(destDir, '卸载同步桥.cmd'), unCmd, 'utf8');
+  n++;
+
+  const unSh = [
+    '#!/bin/bash',
+    '# macOS：双击本文件即可卸载同步桥的开机自启（不会删共享文件夹里的其它文件）',
+    'cd "$(dirname "$0")" || exit 1',
+    'NODE="$(command -v node || echo /usr/local/bin/node)"',
+    '"$NODE" "./安装同步桥.js" --remove',
+    'echo',
+    'read -n 1 -s -r -p "按任意键关闭…"',
+    ''
+  ].join('\n');
+  const unShPath = path.join(destDir, '卸载同步桥-macOS.command');
+  fs.writeFileSync(unShPath, unSh, 'utf8');
+  try { fs.chmodSync(unShPath, 0o755); } catch (e) {}
+  n++;
   return n;
 }
 
@@ -221,7 +255,7 @@ function main() {
   } catch (e) { console.error('图标复制失败', e.message); }
   try {
     const n = copyBridge(destDir);
-    console.log('同步桥文件', n, '个 → 安装同步桥.cmd（Win）/ 安装同步桥-macOS.command / 同步桥.js / 安装同步桥.js');
+    console.log('同步桥文件', n, '个 → 装：安装同步桥.cmd（Win）/ 安装同步桥-macOS.command；卸：卸载同步桥.cmd（Win）/ 卸载同步桥-macOS.command；桥本体 同步桥.js + 安装同步桥.js');
   } catch (e) { console.error('同步桥复制失败', e.message); }
 }
 
