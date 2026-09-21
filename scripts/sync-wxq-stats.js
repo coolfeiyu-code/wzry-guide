@@ -490,6 +490,12 @@ function equipDescOf(lu, pools) {
       continue;
     }
     if (hits.length) {
+      // 命中官方套时要额外拉一次 detail：棋手适配数据（各棋手的登场/前三/登顶）
+      // 只在 detail 里，search 的 commanders 只有登场率。这份数据决定详情页
+      // 能不能写「谁最适配这套」，所以宁可多一次请求。
+      const detO = await detailOf(raw.lineupKey, []);
+      const detailLords = detO ? lordStatsOf(detO, pools) : [];
+      const detailTalents = detO ? talentStatsOf(detO, pools) : [];
       hits.forEach((L) => {
         overlay.push({
           officialKey: String(L.key),
@@ -497,6 +503,8 @@ function equipDescOf(lu, pools) {
           lineupKey: String(raw.lineupKey),
           stats: st,
           overlap: inter(cores, L._names),
+          lords: detailLords,
+          talents: detailTalents,
         });
       });
       continue;
@@ -633,6 +641,14 @@ function equipDescOf(lu, pools) {
     }
   });
   const overlayBest = Object.keys(bestOv).map((k) => bestOv[k]);
+
+  // 给官方套标出「最适配棋手」：用棋手自己的前三率排，样本太小的不算，
+  // 否则一个 5 场 100% 的棋手会顶掉真正稳定的选择。登场率≥8% 且场次≥200。
+  overlayBest.forEach((row) => {
+    const lords = (row.lords || []).filter((c) => c.app >= 0.08 && c.count >= 200 && c.top3 != null);
+    row.bestLords = lords.slice().sort((a, b) => (b.top3 || 0) - (a.top3 || 0)).slice(0, 3);
+    delete row.lords;
+  });
 
   const capturedAt = new Date().toISOString().slice(0, 10);
   const meta = {

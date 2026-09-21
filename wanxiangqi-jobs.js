@@ -25,13 +25,15 @@
     if (jobs._wxqView) return jobs._wxqView;
     var stats = global.WXQ_STATS || { overlay: [], list: [] };
     var ov = {};
-    (stats.overlay || []).forEach(function (r) { ov[String(r.officialKey)] = r.stats; });
+    (stats.overlay || []).forEach(function (r) { ov[String(r.officialKey)] = r; });
     var list = (jobs.list || []).map(function (L) {
-      var s = ov[String(L.key)];
-      if (!s) return L;
+      var r = ov[String(L.key)];
+      if (!r) return L;
       var o = {};
       for (var k in L) o[k] = L[k];
-      o.stats7d = s;
+      if (r.stats) o.stats7d = r.stats;
+      // 棋手适配：来自近7日详情里各棋手自己的前三/登顶/场次，不是推测
+      if (r.bestLords && r.bestLords.length) o.bestLords = r.bestLords;
       return o;
     });
     (stats.list || []).forEach(function (L) { list.push(L); });
@@ -86,6 +88,29 @@
     var P = (ui().PLAYERS) || global.WXQ_PLAYERS || [];
     for (var i = 0; i < P.length; i++) if (P[i].name === name) return P[i];
     return null;
+  }
+
+  // 19 位棋手各给一个固定色（按官方 WXQ_PLAYERS 顺序取），不用黑色，
+  // 也不随主题变，方便一眼认出「这套是谁的」。深色底上这些中彩度色都还看得清。
+  var LORD_COLORS = [
+    '#C2410C', '#0E7490', '#7C3AED', '#B45309', '#BE185D',
+    '#15803D', '#A21CAF', '#0369A1', '#CA8A04', '#DC2626',
+    '#0F766E', '#6D28D9', '#C026D3', '#047857', '#B91C1C',
+    '#2563EB', '#9333EA', '#D97706', '#E11D48'
+  ];
+  var lordColorMap = null;
+  function lordColor(name) {
+    if (!lordColorMap) {
+      lordColorMap = {};
+      var P = (ui().PLAYERS) || global.WXQ_PLAYERS || [];
+      P.forEach(function (p, i) {
+        lordColorMap[p.name] = LORD_COLORS[i % LORD_COLORS.length];
+      });
+    }
+    return lordColorMap[name] || '#57606A';
+  }
+  function lordChip(name) {
+    return '<i class="lc" style="background:' + lordColor(name) + '">' + esc(name) + '</i>';
   }
   function talentByName(name) {
     var T = global.WXQ_TALENTS || [];
@@ -191,16 +216,38 @@
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L) ? '<span class="jtag exp">讲解</span>' : '');
     var sc = parseFloat(L.score) || 0;
     var st = statsLine(L);
+    // 卡片上直接标出棋手（各自配色），一眼能看出这套是谁在带
+    var lords = (L.lords || []).slice(0, 3).map(lordChip).join('');
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
       + (phoneView() ? '' : '<button type="button" class="jstar' + (on ? ' on' : '') + '" data-job-using="' + esc(L.key) + '" title="' + (on ? '取消在用' : '收藏为在用') + '" aria-label="' + (on ? '取消在用' : '收藏为在用') + '">★</button>')
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
       + '<div class="jcard-nm">' + esc(L.name) + '</div>'
+      + (lords ? '<div class="jcard-lords">' + lords + '</div>' : '')
       + '<div class="jcard-au">' + esc(L.author || '匿名')
       + (tag ? ' ' + tag : '')
       + (L.source === 'datawxq'
         ? (st ? ' · ' + st : '')
         : ' · ' + wan(L.useNum) + ' 使用' + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '') + (st ? ' · ' + st : ''))
       + '</div></article>';
+  }
+
+  // 适配性：近7日里各棋手用这套的前三率/登顶率（第三方统计，不是推测）
+  function bestLordsHtml(L) {
+    var rows = L.bestLords || [];
+    if (!rows.length) return '';
+    var body = rows.map(function (r) {
+      return '<div class="d7-row">'
+        + '<div class="d7-name">' + lordChip(r.name)
+        + '<span class="d7-app">登场 ' + pct(r.app) + ' · ' + (r.count || 0) + ' 场</span></div>'
+        + '<div class="d7-stats">'
+        + (r.top3 != null ? '<span class="rt top3">前三 ' + pct(r.top3) + '</span>' : '')
+        + (r.first != null ? '<span class="rt first">登顶 ' + pct(r.first) + '</span>' : '')
+        + (r.avg ? '<span class="rt n">平均名次 ' + Number(r.avg).toFixed(2) + '</span>' : '')
+        + '</div></div>';
+    }).join('');
+    return '<div class="d7-list">' + body + '</div>'
+      + '<p class="d7-src">按近7日第三方统计排序：登场 ≥8% 且 ≥200 场的棋手，取前三率最高的几位。'
+      + '数据来自 datawxq.com，不是官方胜率。</p>';
   }
 
   function boardHtml(L) {
@@ -224,14 +271,25 @@
   }
 
   function lordsHtml(L) {
-    var names = L.lords || [];
+    var names = (L.lords || []);
     if (!names.length) return '<div class="jmuted">未标注棋手</div>';
+    // 有适配数据时按前三率排，把最适配的放前面（没有就按官方顺序）
+    var rank = {};
+    (L.bestLords || []).forEach(function (r, i) { rank[r.name] = i; });
+    if (Object.keys(rank).length) {
+      names = names.slice().sort(function (a, b) {
+        var ra = rank[a] == null ? 99 : rank[a];
+        var rb = rank[b] == null ? 99 : rank[b];
+        return ra - rb;
+      });
+    }
     return names.map(function (n) {
       var p = playerByName(n);
-      var head = '<div class="jlord-h">'
+      // 点名字进图鉴（棋手页），配色与卡片一致
+      var head = '<div class="jlord-h" data-job-lord-go="' + esc(n) + '">'
         + av(playerImg(n), n, 'jav')
-        + '<div><div class="jlord-n">' + esc(n) + '</div>'
-        + (p ? '<div class="jlord-k">棋手</div>' : '<div class="jlord-k">官方库棋手（图鉴未收录）</div>')
+        + '<div><div class="jlord-n">' + lordChip(n) + '</div>'
+        + (p ? '<div class="jlord-k">棋手 · 点开图鉴</div>' : '<div class="jlord-k">官方库棋手（图鉴未收录）</div>')
         + '</div></div>';
       if (!p || !p.skills || !p.skills.length) return '<div class="jlord-block">' + head + '</div>';
       var sk = p.skills.map(function (s) {
@@ -430,6 +488,7 @@
       + (d7 && (L.d7.builds || []).length ? '<section class="jbox"><h3>装备组合 <span>按前三率排序，只列场次≥5 的搭配</span></h3>' + d7BuildsHtml(L) + '</section>' : '')
       + (d7 && (L.d7.variants || []).length ? '<section class="jbox"><h3>同类变体 <span>同一套英雄，换了人之后的数据</span></h3>' + d7VariantsHtml(L) + '</section>' : '')
       + (d7 && (L.d7.boards || []).length > 1 ? '<section class="jbox"><h3>更多参考站位 <span>近 7 日登顶对局</span></h3>' + d7BoardsHtml(L) + '</section>' : '')
+      + ((L.bestLords || []).length ? '<section class="jbox"><h3>这套谁最适配 <span>近7日各棋手用这套的成绩</span></h3>' + bestLordsHtml(L) + '</section>' : '')
       + '</article>';
   }
 
@@ -483,6 +542,16 @@
     var c = heroByName(name);
     var b = ui();
     if (c && b.openCard) b.openCard('hero', c.id);
+  }
+
+  // 棋手名字点开图鉴（棋手弹窗，含技能/秘技/专属）
+  function openLord(name) {
+    var b = ui();
+    if (b.openPlayer) b.openPlayer(name);
+    else {
+      var p = playerByName(name);
+      if (p && b.openCard) b.openCard('player', p.id);
+    }
   }
 
   function copyKey(key, btn) {
@@ -598,6 +667,8 @@
     if (back) { closeDetail(false); return 'open'; }
     var hero = t.closest && t.closest('[data-job-hero]');
     if (hero) { openHero(hero.getAttribute('data-job-hero')); return 'open'; }
+    var lordGo = t.closest && t.closest('[data-job-lord-go]');
+    if (lordGo) { openLord(lordGo.getAttribute('data-job-lord-go')); return 'open'; }
     var cp = t.closest && t.closest('[data-copy-key]');
     if (cp) { copyKey(cp.getAttribute('data-copy-key'), cp); return 'open'; }
     var exb = t.closest && t.closest('[data-job-explain-back]');
