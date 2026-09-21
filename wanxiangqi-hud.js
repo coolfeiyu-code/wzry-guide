@@ -88,10 +88,11 @@
     try {
       var o = JSON.parse(localStorage.getItem(STORE) || '');
       if (!o || !o.keys) return { keys: [], last: '' };
-      return { keys: o.keys.map(String).filter(Boolean).slice(0, MAX), last: String(o.last || '') };
+      return { keys: o.keys.map(String).filter(Boolean).slice(0, MAX), last: String(o.last || ''), at: o.at };
     } catch (e) { return { keys: [], last: '' }; }
   }
   function save(st) {
+    st.at = Date.now(); // 最近一次本地编辑时刻，供云端按时间戳后写者胜同步
     try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) {}
     paintDock();
     cloudTouch();

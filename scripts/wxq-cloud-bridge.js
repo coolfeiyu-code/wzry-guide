@@ -122,33 +122,23 @@ function readCfg(dir) {
   } catch (e) { return { v: 1 }; }
 }
 
-function unionKeys(a, b) {
-  const seen = Object.create(null);
-  const out = [];
-  [a, b].forEach(function (arr) {
-    (arr || []).forEach(function (k) {
-      k = String(k || '');
-      if (!k || seen[k]) return;
-      seen[k] = 1;
-      out.push(k);
-    });
-  });
-  return out.slice(0, 8);
-}
-
-// 后写的那台不能把另一台的收藏冲掉：收藏取并集，屏幕尺寸按分辨率分桶合并。
+// 在用阵容整组覆盖：谁改得晚（at 大）谁说了算，删除能穿透。
 function mergeCfg(disk, incoming) {
   const out = Object.assign({}, disk || {}, incoming || {});
   out.v = 1;
   out.updatedAt = new Date().toISOString();
-  const disks = (disk && disk.using) || {};
-  const inc = (incoming && incoming.using) || {};
-  if ((disks.keys && disks.keys.length) || (inc.keys && inc.keys.length)) {
-    const keys = unionKeys(disks.keys, inc.keys);
-    let last = String(inc.last || '');
-    if (keys.indexOf(last) < 0) last = String(disks.last || '');
-    if (keys.indexOf(last) < 0) last = keys[keys.length - 1] || '';
-    out.using = { keys: keys, last: last };
+  const incUsing = (incoming && incoming.using) || null;
+  const diskUsing = (disk && disk.using) || null;
+  if (incUsing && incUsing.keys) {
+    const inAt = Number(incUsing.at || 0);
+    const dsAt = Number((diskUsing && diskUsing.at) || 0);
+    if (inAt >= dsAt || inAt === 0 || dsAt === 0) {
+      out.using = { keys: incUsing.keys.slice(0, 8), last: String(incUsing.last || ''), at: inAt };
+    } else {
+      out.using = diskUsing; // 旧的写进来，以云端(较新)为准，防止旧端覆盖
+    }
+  } else if (diskUsing) {
+    out.using = diskUsing; // incoming 未带有效 using，保留云端在用阵容
   }
   if (disk && disk.hudSize && incoming && incoming.hudSize) {
     out.hudSize = Object.assign({}, disk.hudSize, incoming.hudSize);

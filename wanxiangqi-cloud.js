@@ -74,40 +74,23 @@
     if (theme) o.theme = theme;
     return o;
   }
-  function unionKeys(a, b) {
-    var seen = {};
-    var out = [];
-    [a, b].forEach(function (arr) {
-      (arr || []).forEach(function (k) {
-        k = String(k || '');
-        if (!k || seen[k]) return;
-        seen[k] = 1;
-        out.push(k);
-      });
-    });
-    return out.slice(0, 8);
+  // 返回 'adopt'(云端新，整组覆盖本机) | 'local_newer'(本机新，需写回云端) | 'none'(云端空)
+  function decideUsing(cfgUsing) {
+    if (!cfgUsing || !cfgUsing.keys || !cfgUsing.keys.length) return 'none';
+    var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
+    var cloudAt = Number(cfgUsing.at || 0);
+    var localAt = Number(local.at || 0);
+    if (cloudAt >= localAt) {
+      lsSet(KEYS.using, JSON.stringify({ keys: cfgUsing.keys.slice(0, 8), last: String(cfgUsing.last || ''), at: cloudAt }));
+      return 'adopt';
+    }
+    return 'local_newer';
   }
-  // 两边都可能收藏过：并起来，别让后打开的那台把对方的冲掉。
-  function mergeUsing(a, b) {
-    var keys = unionKeys(a && a.keys, b && b.keys);
-    var last = String((b && b.last) || '');
-    if (keys.indexOf(last) < 0) last = String((a && a.last) || '');
-    if (keys.indexOf(last) < 0) last = keys[keys.length - 1] || '';
-    return { keys: keys, last: last };
-  }
-  // 云端配置合进本机：收藏取并集，其余字段本机没有才采纳。
+  // 云端配置合进本机：在用阵容按时间戳整组覆盖（删除可穿透），其余字段本机没有才采纳。
   function mergeBoot(cfg) {
     if (!cfg || typeof cfg !== 'object') return false;
     var changed = false;
-    if (cfg.using && cfg.using.keys && cfg.using.keys.length) {
-      var local = parseJson(lsGet(KEYS.using));
-      var merged = mergeUsing(local, cfg.using);
-      var before = local ? JSON.stringify({ k: local.keys || [], l: local.last || '' }) : '';
-      if (before !== JSON.stringify({ k: merged.keys, l: merged.last })) {
-        lsSet(KEYS.using, JSON.stringify(merged));
-        changed = true;
-      }
-    }
+    if (decideUsing(cfg.using) === 'adopt') changed = true;
     if (cfg.theme && lsGet(KEYS.theme) == null) { lsSet(KEYS.theme, cfg.theme); changed = true; }
     if (cfg.hudSize && lsGet(KEYS.hudSize) == null) { lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize)); changed = true; }
     if (cfg.hudPos && lsGet(KEYS.hudPos) == null) { lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos)); changed = true; }
@@ -188,13 +171,12 @@
     return bridgeCall('/api/cloud', null, 3000).then(function (j) {
       if (!j || !j.ok) return false;
       var cfg = j.cfg || { v: 1 };
-      var cloudKeys = (cfg.using && cfg.using.keys) || [];
-      var merged = mergeBoot(cfg);
-      var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
-      var union = mergeUsing({ keys: cloudKeys, last: cfg.using && cfg.using.last }, local);
-      var stale = union.keys.join('|') !== cloudKeys.join('|');
-      if (merged && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-      if (merged || stale) return queueWrite();
+      var d = decideUsing(cfg.using);
+      if (d === 'adopt') {
+        if (global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
+      } else if (d === 'local_newer') {
+        return queueWrite(); // 本机更新，把整组写回云端
+      }
       return false;
     }).catch(function () { return false; });
   }
@@ -303,13 +285,12 @@
         var m = String(txt).match(/window\.WXQ_CLOUD_BOOT\s*=\s*(\{[\s\S]*\});?/);
         var cfg = m ? parseJson(m[1]) : null;
         if (!cfg) cfg = { v: 1 };
-        var cloudKeys = (cfg.using && cfg.using.keys) || [];
-        var merged = mergeBoot(cfg);
-        var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
-        var union = mergeUsing({ keys: cloudKeys, last: cfg.using && cfg.using.last }, local);
-        var stale = union.keys.join('|') !== cloudKeys.join('|');
-        if (merged && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-        if (merged || stale) return queueWrite();
+        var d = decideUsing(cfg.using);
+        if (d === 'adopt') {
+          if (global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
+        } else if (d === 'local_newer') {
+          return queueWrite(); // 本机更新，把整组写回云端
+        }
         return false;
       }).catch(function () { return false; });
   }
@@ -384,14 +365,6 @@
     };
     return;
   }
-
-  // 首次点击页面任意位置时顺手申请文件授权（仅退路模式需要）
-  function onFirstGesture() {
-    if (mode === 'bridge' || granted || !dirHandle) return;
-    askPermission();
-  }
-  document.addEventListener('pointerdown', onFirstGesture, true);
-  document.addEventListener('keydown', onFirstGesture, true);
 
   detectBridge().then(function (ok) {
     if (ok) {
