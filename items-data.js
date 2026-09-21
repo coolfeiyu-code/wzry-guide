@@ -1,10 +1,10 @@
 // 装备库数据源 —— 由 scripts/sync-items.py 自动生成，请勿手工编辑
 // 数据源：https://pvp.qq.com/web201605/js/item.json
-// 同步日期：2026-09-14
+// 同步日期：2026-09-21
 window.ITEMS = {
  "meta": {
   "season": "S44",
-  "updated": "2026-09-14",
+  "updated": "2026-09-21",
   "source": "pvp.qq.com 官方 item.json",
   "total": 121,
   "iconTotal": 108
