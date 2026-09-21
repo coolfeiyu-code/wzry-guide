@@ -238,7 +238,7 @@
     var sc = parseFloat(L.score) || 0;
     var st = statsLine(L);
     // 卡片上直接标出棋手（各自配色），一眼能看出这套是谁在带
-    var lords = (L.lords || []).slice(0, 3).map(lordChip).join('');
+    var lords = cardLordNames(L).map(lordChip).join('');
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
       + (phoneView() ? '' : '<button type="button" class="jstar' + (on ? ' on' : '') + '" data-job-using="' + esc(L.key) + '" title="' + (on ? '取消在用' : '收藏为在用') + '" aria-label="' + (on ? '取消在用' : '收藏为在用') + '">★</button>')
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
@@ -252,23 +252,13 @@
       + '</div></article>';
   }
 
-  // 适配性：近7日里各棋手用这套的前三率/登顶率（第三方统计，不是推测）
-  function bestLordsHtml(L) {
-    var rows = L.bestLords || [];
-    if (!rows.length) return '';
-    var body = rows.map(function (r) {
-      return '<div class="d7-row">'
-        + '<div class="d7-name">' + lordChip(r.name)
-        + '<span class="d7-app">登场 ' + pct(r.app) + ' · ' + (r.count || 0) + ' 场</span></div>'
-        + '<div class="d7-stats">'
-        + (r.top3 != null ? '<span class="rt top3">前三 ' + pct(r.top3) + '</span>' : '')
-        + (r.first != null ? '<span class="rt first">登顶 ' + pct(r.first) + '</span>' : '')
-        + (r.avg ? '<span class="rt n">平均名次 ' + Number(r.avg).toFixed(2) + '</span>' : '')
-        + '</div></div>';
-    }).join('');
-    return '<div class="d7-list">' + body + '</div>'
-      + '<p class="d7-src">按近7日第三方统计排序：登场 ≥8% 且 ≥200 场的棋手，取前三率最高的几位。'
-      + '数据来自 datawxq.com，不是官方胜率。</p>';
+  // 卡片上直接标出棋手（各自配色）：有近7日适配数据就以数据为准并用数据的顺序，
+  // 没有再退回官方库原文的 lords。用户要求「数据第一位」。
+  function cardLordNames(L) {
+    var adapt = (L.bestLords || []).length ? L.bestLords
+      : ((L.d7 && L.d7.lords) || []);
+    if (adapt.length) return adapt.slice(0, 3).map(function (r) { return r.name; });
+    return (L.lords || []).slice(0, 3);
   }
 
   function boardHtml(L) {
@@ -291,35 +281,48 @@
     return '<div class="jboard">' + rows + '</div>';
   }
 
+  // 棋手块：有近7日适配数据就**以数据为准**（名单、顺序、每个棋手自己的成绩都用
+  // 统计里的），官方库原文里的 lords 只在没有数据时兜底。用户要求「数据第一位」。
   function lordsHtml(L) {
-    var names = (L.lords || []);
-    if (!names.length) return '<div class="jmuted">未标注棋手</div>';
-    // 有适配数据时按前三率排，把最适配的放前面（没有就按官方顺序）
-    var rank = {};
-    (L.bestLords || []).forEach(function (r, i) { rank[r.name] = i; });
-    if (Object.keys(rank).length) {
-      names = names.slice().sort(function (a, b) {
-        var ra = rank[a] == null ? 99 : rank[a];
-        var rb = rank[b] == null ? 99 : rank[b];
-        return ra - rb;
-      });
+    var adapt = (L.bestLords || []).length ? L.bestLords
+      : ((L.d7 && L.d7.lords) || []).filter(function (r) { return (r.app || 0) >= 0.08; });
+    var names, stat = {};
+    if (adapt.length) {
+      adapt.forEach(function (r) { stat[r.name] = r; });
+      names = adapt.map(function (r) { return r.name; });
+    } else {
+      names = (L.lords || []).slice();
     }
-    return names.map(function (n) {
+    if (!names.length) return '<div class="jmuted">未标注棋手</div>';
+    var html = names.map(function (n) {
       var p = playerByName(n);
+      var r = stat[n];
       // 点名字进图鉴（棋手页），配色与卡片一致
       var head = '<div class="jlord-h" data-job-lord-go="' + esc(n) + '">'
         + av(playerImg(n), n, 'jav')
         + '<div><div class="jlord-n">' + lordChip(n) + '</div>'
         + (p ? '<div class="jlord-k">棋手 · 点开图鉴</div>' : '<div class="jlord-k">官方库棋手（图鉴未收录）</div>')
         + '</div></div>';
-      if (!p || !p.skills || !p.skills.length) return '<div class="jlord-block">' + head + '</div>';
+      // 有统计就把这个棋手用这套的成绩直接摆在名字下面
+      var line = r ? '<div class="jlord-stat">'
+        + '<span class="rt n">登场 ' + pct(r.app) + (r.count ? ' · ' + r.count + ' 场' : '') + '</span>'
+        + (r.top3 != null ? '<span class="rt top3">前三 ' + pct(r.top3) + '</span>' : '')
+        + (r.first != null ? '<span class="rt first">登顶 ' + pct(r.first) + '</span>' : '')
+        + (r.avg ? '<span class="rt n">平均 ' + Number(r.avg).toFixed(2) + '</span>' : '')
+        + '</div>' : '';
+      if (!p || !p.skills || !p.skills.length) return '<div class="jlord-block">' + head + line + '</div>';
       var sk = p.skills.map(function (s) {
         return '<div class="jsk"><span class="jsk-k">' + esc(s.kind) + '</span>'
           + '<span class="jsk-n">' + esc(s.name) + '</span>'
           + '<div class="jsk-d">' + fmt(s.desc) + '</div></div>';
       }).join('');
-      return '<div class="jlord-block">' + head + sk + '</div>';
+      return '<div class="jlord-block">' + head + line + sk + '</div>';
     }).join('');
+    if (adapt.length) {
+      html += '<p class="d7-src">棋手与顺序按近7日第三方统计（登场 ≥8% 且 ≥200 场，按前三率排），'
+        + '不是官方库原文的棋手标注。数据来自 datawxq.com。</p>';
+    }
+    return html;
   }
 
   function equipsHtml(L) {
@@ -509,7 +512,6 @@
       + (d7 && (L.d7.builds || []).length ? '<section class="jbox"><h3>装备组合 <span>按前三率排序，只列场次≥5 的搭配</span></h3>' + d7BuildsHtml(L) + '</section>' : '')
       + (d7 && (L.d7.variants || []).length ? '<section class="jbox"><h3>同类变体 <span>同一套英雄，换了人之后的数据</span></h3>' + d7VariantsHtml(L) + '</section>' : '')
       + (d7 && (L.d7.boards || []).length > 1 ? '<section class="jbox"><h3>更多参考站位 <span>近 7 日登顶对局</span></h3>' + d7BoardsHtml(L) + '</section>' : '')
-      + ((L.bestLords || []).length ? '<section class="jbox"><h3>这套谁最适配 <span>近7日各棋手用这套的成绩</span></h3>' + bestLordsHtml(L) + '</section>' : '')
       + '</article>';
   }
 

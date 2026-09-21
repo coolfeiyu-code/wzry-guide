@@ -3,7 +3,7 @@
 > 最后更新：2026-09-19
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.45**（修棋手配色对比度与浮窗色标）。官方阵容库 **v1.3.0**（298 套）。近7日数据阵容 **v1.2.0**。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.46**（棋手以数据为准 + 修词条高亮盖色）。官方阵容库 **v1.3.0**（298 套）。近7日数据阵容 **v1.2.0**。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -50,7 +50,7 @@ wzry-guide/
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的阵容有「讲解这套」。版本只升 WXQ_META
 ├── wanxiangqi-explain.js   讲解：官方卡面 + 阵容原文。识别李信牺牲/木兰复生/三分倒转/大河开团/日落海整备/往生图腾。李信按上场牺牲位拆读法。
-├── wanxiangqi-hud.js       在用阵容（localStorage wxq-using-v1，最多 8 套）+ 对局浮窗（Chrome 画中画贴最前 / 弹出小窗 / 页内可拖）。贴不进游戏画面。
+├── wanxiangqi-hud.js       在用阵容（localStorage wxq-using-v1，最多 8 套）+ 对局浮窗（独立小窗，可拖可拉；关不掉助手页时用占位页兜底）。贴不进游戏画面。
 ├── wanxiangqi-data.js      万象棋官方快照只读数据源（WXQ_META + WXQ_PLAYERS(19 含阿离)/HEROES(85)/EFFECTS(98)/EQUIPS(73)/TALENTS(255)/FACTIONS(7)）。**严禁手改**。英雄另有 skills/awakeDesc/stats/kwHelp/cost；装备另有 subType/equipType/craftFrom/craftInto
 ├── wanxiangqi-guide.js     万象棋攻略数据（WXQ_GUIDE，手工维护，改文案改这里）
 ├── wanxiangqi-lineups.js   官方阵容推荐库（WXQ_JOBS，scripts/sync-wxq-lineups.js 生成，**勿手改**）
@@ -145,6 +145,8 @@ WXQ_GUIDE = {
 - 排序按钮：使用量 / 评分 / 前三率 / 登顶率 / 时间（`sbtn('first','登顶率')`，排序键 `js.sort==='first'`）。
 - **棋手配色**：19 位各一对固定色（`wanxiangqi-jobs.js` 的 `LORD_COLORS`，按官方 `WXQ_PLAYERS` 顺序分配，无黑色、无重复）。**每对是 [浅色主题: 深底白字, 深色主题: 亮底深字]** —— 只用一个色值必然在另一套主题上糊掉（用户 2026-09-21 反馈「看不清楚」就是这个原因）。渲染成 `--lc-l` / `--lc-d` 两个 CSS 变量，`.lc` 在 `[data-theme="dark"]` 下自动换。对比度已脚本核算：字/底 ≥4.5、底/页面 ≥3，两套主题都达标；深色底亮度上限 0.72 防止刺眼。卡片取前 3 位棋手。
 - **配色表要在 jobs 里导出**（`window.WXQ_LORD_COLORS.themePair`），浮窗没有 jobs 的 `ui()` 上下文，必须走这个共享入口才能拿到同一套色。**浮窗之前棋手名是纯文本 `esc(lords)`，所以全黑** —— 浮窗里必须用 `lordChip()`。
+- **棋手名会被「词条高亮」包成 `.wxq-term`**（`fmt()`/linkify 给术语加的橙色字 + 虚线下划线），它会把色标的白字/深字盖成橙字 —— 这就是用户 2026-09-21 第二次反馈「底色和本色一模一样，根本看不清」的真正原因。`.lc .wxq-term` 必须 `color:inherit; background:transparent; border-bottom:0`。改色标后**一定要量 `.wxq-term` 的实际 color**，只量 `.lc` 看不出来。
+- **数据优先（用户要求「数据第一位」）**：`cardLordNames()`（卡片）与 `lordsHtml()`（详情）/`hudLordNames()`（浮窗）都先取 `bestLords` → 再取 `d7.lords` → 最后才退回官方库原文 `lords`。名单与顺序都按统计（已按前三率排），详情里每个棋手名下面直接摆他自己用这套的登场/前三/登顶/平均。原「这套谁最适配」独立板块已合并进棋手块，不再重复列同一批名字。有统计时加 `d7-src` 说明来源。
 - **棋手图鉴**：详情页棋手名 `data-job-lord-go` → `openLord()` → `__wxqUI.openPlayer(name)`（棋手弹窗，含技能/秘技/专属）。别再自己拼弹窗。
 - **适配性数据（「这套谁最适配」）**：来自 datawxq `detail` 的 `commanders`（每个棋手自己的登场率/前三率/登顶率/场次），**不是推测**。同步时对命中的官方套额外拉一次 detail，写进 `overlay[].bestLords`；筛选条件 **登场 ≥8% 且场次 ≥200**（否则 5 场 100% 的棋手会顶掉稳定选择），取前三率前 3。298 套官方阵容中 138 套有这份数据。
 - 注意 `.rt` 的 class 名是 `top3`/`first`（不是 `t3`/`f1`），改的时候要对齐全文件已有样式。

@@ -367,9 +367,7 @@
         + rows.map(function (r) { return '<span>' + fmt(r) + '</span>'; }).join('')
         + '</div>');
     }
-    line('棋手', d.lords, function (r) {
-      return lordChip(r.name) + ' 登场' + pctText(r.app) + (r.top3 ? ' · 前三' + pctText(r.top3) : '');
-    });
+    // 棋手不在这里列：上面「这套谁最适配」已经按胜负数据列过，避免同一批名字出现两次
     line('天赋', d.talents, function (r) {
       return esc(r.name) + (r.top3 ? ' 前三' + pctText(r.top3) : '') + (r.count ? '（' + r.count + '场）' : '');
     });
@@ -409,6 +407,14 @@
   function lordChips(names) {
     return (names || []).map(lordChip).join('');
   }
+  // 棋手名单以近7日数据为准（bestLords 已按前三率排好）；
+  // 没有数据才退回官方库原文的 lords。用户要求「数据第一位」。
+  function hudLordNames(L) {
+    var adapt = (L.bestLords || []).length ? L.bestLords
+      : ((L.d7 && L.d7.lords) || []);
+    if (adapt.length) return adapt.map(function (r) { return r.name; });
+    return (L.lords || []);
+  }
 
   // 适配棋手：官方套用 overlay.bestLords（近7日各棋手用自己的成绩），
   // 7 日卡用 d7.lords。有就按前三率展示，没有就不显示这一块。
@@ -446,13 +452,12 @@
       + switcherHtml(L.key)
       + '<div class="hbody">'
       + '<div class="hside"><div class="hname">' + esc(L.name) + '</div>'
-      + ((L.lords || []).length ? '<div class="hlords">' + lordChips(L.lords) + '</div>' : '')
+      + ((L.lords || []).length || (L.bestLords || []).length ? '<div class="hlords">' + lordChips(hudLordNames(L)) + '</div>' : '')
       + (L.nocode
         ? '<p class="hsub">第三方数据，无可导入阵容码</p>'
         : '<p class="hsub">阵容码 <button type="button" class="hlink" data-hud-copy="' + esc(L.key) + '">复制</button></p>')
       + boardHtml(L) + '</div>'
-      + '<div class="htips">' + sec('装备', eq) + sec('这套谁最适配', adaptBlock(L)) + sec('7日数据', d7Block(L)) + sec('前 / 中 / 后期', op) + sec('出牌', play)
-      + (!eq && !op && !play && !L.d7 && !(L.bestLords || []).length ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
+      + '<div class="htips">' + sec('装备', eq) + sec('这套谁最适配', adaptBlock(L)) + sec('7日数据', d7Block(L)) + sec('前 / 中 / 后期', op) + sec('出牌', play)      + (!eq && !op && !play && !L.d7 && !(L.bestLords || []).length ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
       + '</div></div>'
       + '</div>';
   }

@@ -519,9 +519,15 @@
     padding:0 6px;margin-right:4px;white-space:nowrap;
     background:var(--lc-l,#52525B);color:#fff;font-weight:600;}
   [data-theme="dark"] .lc{background:var(--lc-d,#D4D4D8);color:#14121A;}
+  /* 棋手名会被「词条高亮」包成 .wxq-term（那是给术语用的橙色字+虚线下划线），
+     它会把色标的白字/深字盖成橙字，在色标底上几乎看不清。这里强制继承色标颜色。 */
+  .lc .wxq-term,.lc .wxq-term:hover{color:inherit;background:transparent;border-bottom:0;font-weight:inherit;cursor:inherit;}
   .jcard-lords{display:flex;flex-wrap:wrap;gap:0;margin-top:6px;}
   .jlord-h[data-job-lord-go]{cursor:pointer;}
   .jlord-h[data-job-lord-go]:hover .lc{filter:brightness(1.12);}
+  /* 棋手行下面直接摆这个棋手用这套的成绩（登场/前三/登顶/平均） */
+  .jlord-stat{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 0;font-size:12.5px;line-height:1.6;}
+  .jlord-stat .rt{font-style:normal;}
   .d7-src{font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;line-height:1.6;}
   /* 浮窗里的棋手行与适配行 */
   .hlords{display:flex;flex-wrap:wrap;gap:0;margin:6px 0 0;}
