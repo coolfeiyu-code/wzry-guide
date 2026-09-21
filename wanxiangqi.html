@@ -517,6 +517,28 @@
   .st.top3{color:#2E7D6B;font-weight:600;}
   .st.first{color:#C77B12;font-weight:700;}
   .st.thin{color:var(--ink-soft);font-style:italic;}
+  /* 7 日数据卡：第三方只给统计，按胜率把「谁胜率高、带什么」排出来 */
+  .d7-list{display:flex;flex-direction:column;gap:10px;}
+  .d7-row{border-top:1px solid var(--line);padding-top:8px;}
+  .d7-row:first-child{border-top:0;padding-top:0;}
+  .d7-name{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--ink);}
+  .d7-name b{font-weight:700;}
+  .d7-app{font-size:11.5px;color:var(--ink-soft);font-weight:400;}
+  .d7-sk{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:4px 0 0 32px;}
+  .d7-stats{display:flex;flex-wrap:wrap;gap:8px;margin:5px 0 0 32px;font-size:12.5px;}
+  .d7-build{display:flex;align-items:center;gap:6px;margin:6px 0 0 32px;flex-wrap:wrap;}
+  .d7-build .d7-stats{margin:0;}
+  .rt{font-style:normal;}
+  .rt.top3{color:#2E7D6B;font-weight:600;}
+  .rt.first{color:#C77B12;font-weight:700;}
+  .rt.n{color:var(--ink-soft);}
+  .d7-add{color:#2E7D6B;font-weight:600;font-size:12.5px;margin-left:4px;}
+  .d7-rm{color:var(--ink-soft);font-size:12.5px;margin-left:4px;text-decoration:line-through;}
+  .d7-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+  .d7-board-h{font-size:11.5px;color:var(--ink-soft);margin-bottom:6px;}
+  [data-theme="dark"] .rt.top3{color:#5FD0B0;}
+  [data-theme="dark"] .rt.first{color:#FFC24A;}
+  [data-theme="dark"] .d7-add{color:#5FD0B0;}
   .jtag{font-size:10.5px;color:#fff;border-radius:5px;padding:0 6px;margin-left:4px;vertical-align:1px;}
   .jtag.hot,.jtag.god,.jtag.exp,.jtag.d7,.jtag.using{background:var(--accent-fill);}
   .jtag.official{background:var(--ink);}
@@ -715,6 +737,10 @@
   .htips .hsec:first-child{margin-top:0;}
   .hsec{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line);}
   .hsec h4{margin:0 0 6px;font-size:12px;color:var(--celadon-deep);letter-spacing:.04em;}
+  /* 浮窗里的 7 日数据：压成紧凑几行，别把浮窗撑太长 */
+  .hd7{margin:0 0 6px;}
+  .hd7 b{display:block;font-size:11px;color:var(--ink-soft);font-weight:600;margin-bottom:3px;}
+  .hd7 span{display:block;font-size:12px;line-height:1.6;color:var(--ink);}
   .heq-row{display:flex;gap:8px;margin:0 0 8px;}
   .heq-h{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--paper-2);flex:none;}
   .heq-n{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px;}

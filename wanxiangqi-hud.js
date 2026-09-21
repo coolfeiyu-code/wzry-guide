@@ -355,6 +355,44 @@
     }).join('') + '</div>';
   }
 
+  // 7 日数据卡：把接口带的胜率压成一行行小字，浮窗里也要能看
+  function d7Block(L) {
+    var d = L.d7;
+    if (!d) return '';
+    var bits = [];
+    function line(tag, rows, fmt) {
+      if (!rows || !rows.length) return;
+      bits.push('<div class="hd7">'
+        + '<b>' + esc(tag) + '</b>'
+        + rows.map(function (r) { return '<span>' + fmt(r) + '</span>'; }).join('')
+        + '</div>');
+    }
+    line('棋手', d.lords, function (r) {
+      return esc(r.name) + ' 登场' + pctText(r.app) + (r.top3 ? ' · 前三' + pctText(r.top3) : '');
+    });
+    line('天赋', d.talents, function (r) {
+      return esc(r.name) + (r.top3 ? ' 前三' + pctText(r.top3) : '') + (r.count ? '（' + r.count + '场）' : '');
+    });
+    line('装备组合', flattenBuilds(d.builds), function (b) {
+      return esc(b.hero) + ' ' + esc(b.items.join('+')) + ' · 前三' + pctText(b.top3);
+    });
+    return bits.join('');
+  }
+  function flattenBuilds(list) {
+    var out = [];
+    (list || []).forEach(function (h) {
+      (h.builds || []).forEach(function (b) {
+        out.push({ hero: h.name, items: b.items, top3: b.top3, count: b.count });
+      });
+    });
+    return out.slice(0, 6);
+  }
+  function pctText(n) {
+    n = Number(n) || 0;
+    if (n <= 0) return '';
+    return Math.round(n * 1000) / 10 + '%';
+  }
+
   function innerHtml(L) {
     var lords = (L.lords || []).join(' / ');
     var eq = equipsBlock(L);
@@ -378,8 +416,8 @@
         ? '<p class="hsub">第三方数据，无可导入阵容码</p>'
         : '<p class="hsub">阵容码 <button type="button" class="hlink" data-hud-copy="' + esc(L.key) + '">复制</button></p>')
       + boardHtml(L) + '</div>'
-      + '<div class="htips">' + sec('装备', eq) + sec('前 / 中 / 后期', op) + sec('出牌', play)
-      + (!eq && !op && !play ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
+      + '<div class="htips">' + sec('装备', eq) + sec('7日数据', d7Block(L)) + sec('前 / 中 / 后期', op) + sec('出牌', play)
+      + (!eq && !op && !play && !L.d7 ? '<p class="hmuted">这套原文没写装备和运营，只看站位。</p>' : '')
       + '</div></div>'
       + '</div>';
   }

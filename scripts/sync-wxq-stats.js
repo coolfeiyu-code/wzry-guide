@@ -257,8 +257,7 @@ function clamp(n, lo, hi) {
 }
 
 function boardHeroes(lu, pools) {
-  const board = lu.referenceBoard || (Array.isArray(lu.referenceBoards) && lu.referenceBoards[0]) || null;
-  const rec = {};
+  const board = lu.referenceBoard || (Array.isArray(lu.referenceBoards) && lu.referenceBoards[0]) || null;  const rec = {};
   (lu.recommendedUnits || []).forEach((u) => {
     rec[T(u.heroName)] = u;
   });
@@ -321,6 +320,97 @@ function lordNames(lu, pools) {
     .map((c) => T(c.name))
     .filter((n) => n && pools.players[n])
     .slice(0, 3);
+}
+
+function r2(n) { return Math.round((Number(n) || 0) * 1000) / 1000; }
+
+// 棋手榜：详情里每个棋手都带自己的场次/前三/登顶，挑实际在用的前几个。
+function lordStatsOf(lu, pools) {
+  return (lu.commanders || [])
+    .filter((c) => pools.players[T(c.name)])
+    .slice()
+    .sort((a, b) => (b.appearanceRate || 0) - (a.appearanceRate || 0))
+    .slice(0, 4)
+    .map((c) => ({
+      name: T(c.name),
+      app: r2(c.appearanceRate),
+      count: Number(c.count) || 0,
+      top3: r2(c.top3Rate),
+      first: r2(c.firstRate),
+      avg: r2(c.avgPlacement),
+    }));
+}
+
+// 天赋按出现场次取前几个，带上该天赋的胜率（接口返回 160 条，全塞没必要）。
+function talentStatsOf(lu, pools) {
+  const byId = Object.create(null);
+  Object.keys(pools.talents).forEach((n) => {
+    const t = pools.talents[n];
+    if (t && t.id != null) byId[String(t.id)] = n;
+  });
+  return (lu.talents || [])
+    .slice()
+    .sort((a, b) => (b.count || 0) - (a.count || 0))
+    .map((t) => ({ name: byId[String(t.id)] || '', t: t }))
+    .filter((x) => x.name && pools.talents[x.name])
+    .slice(0, 6)
+    .map((x) => ({
+      name: x.name,
+      app: r2(x.t.appearanceRate),
+      count: Number(x.t.count) || 0,
+      top3: r2(x.t.top3Rate),
+      first: r2(x.t.firstRate),
+    }));
+}
+
+// 每个英雄最常赢的装备组合：接口按 heroEquipment[].builds 给，取场次够的组合。
+function buildStatsOf(lu, pools) {
+  const heroName = Object.create(null);
+  (lu.heroes || []).concat(lu.coreHeroes || []).forEach((h) => {
+    if (h && h.id != null && h.name) heroName[String(h.id)] = T(h.name);
+  });
+  const board = lu.referenceBoard || (Array.isArray(lu.referenceBoards) && lu.referenceBoards[0]) || null;
+  ((board && board.units) || []).forEach((u) => {
+    if (u && u.hero_id != null && u.hero_name) heroName[String(u.hero_id)] = T(u.hero_name);
+  });
+  const out = [];
+  (lu.heroEquipment || []).forEach((h) => {
+    const name = heroName[String(h.heroId)];
+    if (!name || !pools.heroes[name]) return;
+    const builds = (h.builds || [])
+      .map((b) => ({
+        items: (b.itemNames || []).map(T).filter((e) => pools.equips[e]),
+        count: Number(b.count) || 0,
+        top3: r2(b.top3Rate),
+        first: r2(b.firstRate),
+      }))
+      .filter((b) => b.items.length === 3 && b.count >= 5)
+      .sort((a, b) => (b.top3 - a.top3) || (b.count - a.count))
+      .slice(0, 2);
+    if (!builds.length) return;
+    out.push({
+      name: name,
+      level: Math.round(Number(h.avgLevel) || 0),
+      mvp: r2(h.mvpRate),
+      awaken: r2(h.awakenedRate),
+      builds: builds,
+    });
+  });
+  return out.sort((a, b) => (b.builds[0].top3 - a.builds[0].top3)).slice(0, 7);
+}
+
+// 多留几套参考站位（接口给 5 条），浮窗/详情可以换着看。
+function boardsOf(lu, pools) {
+  const list = Array.isArray(lu.referenceBoards) && lu.referenceBoards.length
+    ? lu.referenceBoards
+    : (lu.referenceBoard ? [lu.referenceBoard] : []);
+  const out = [];
+  list.forEach((b) => {
+    const heroes = boardHeroes({ referenceBoard: b }, pools);
+    if (heroes.length < 4) return;
+    out.push({ placement: Number(b.placement) || 0, heroes: heroes });
+  });
+  return out.slice(0, 3);
 }
 
 function isShangui(cores) {
@@ -456,6 +546,27 @@ function equipDescOf(lu, pools) {
     }
     const lords = lordNames(det, pools);
     const talents = talentNames(det, pools);
+    // 接口还带着棋手胜率、天赋胜率、装备组合、多条参考对局，全取出来，
+    // 否则 7 日卡只剩一句「样本 N 场」，看着像没内容。
+    const d7 = {
+      lords: lordStatsOf(det, pools),
+      talents: talentStatsOf(det, pools),
+      builds: buildStatsOf(det, pools),
+      boards: boardsOf(det, pools),
+      variants: (det.variants || [])
+        .slice()
+        .sort((a, b) => (b.count || 0) - (a.count || 0))
+        .slice(0, 4)
+        .map((v) => ({
+          add: (v.addedHeroes || []).map((x) => T(x.name)).filter((n) => pools.heroes[n]),
+          remove: (v.removedHeroes || []).map((x) => T(x.name)).filter((n) => pools.heroes[n]),
+          count: Number(v.count) || 0,
+          top3: r2(v.top3Rate),
+          // lineupSize 在变体里恒为 0，人数从 lineupKey 的「人数|英雄id…」里取
+          size: Number(v.lineupSize) || Number(String(v.lineupKey || '').split('|')[0]) || 0,
+        })),
+      variantCount: Number(det.variantCount) || 0,
+    };
     const job = {
       key: 'd7-' + String(det.lineupKey || raw.lineupKey),
       name: titleOf(lords, cores),
@@ -484,6 +595,7 @@ function equipDescOf(lu, pools) {
       nocode: true,
       source: 'datawxq',
       stats7d: st,
+      d7: d7,
       _cores: cores,
     };
     if (!job.heroes.length) {

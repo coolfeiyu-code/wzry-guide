@@ -287,7 +287,97 @@
     }).join('') + '</div>';
   }
 
+  /* ---------- 7 日数据卡专属：把接口带回来的胜率用上 ---------- */
+  // 第三方聚类只给统计、不给攻略，所以把「谁胜率高、带什么、配什么天赋」
+  // 按胜率排出来，比一句「样本 N 场」有用得多。
+  function rateBits(o) {
+    var bits = [];
+    if (o.top3) bits.push('<span class="rt top3">前三 ' + pct(o.top3) + '</span>');
+    if (o.first) bits.push('<span class="rt first">登顶 ' + pct(o.first) + '</span>');
+    if (o.count) bits.push('<span class="rt n">' + o.count + ' 场</span>');
+    return bits.join('');
+  }
+
+  function d7LordsHtml(L) {
+    var rows = (L.d7 && L.d7.lords) || [];
+    if (!rows.length) return lordsHtml(L);
+    return '<div class="d7-list">' + rows.map(function (r) {
+      var p = playerByName(r.name);
+      return '<div class="d7-row">'
+        + '<div class="d7-name">' + av(playerImg(r.name), r.name, 'jav sm')
+        + '<b>' + esc(r.name) + '</b>'
+        + '<span class="d7-app">登场 ' + pct(r.app) + '</span></div>'
+        + (p ? '<div class="d7-sk">' + fmt(p.skill || p.skillDesc || '') + '</div>' : '')
+        + '<div class="d7-stats">' + rateBits(r) + (r.avg ? '<span class="rt n">平均名次 ' + r.avg.toFixed(2) + '</span>' : '') + '</div>'
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function d7TalentsHtml(L) {
+    var rows = (L.d7 && L.d7.talents) || [];
+    if (!rows.length) return talentsHtml(L);
+    return '<div class="d7-list">' + rows.map(function (r) {
+      var t = talentByName(r.name);
+      return '<div class="d7-row">'
+        + '<div class="d7-name">' + av(talentImg(r.name), r.name, 'jav sm')
+        + '<b>' + esc(r.name) + '</b>'
+        + '<span class="d7-app">登场 ' + pct(r.app) + '</span></div>'
+        + (t ? '<div class="d7-sk">' + fmt(t.desc || '') + '</div>' : '')
+        + '<div class="d7-stats">' + rateBits(r) + '</div>'
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function d7BuildsHtml(L) {
+    var rows = (L.d7 && L.d7.builds) || [];
+    if (!rows.length) return '';
+    return '<div class="d7-list">' + rows.map(function (h) {
+      return '<div class="d7-row">'
+        + '<div class="d7-name">' + av(heroImg(h.name), h.name, 'jav sm')
+        + '<b>' + esc(h.name) + '</b>'
+        + (h.level ? '<span class="d7-app">平均 ' + h.level + ' 级</span>' : '')
+        + (h.awaken ? '<span class="d7-app">觉醒 ' + pct(h.awaken) + '</span>' : '')
+        + '</div>'
+        + h.builds.map(function (b) {
+          return '<div class="d7-build">' + b.items.map(function (e) {
+            return av(equipImg(e), e, 'jav eq');
+          }).join('') + '<span class="d7-stats">' + rateBits(b) + '</span></div>';
+        }).join('')
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function d7VariantsHtml(L) {
+    var rows = (L.d7 && L.d7.variants) || [];
+    if (!rows.length) return '';
+    return '<div class="d7-list">' + rows.map(function (v) {
+      var diff = [];
+      v.add.forEach(function (n) { diff.push('<span class="d7-add">+' + esc(n) + '</span>'); });
+      v.remove.forEach(function (n) { diff.push('<span class="d7-rm">−' + esc(n) + '</span>'); });
+      return '<div class="d7-row d7-var">'
+        + '<div class="d7-name"><b>' + (v.size ? v.size + ' 人' : '变体') + '</b>'
+        + diff.join('') + '</div>'
+        + '<div class="d7-stats">' + rateBits({ count: v.count, top3: v.top3 }) + '</div>'
+        + '</div>';
+    }).join('') + '</div>'
+      + ((L.d7 && L.d7.variantCount > rows.length)
+        ? '<div class="jmuted">另有 ' + (L.d7.variantCount - rows.length) + ' 种搭配，这里只列场次最多的几种。</div>' : '');
+  }
+
+  // 多条参考站位并排，每张图下面标该局名次
+  function d7BoardsHtml(L) {
+    var boards = (L.d7 && L.d7.boards) || [];
+    if (boards.length < 2) return '';
+    return '<div class="d7-boards">' + boards.map(function (b, i) {
+      return '<div class="d7-board">'
+        + '<div class="d7-board-h">参考 ' + (i + 1) + (b.placement ? ' · 第 ' + b.placement + ' 名' : '') + '</div>'
+        + boardHtml({ heroes: b.heroes })
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
   function detailHtml(L) {
+    var d7 = L.source === 'datawxq';
     var cover = (L.heroes && L.heroes[0]) ? heroImg(L.heroes[0].name) : playerImg((L.lords || [])[0] || '');
     var coverName = (L.heroes && L.heroes[0] && L.heroes[0].name) || (L.lords || [])[0] || '';
     var sc = parseFloat(L.score) || 0;
@@ -329,13 +419,17 @@
       + '<section class="jbox"><h3>装备分析</h3><p>' + esc(eqTx) + '</p></section>'
       + '</div>'
       + '<div class="jtwo">'
-      + '<section class="jbox"><h3>推荐棋手</h3>' + lordsHtml(L) + '</section>'
+      + '<section class="jbox"><h3>棋手 <span>按登场率</span></h3>' + (d7 ? d7LordsHtml(L) : lordsHtml(L)) + '</section>'
       + '<div>'
       + '<section class="jbox"><h3>阵容站位</h3>' + boardHtml(L) + '</section>'
       + '<section class="jbox" style="margin-top:12px"><h3>推荐装备</h3>' + equipsHtml(L) + '</section>'
       + '</div></div>'
       + ((L.ops && L.ops.length) ? '<section class="jbox"><h3>运营思路 <span>前 / 中 / 后期上阵</span></h3>' + opsHtml(L) + '</section>' : '')
-      + ((L.talents && L.talents.length) ? '<section class="jbox"><h3>关键天赋</h3>' + talentsHtml(L) + '</section>' : '')
+      + ((L.talents && L.talents.length) ? '<section class="jbox"><h3>关键天赋</h3>' + (d7 ? d7TalentsHtml(L) : talentsHtml(L)) + '</section>' : '')
+      // 7 日数据卡专属：接口带回来的装备组合、变体阵容、多套参考站位
+      + (d7 && (L.d7.builds || []).length ? '<section class="jbox"><h3>装备组合 <span>按前三率排序，只列场次≥5 的搭配</span></h3>' + d7BuildsHtml(L) + '</section>' : '')
+      + (d7 && (L.d7.variants || []).length ? '<section class="jbox"><h3>同类变体 <span>同一套英雄，换了人之后的数据</span></h3>' + d7VariantsHtml(L) + '</section>' : '')
+      + (d7 && (L.d7.boards || []).length > 1 ? '<section class="jbox"><h3>更多参考站位 <span>近 7 日登顶对局</span></h3>' + d7BoardsHtml(L) + '</section>' : '')
       + '</article>';
   }
 
