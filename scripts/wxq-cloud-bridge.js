@@ -27,6 +27,8 @@ const path = require('path');
 
 const PORT = Number(process.env.WXQ_BRIDGE_PORT || 17871);
 const HOME = process.env.USERPROFILE || process.env.HOME || '';
+const IS_WIN = process.platform === 'win32';
+const IS_MAC = process.platform === 'darwin';
 const HELPER_DIR = '王者万象棋助手';
 const CONFIG_FILE = '王者助手.json.js';
 const PAGE_FILE = '王者助手.html';
@@ -47,10 +49,17 @@ const MIME = {
 
 function exists(p) { try { return fs.existsSync(p); } catch (e) { return false; } }
 
+// 坚果云在不同系统上放配置和同步目录的位置不一样，这里两套都找。
+// Windows 走 %APPDATA%\Nutstore\config\UsersMap.json（里面 cachePath 是同步根）；
+// macOS 的客户端把同步目录默认放在 ~/Nutstore Files 下，配置在 Application Support。
 function nutstoreRoot() {
   const cfgHits = [
+    // Windows
     path.join(HOME, 'AppData', 'Roaming', 'Nutstore', 'config', 'UsersMap.json'),
-    path.join(HOME, 'AppData', 'Roaming', 'Nutstore', 'config', 'UsersMap-ng.json')
+    path.join(HOME, 'AppData', 'Roaming', 'Nutstore', 'config', 'UsersMap-ng.json'),
+    // macOS
+    path.join(HOME, 'Library', 'Application Support', 'Nutstore', 'config', 'UsersMap.json'),
+    path.join(HOME, 'Library', 'Application Support', 'Nutstore', 'config', 'UsersMap-ng.json')
   ];
   for (let i = 0; i < cfgHits.length; i++) {
     try {
@@ -72,8 +81,13 @@ function nutstoreRoot() {
     } catch (e) {}
   }
   const hits = [
+    // Windows
     path.join(HOME, 'Nutstore', '1', '我的坚果云'),
     path.join(HOME, '坚果云'),
+    // macOS（坚果云 for Mac 默认同步盘）
+    path.join(HOME, 'Nutstore Files', '我的坚果云'),
+    path.join(HOME, 'Nutstore Files'),
+    // 两边都可能自定义到这些地方
     path.join(HOME, 'Documents', '坚果云'),
     path.join(HOME, 'Documents', 'Nutstore')
   ];
@@ -198,7 +212,7 @@ function serveStatic(res, dir, urlPath) {
 function main() {
   const dir = helperDir();
   if (!dir) {
-    console.error('找不到坚果云目录，请设置 WXQ_BRIDGE_ROOT');
+    console.error('找不到坚果云目录，请设置环境变量 WXQ_BRIDGE_ROOT 指向「王者万象棋助手」文件夹');
     process.exit(1);
   }
   fs.mkdirSync(dir, { recursive: true });

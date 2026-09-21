@@ -847,8 +847,11 @@
         return;
       }
       var grid = document.getElementById('grid');
-      if (grid && global.WXQ_JOBS_UI && WXQ_JOBS_UI.render && global.__wxqUI) {
-        WXQ_JOBS_UI.render(grid, global.__wxqUI.state || { q: '', type: 'jobs' });
+      var st = global.__wxqUI && global.__wxqUI.state;
+      // 云同步合并后才走到这里：只在「当前就是阵容 tab」时重画阵容列表，
+      // 否则讲解/棋手/英雄等 tab 会被顶成阵容内容，造成高亮与内容错位。
+      if (grid && global.WXQ_JOBS_UI && WXQ_JOBS_UI.render && st && st.type === 'jobs') {
+        WXQ_JOBS_UI.render(grid, st);
       }
     },
     html: function (key) {

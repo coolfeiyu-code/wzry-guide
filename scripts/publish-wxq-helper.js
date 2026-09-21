@@ -33,8 +33,12 @@ function exists(p) { try { return fs.existsSync(p); } catch (e) { return false; 
 function nutstoreRoot() {
   if (process.env.NUTSTORE_ROOT) return process.env.NUTSTORE_ROOT;
   const cfgHits = [
+    // Windows
     path.join(HOME, 'AppData', 'Roaming', 'Nutstore', 'config', 'UsersMap.json'),
-    path.join(HOME, 'AppData', 'Roaming', 'Nutstore', 'config', 'UsersMap-ng.json')
+    path.join(HOME, 'AppData', 'Roaming', 'Nutstore', 'config', 'UsersMap-ng.json'),
+    // macOS
+    path.join(HOME, 'Library', 'Application Support', 'Nutstore', 'config', 'UsersMap.json'),
+    path.join(HOME, 'Library', 'Application Support', 'Nutstore', 'config', 'UsersMap-ng.json')
   ];
   for (let i = 0; i < cfgHits.length; i++) {
     try {
@@ -56,8 +60,13 @@ function nutstoreRoot() {
     } catch (e) {}
   }
   const hits = [
+    // Windows
     path.join(HOME, 'Nutstore', '1', '我的坚果云'),
     path.join(HOME, '坚果云'),
+    // macOS（坚果云 for Mac 默认同步盘）
+    path.join(HOME, 'Nutstore Files', '我的坚果云'),
+    path.join(HOME, 'Nutstore Files'),
+    // 两边都可能自定义
     path.join(HOME, 'Documents', '坚果云'),
     path.join(HOME, 'Documents', 'Nutstore')
   ];
@@ -121,8 +130,8 @@ function copyIcons(destDir) {
   return { files, bytes };
 }
 
-// 把「本机同步桥 + 安装脚本」也放到坚果云文件夹里：
-// 别的电脑拿到这个文件夹后，跑一次 安装同步桥.cmd 就能静默同步，不用再点授权。
+// 把「本机同步桥 + 安装脚本」也放到坚果云文件夹里，Windows / macOS 各一份：
+// 别的电脑拿到这个文件夹后，双击对应的安装文件就能静默同步，不用再点授权。
 function copyBridge(destDir) {
   const files = [
     ['scripts/wxq-cloud-bridge.js', '同步桥.js'],
@@ -135,6 +144,7 @@ function copyBridge(destDir) {
     fs.copyFileSync(src, path.join(destDir, pair[1]));
     n++;
   });
+  // Windows：双击 .cmd
   const cmd = [
     '@echo off',
     'setlocal',
@@ -151,6 +161,27 @@ function copyBridge(destDir) {
     ''
   ].join('\r\n');
   fs.writeFileSync(path.join(destDir, '安装同步桥.cmd'), cmd, 'utf8');
+  n++;
+
+  // macOS：双击 .command（Finder 里双击会在终端跑）
+  const sh = [
+    '#!/bin/bash',
+    '# macOS：双击本文件即可安装同步桥自启（首次可能要在「系统设置 → 隐私与安全性」放行）',
+    'cd "$(dirname "$0")" || exit 1',
+    'NODE="$(command -v node || echo /usr/local/bin/node)"',
+    'if [ ! -x "$NODE" ]; then',
+    '  echo "没找到 node。请先安装 Node.js（https://nodejs.org 或 brew install node）"',
+    '  read -n 1 -s -r -p "按任意键关闭…"',
+    '  exit 1',
+    'fi',
+    '"$NODE" "./安装同步桥.js"',
+    'echo',
+    'read -n 1 -s -r -p "按任意键关闭…"',
+    ''
+  ].join('\n');
+  const shPath = path.join(destDir, '安装同步桥-macOS.command');
+  fs.writeFileSync(shPath, sh, 'utf8');
+  try { fs.chmodSync(shPath, 0o755); } catch (e) {}
   n++;
   return n;
 }
@@ -190,7 +221,7 @@ function main() {
   } catch (e) { console.error('图标复制失败', e.message); }
   try {
     const n = copyBridge(destDir);
-    console.log('同步桥文件', n, '个 → 安装同步桥.cmd / 同步桥.js / 安装同步桥.js');
+    console.log('同步桥文件', n, '个 → 安装同步桥.cmd（Win）/ 安装同步桥-macOS.command / 同步桥.js / 安装同步桥.js');
   } catch (e) { console.error('同步桥复制失败', e.message); }
 }
 

@@ -606,8 +606,15 @@
   .jav.lg{width:56px;height:56px;}
   .jav.eq{width:28px;height:28px;}
   .jav.eq img,.jav.eq i{border-radius:7px;}
-  .jback{border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:13.5px;
-    cursor:pointer;padding:0 0 12px;min-height:40px;}
+  /* 返回列表：做成明显的圆形图标按钮，并 sticky 在左上角（长详情滚动时也在） */
+  .jback{position:sticky;top:10px;z-index:6;display:flex;align-items:center;justify-content:center;
+    width:46px;height:46px;margin:0 0 10px;padding:0;border:none;border-radius:50%;cursor:pointer;
+    background:var(--accent-fill);color:#fff;box-shadow:0 3px 12px rgba(23,20,31,.28);
+    font-family:inherit;transition:transform .12s,filter .12s;}
+  .jback svg{width:24px;height:24px;display:block;}
+  .jback:hover{filter:brightness(1.08);}
+  .jback:active{transform:scale(.94);}
+  @media (max-width:640px){.jback{width:42px;height:42px;top:8px;}.jback svg{width:22px;height:22px;}}
   .jdoc-acts{display:flex;flex-wrap:wrap;gap:8px;}
   .sb-from{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;
     border:1px solid var(--line);border-radius:12px;background:var(--paper-2);font-size:13.5px;color:var(--ink);}

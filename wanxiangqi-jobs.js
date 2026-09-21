@@ -11,7 +11,16 @@
   var COLS = 7;
   var ROWS = 4;
   var PHASE = ['前期', '中期', '后期'];
-  var js = { filter: 'all', sort: 'use', page: 1, lord: '', openKey: '', view: '' };
+  var js = { filter: 'all', sort: 'use', page: 1, lord: '', fac: '', openKey: '', view: '' };
+  // 流派归属：取阵容里人数最多的官方阵营（WXQ_HEROES.faction，全部来自官方，非自造）
+  var FACMAP = null;
+  function facOf(L) {
+    if (!FACMAP) { FACMAP = {}; (global.WXQ_HEROES || []).forEach(function (h) { if (h && h.name) FACMAP[h.name] = h.faction || ''; }); }
+    if (!L || !L.heroes) return '';
+    var cnt = {}, best = '', bn = 0;
+    L.heroes.forEach(function (h) { var f = h && FACMAP[h.name]; if (!f) return; cnt[f] = (cnt[f] || 0) + 1; if (cnt[f] > bn) { bn = cnt[f]; best = f; } });
+    return best || '';
+  }
 
   function ui() { return global.__wxqUI || {}; }
   // 触屏手机只看阵容：星标、「在用」筛选、对局浮窗都没有意义（游戏在电脑上）
@@ -165,6 +174,7 @@
       list = list.filter(function (L) { return using.indexOf(String(L.key)) >= 0; });
     }
     if (js.lord) list = list.filter(function (L) { return (L.lords || []).indexOf(js.lord) >= 0; });
+    if (js.fac) list = list.filter(function (L) { return facOf(L) === js.fac; });
     list.sort(function (a, b) {
       if (js.filter === 'd7' || js.sort === 'top3') {
         var ta = (a.stats7d && a.stats7d.top3Rate) || 0;
@@ -478,7 +488,11 @@
         + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
         + (st ? ' · ' + st : ''));
     return '<article class="jdoc">'
-      + '<button type="button" class="jback" data-job-back>← 返回列表</button>'
+      // 返回用图标按钮：文字版太不显眼（用户 2026-09-21 反馈）。sticky 让它
+      // 在长详情里滚动时一直挂在左上角，随时能点。
+      + '<button type="button" class="jback" data-job-back title="返回列表" aria-label="返回列表">'
+      + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4 7.5 12l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '</button>'
       + '<header class="jdoc-head">'
       + av(cover, coverName, 'jav lg')
       + '<div class="jdoc-tit"><h1>' + esc(L.name) + '</h1>'
@@ -642,6 +656,9 @@
     var sbtn = function (id, lab) {
       return '<button type="button" class="jchip' + (js.sort === id ? ' on' : '') + '" data-job-sort="' + id + '">' + lab + '</button>';
     };
+    var FAC = [];
+    if (global.WXQ_FACTIONS) global.WXQ_FACTIONS.forEach(function (x) { var n = x && (x.name || x); if (n && n !== '通用' && n !== '无阵营') FAC.push(n); });
+    var facbtn = function (id) { return '<button type="button" class="jchip' + (js.fac === id ? ' on' : '') + '" data-job-fac="' + (id || '') + '">' + (id || '全部') + '</button>'; };
     var lordSel = '<select class="filter jlord" data-job-lord="1"><option value="">全部棋手</option>'
       + lords.map(function (x) {
         return '<option value="' + esc(x.name) + '"' + (js.lord === x.name ? ' selected' : '') + '>' + esc(x.name) + ' · ' + x.n + '</option>';
@@ -655,6 +672,7 @@
       + (phone || !usingN ? '' : '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>')
       + '</div>'
       + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('first', '登顶率') + sbtn('new', '时间') + lordSel + '</div>'
+      + '<div class="jbar-row">' + facbtn('') + FAC.map(facbtn).join('') + '</div>'
       + '</div>';
     if (!slice.length) {
       grid.innerHTML = h + '<div class="empty">'
@@ -700,6 +718,8 @@
     if (ex) { openExplain(ex.getAttribute('data-job-explain')); return 'open'; }
     var f = t.closest && t.closest('[data-job-filter]');
     if (f) { js.filter = f.getAttribute('data-job-filter'); js.page = 1; return 'rerender'; }
+    var fa = t.closest && t.closest('[data-job-fac]');
+    if (fa) { js.fac = fa.getAttribute('data-job-fac') || ''; js.page = 1; return 'rerender'; }
     var s = t.closest && t.closest('[data-job-sort]');
     if (s) { js.sort = s.getAttribute('data-job-sort'); js.page = 1; return 'rerender'; }
     var p = t.closest && t.closest('[data-job-page]');

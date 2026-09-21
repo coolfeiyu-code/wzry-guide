@@ -180,6 +180,8 @@ WXQ_GUIDE = {
 - **手机端自动关掉电脑才用得上的功能**：`WXQ_HUD.touch()` 判定（`pointer:coarse` 或 UA 含 Mobile 或最短边 ≤480）。手机上不生成卡片星标 / 「在用」筛选 / 对局浮窗按钮 / 右下角浮窗码头，云同步整条链路也不启用（`WXQ_CLOUD.mode()==='off'`：不探桥、不建云条、不请求授权、不挂手势监听）。手机仍保留阵容浏览、复制阵容码、讲解。手机只是用来看阵容，游戏在电脑上，所以这些入口没有意义；**不要顺手把「复制阵容码」也删掉**。判断用能力识别，不写死机型，电脑端行为不变。
 - 各电脑直接打开该 HTML：配置脚本在最前面，页面脚本跑之前已生效，**不用导入、不用点**。收藏/取消收藏、拖动浮窗、改主题会在 250ms 后写回。装了同步桥就是全静默；没装桥才需要在左下角点一次「开启自动保存」并选「王者万象棋助手」文件夹（file:// 下这个授权不会跨次记住）。发布脚本从坚果云 `UsersMap.json` 反查根目录（`NUTSTORE_ROOT` 仍可覆盖）。
 - **浮窗和首页共用 `#grid`，必须三处设防**（2026-09-21 bug：云同步一触发，小窗就变成「缩小的首页」）。① `WXQ_HUD.hydrate()` 在 `hud-only` 时改为重绘浮窗自己（`enterPage(location.hash)`），绝不能画首页列表；② 首页 `wanxiangqi.html` 的 `render()` 开头加 `if(document.body.classList.contains('hud-only')) return;`；③ `route()` 在 `hud-only` 时只认 `#hud`/`#hud-*`，其它路由直接 return。云同步、切 tab、点搜索都会走到这三条路，漏一条就会被覆盖。
+- **第 4 处防线（2026-09-21 增补）**：`WXQ_HUD.hydrate()` 非浮窗分支现在**只在当前就是阵容 tab（`__wxqUI.state.type === 'jobs'`）时才重画 #grid 阵容列表**，否则讲解/棋手/英雄等 tab 会被顶成阵容内容造成高亮错位。
+- **回归测试**：`wxq_hud_cloud_smoke.cjs`（Temp，puppeteer-core）覆盖：A 浮窗下 hydrate 仍是浮窗、C `.lc .wxq-term` 继承色标字色、B 非阵容 tab 不被 hydrate 顶替。改浮窗/云同步后必跑。
 - 浮窗运营空段用该套 brief 顶上；出牌段没有讲解也没关系，最后会跟一句 brief。
 - 助手页脚带版本号和发布日期。坚果云 `王者万象棋助手` 文件夹顺带整目录复制 `wxq-icon`（553 个约 11MB，含 heroes/equips/players/talents/effects），本地打开也有图。近 7 日脚本的 `version` 按周一自动算（如 v260921），页面显示数据版本和截至日期。
 - `wanxiangqi-cloud.js`。改完万象棋后跑一次发布脚本，各电脑坚果云同步完即可用新版。

@@ -252,7 +252,8 @@
     var tips = pullTips(L);
     var ops = (L.ops || []).filter(function (o) { return o.desc; });
     var h = '<article class="jdoc ex-doc">'
-      + '<button type="button" class="jback" data-job-explain-back="' + esc(L.key) + '">← 返回阵容</button>'
+      + '<button type="button" class="jback" data-job-explain-back="' + esc(L.key) + '" title="返回阵容" aria-label="返回阵容">'
+      + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4 7.5 12l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
       + '<header class="jdoc-head"><div class="jdoc-tit">'
       + '<h1>讲解 · ' + esc(L.name) + '</h1>'
       + '<div class="jdoc-sub">' + (arch ? esc(arch.name) + ' · ' : '') + '先读懂机制，再对照卡面</div>'
