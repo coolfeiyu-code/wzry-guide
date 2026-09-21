@@ -1,6 +1,6 @@
 # 王者荣耀 S44 攻略总集 · 王者万象棋板块 — 工作交接文档（task.md）
 
-> 最后更新：2026-09-19
+> 最后更新：2026-09-22
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
 > 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.46**（棋手以数据为准 + 修词条高亮盖色）。官方阵容库 **v1.3.0**（298 套）。近7日数据阵容 **v1.2.0**。
@@ -44,7 +44,7 @@ wzry-guide/
 │   ├── sync-wxq-lineups.js 万象棋官方阵容库同步（推荐/热门/新手）；入库门槛使用量≥2000 且评分≥4.0
 │   ├── sync-wxq-stats.js   万象棋大数据近7日前三率（datawxq.com → wanxiangqi-stats.js）
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
-│   ├── publish-wxq-helper.js 打成单文件写到坚果云 `王者万象棋助手/王者助手.html`（不覆盖 `王者助手.json.js`；顺带带同步桥 3 个文件）
+│   ├── publish-wxq-helper.js 打成单文件写到坚果云 `王者万象棋助手/王者助手.html`（不覆盖 `王者助手.json.js`；顺带带同步桥 6 个文件：装/卸各 Win.cmd+macOS.command，见 5.2f）
 │   ├── wxq-cloud-bridge.js 本机同步桥：127.0.0.1:17871，读写坚果云配置 + 可静态托管助手页
 │   └── install-wxq-bridge.js 装/卸开机自启（复制桥到 %LOCALAPPDATA%\王者助手同步桥 并写 Startup VBS）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
@@ -175,8 +175,8 @@ WXQ_GUIDE = {
 - **为什么需要同步桥**：Chrome 在 `file://` 页面上不会记住「写文件夹」授权（File System Access handle 存 IndexedDB 也会丢权限），所以每次重开助手都要再点一次「开启自动保存」并选文件夹。这是浏览器限制，页面上无法绕过。
 - 同步桥（`scripts/wxq-cloud-bridge.js`）：本机 127.0.0.1:17871 小服务，`GET /api/cloud` 读、`POST /api/cloud` 合并写坚果云 `王者助手.json.js`；其余路径静态托管（打开 `http://127.0.0.1:17871/` 就是助手页，同源最省事）。**必须带 `Access-Control-Allow-Private-Network: true`**：file:// 页面访问本机端口时 Chrome 先发预检，没有这个头 POST 会被拦成 Failed to fetch（实测 GET 能过、POST 过不去）。
 - 安装：`node scripts/install-wxq-bridge.js`（`--remove` 卸载）。桥脚本复制到 `%LOCALAPPDATA%\王者助手同步桥\`，Startup 里放 VBS 无窗口拉起，仓库改名/移动都不影响。**自启必须用系统 node**（`C:\Program Files\nodejs\node.exe`），agent 自带 node 在版本目录里，升级后路径会消失。
-- 别台电脑：坚果云文件夹里有 `安装同步桥.cmd`、`同步桥.js`、`安装同步桥.js`，双击 cmd 装一次即可。没装桥的电脑会自动退回原来的「点一次开授权」方式，不会卡死。
-- 多台机器：打开时读云上 `王者助手.json.js` 与本机**取并集**（收藏合起来、最多 8 条；hudSize 按分辨率分桶合并），云端比合并结果旧就回写一次。绝不能用「本机覆盖云端」。
+- 别台电脑：坚果云文件夹有装/卸两套——装开机自启：`安装同步桥.cmd`（Win）/`安装同步桥-macOS.command`（macOS）；卸开机自启：`卸载同步桥.cmd`/`卸载同步桥-macOS.command`，都对应当前系统双击即可。没装桥的电脑会自动退回原来的「点一次开授权」方式，不会卡死。
+- 多台机器：打开时读云上 `王者助手.json.js` 的在用阵容，按**时间戳后写者胜、整组覆盖**同步（2026-09-22 由「取并集」改，并集表达不了删除）。`using` 带 `at`（最近本地编辑 ms）：本机新 → 回写云端；云端新 → 整组覆盖本机。**取消收藏（删除）能穿透同步**，不再被「复生」；也去掉「拉取即反向写回」造成的跨机互相覆盖。hudSize 仍按分辨率分桶合并。禁止退回会丢删除的并集。
 - **手机端自动关掉电脑才用得上的功能**：`WXQ_HUD.touch()` 判定（`pointer:coarse` 或 UA 含 Mobile 或最短边 ≤480）。手机上不生成卡片星标 / 「在用」筛选 / 对局浮窗按钮 / 右下角浮窗码头，云同步整条链路也不启用（`WXQ_CLOUD.mode()==='off'`：不探桥、不建云条、不请求授权、不挂手势监听）。手机仍保留阵容浏览、复制阵容码、讲解。手机只是用来看阵容，游戏在电脑上，所以这些入口没有意义；**不要顺手把「复制阵容码」也删掉**。判断用能力识别，不写死机型，电脑端行为不变。
 - 各电脑直接打开该 HTML：配置脚本在最前面，页面脚本跑之前已生效，**不用导入、不用点**。收藏/取消收藏、拖动浮窗、改主题会在 250ms 后写回。装了同步桥就是全静默；没装桥才需要在左下角点一次「开启自动保存」并选「王者万象棋助手」文件夹（file:// 下这个授权不会跨次记住）。发布脚本从坚果云 `UsersMap.json` 反查根目录（`NUTSTORE_ROOT` 仍可覆盖）。
 - **浮窗和首页共用 `#grid`，必须三处设防**（2026-09-21 bug：云同步一触发，小窗就变成「缩小的首页」）。① `WXQ_HUD.hydrate()` 在 `hud-only` 时改为重绘浮窗自己（`enterPage(location.hash)`），绝不能画首页列表；② 首页 `wanxiangqi.html` 的 `render()` 开头加 `if(document.body.classList.contains('hud-only')) return;`；③ `route()` 在 `hud-only` 时只认 `#hud`/`#hud-*`，其它路由直接 return。云同步、切 tab、点搜索都会走到这三条路，漏一条就会被覆盖。
@@ -185,6 +185,11 @@ WXQ_GUIDE = {
 - 浮窗运营空段用该套 brief 顶上；出牌段没有讲解也没关系，最后会跟一句 brief。
 - 助手页脚带版本号和发布日期。坚果云 `王者万象棋助手` 文件夹顺带整目录复制 `wxq-icon`（553 个约 11MB，含 heroes/equips/players/talents/effects），本地打开也有图。近 7 日脚本的 `version` 按周一自动算（如 v260921），页面显示数据版本和截至日期。
 - `wanxiangqi-cloud.js`。改完万象棋后跑一次发布脚本，各电脑坚果云同步完即可用新版。
+- **2026-09-22 改动（同步修复 + 静默保存 + 装/卸自启）**：
+  ① 在用阵容同步改「时间戳后写者胜、整组覆盖」——桥 `wxq-cloud-bridge.js` 的 `mergeCfg` 对 using 按 `at` 较新者覆盖（不再 unionKeys），前端 `wanxiangqi-cloud.js` 新增 `decideUsing()`，`bridgePull`/文件退路 `pull` 改为「云端新→整组覆盖本机、本机新→回写一次」，去掉无条件写回循环；`wanxiangqi-hud.js` 的 `load()` 保留 `at`、`save()` 打 `at=Date.now()`。修复「取消收藏后重开页面被复生」与「多台互相覆盖」。
+  ② 全部确认弹窗去掉：删除 `onFirstGesture`（页面任意首次点击自动弹文件授权框）与其监听。装了/开着同步桥就全程静默零弹窗；file:// 下仅用户主动点「开启自动保存」才弹一次系统选择框（浏览器硬限制）。
+  ③ 发布脚本配好装/卸入口：发布到坚果云文件夹 6 个桥文件（同步桥.js、安装同步桥.js、安装同步桥.cmd、安装同步桥-macOS.command、卸载同步桥.cmd、卸载同步桥-macOS.command），任何机器双击当前系统对应文件即可装/卸开机自启。
+  - 提交：`9deb4af`（同步修复）`83a59ff`（卸/装入口）。本机已用 `install-wxq-bridge.js` 装好自启（Startup VBS + `%LOCALAPPDATA%\王者助手同步桥`）。
 
 ### 5.2b 原连锁四层（已下线，仅留档）
 
