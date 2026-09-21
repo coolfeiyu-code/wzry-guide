@@ -914,6 +914,9 @@
 
     var grid=document.getElementById('grid');
     function render(){
+      // 浮窗和首页共用 #grid：浮窗打开期间，首页这条渲染路径必须让位，
+      // 否则云同步/切 tab 一触发就把小窗内容换成首页列表。
+      if(document.body.classList.contains('hud-only')) return;
       var isJobs=state.type==='jobs';
       var isExplain=state.type==='explain';
       var qEl=document.getElementById('q');
@@ -1389,6 +1392,8 @@
     function route(h){
       if(h===undefined)h=location.hash;
       if(!(h==='#hud'||(h&&h.indexOf('#hud-')===0))) document.body.classList.remove('hud-only');
+      // 浮窗视图只认 #hud 深链，其它路由一律不进首页渲染
+      if(document.body.classList.contains('hud-only')&&!(h==='#hud'||h.indexOf('#hud-')===0)) return;
       if(!h||h==='#'){
         if(window.WXQ_JOBS_UI&&WXQ_JOBS_UI.state.openKey)window.WXQ_JOBS_UI.closeDetail(true);
         return;

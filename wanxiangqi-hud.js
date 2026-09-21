@@ -800,6 +800,12 @@
     touch: isMobile,
     hydrate: function () {
       paintDock();
+      // 浮窗和首页共用 #grid：浮窗打开时只能重绘浮窗本身，
+      // 若照旧去画首页列表，云同步一触发小窗就变回「缩小的首页」。
+      if (isHudView()) {
+        enterPage(location.hash);
+        return;
+      }
       var grid = document.getElementById('grid');
       if (grid && global.WXQ_JOBS_UI && WXQ_JOBS_UI.render && global.__wxqUI) {
         WXQ_JOBS_UI.render(grid, global.__wxqUI.state || { q: '', type: 'jobs' });
