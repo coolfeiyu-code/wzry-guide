@@ -11,6 +11,10 @@
  */
 'use strict';
 
+// 禁用所有系统代理（agent 环境会注入 ICUBE_PROXY_HOST 等，劫持 HTTPS 请求）
+['http_proxy','https_proxy','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','all_proxy','ICUBE_PROXY_HOST'].forEach(k => { delete process.env[k]; });
+process.env.NO_PROXY = '*'; process.env.no_proxy = '*';
+
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
