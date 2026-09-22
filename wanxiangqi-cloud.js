@@ -187,7 +187,20 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cfg)
-    }, 3500).then(function (j) { return !!(j && j.ok); });
+    }, 3500).then(function (j) {
+      if (!j || !j.ok) return false;
+      // 关键：把云端 ack 的 using（mergeCfg 最终确定的 at）同步回 localStorage，
+      // 让本设备知道「我最后一次成功推到云端的版本号」。否则下次 bridgePull 比较
+      // localStorage.at vs 云端 at 没有单调关系，会把本设备旧数据反写覆盖新设备。
+      if (j.cfg && j.cfg.using && j.cfg.using.keys) {
+        lsSet(KEYS.using, JSON.stringify({
+          keys: j.cfg.using.keys.slice(0, 8),
+          last: String(j.cfg.using.last || ''),
+          at: Number(j.cfg.using.at || Date.now())
+        }));
+      }
+      return true;
+    });
   }
 
   /* ---------- 文件授权（桥不可用时的退路） ---------- */
