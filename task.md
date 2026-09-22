@@ -185,6 +185,11 @@ WXQ_GUIDE = {
 - 浮窗运营空段用该套 brief 顶上；出牌段没有讲解也没关系，最后会跟一句 brief。
 - 助手页脚带版本号和发布日期。坚果云 `王者万象棋助手` 文件夹顺带整目录复制 `wxq-icon`（553 个约 11MB，含 heroes/equips/players/talents/effects），本地打开也有图。近 7 日脚本的 `version` 按周一自动算（如 v260921），页面显示数据版本和截至日期。
 - `wanxiangqi-cloud.js`。改完万象棋后跑一次发布脚本，各电脑坚果云同步完即可用新版。
+- **2026-09-22 阵容库刷新（官方 317 套 + stats 302 套 overlay + 23 套 unique）**：
+  - 官方阵容从 game.gtimg.cn 重拉（原始 452 → 入库 317，丢 135：英雄不足 4 个 18 / 无任何入选理由 117）。
+  - datawxq.com 大数据阵容同步：search 全服 + 19 棋手 + 14 冷门英雄，合计 612 聚类（样本 647743），命中官方套叠统计 302 条，独立成卡 23 条。
+  - **新坑：agent 环境会自动注入 ICUBE_PROXY_HOST=127.0.0.1**，node.js 默认走系统代理，导致 sync-wxq-stats.js 的 HTTPS 请求被劫持、30s timeout 后才返回"样本过少"（PowerShell 里显式设 DefaultWebProxy=$null 能通，但 node 不行）。修复：在 `sync-wxq-stats.js` 顶部加 `delete process.env['ICUBE_PROXY_HOST']` 等并设 `NO_PROXY='*'`。官方阵容脚本 sync-wxq-lineups.js 未受影响（可能接口响应快到代理没卡），但同样的注入风险存在——下次刷新如果 sync-lineups 也卡了再同样 patch。
+  - 提交：`c22e16b`（版本 1.5.48 → 1.5.49）。
 - **2026-09-22 改动（同步修复 + 静默保存 + 装/卸自启）**：
   ① 在用阵容同步改「时间戳后写者胜、整组覆盖」——桥 `wxq-cloud-bridge.js` 的 `mergeCfg` 对 using 按 `at` 较新者覆盖（不再 unionKeys），前端 `wanxiangqi-cloud.js` 新增 `decideUsing()`，`bridgePull`/文件退路 `pull` 改为「云端新→整组覆盖本机、本机新→回写一次」，去掉无条件写回循环；`wanxiangqi-hud.js` 的 `load()` 保留 `at`、`save()` 打 `at=Date.now()`。修复「取消收藏后重开页面被复生」与「多台互相覆盖」。
   ② 全部确认弹窗去掉：删除 `onFirstGesture`（页面任意首次点击自动弹文件授权框）与其监听。装了/开着同步桥就全程静默零弹窗；file:// 下仅用户主动点「开启自动保存」才弹一次系统选择框（浏览器硬限制）。
