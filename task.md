@@ -185,6 +185,13 @@ WXQ_GUIDE = {
 - 浮窗运营空段用该套 brief 顶上；出牌段没有讲解也没关系，最后会跟一句 brief。
 - 助手页脚带版本号和发布日期。坚果云 `王者万象棋助手` 文件夹顺带整目录复制 `wxq-icon`（553 个约 11MB，含 heroes/equips/players/talents/effects），本地打开也有图。近 7 日脚本的 `version` 按周一自动算（如 v260921），页面显示数据版本和截至日期。
 - `wanxiangqi-cloud.js`。改完万象棋后跑一次发布脚本，各电脑坚果云同步完即可用新版。
+- **2026-09-22 在用阵容跨设备同步 bug 再修复（版本 1.5.49 → 1.5.50）**：
+  - 上一次把同步语义改成"时间戳后写者胜、整组覆盖"后，**漏掉了 bridgeWrite 成功后把云端 ack 的 using.at 同步回 localStorage** 这关键一步。
+  - 根因：hud.save() 会在本地打 at=Date.now() 并存 localStorage，bridgeWrite 把这份推上去。但 POST 返回后，代码只返回了 ok 布尔，没有把云端 mergeCfg 最终确定的 at 回写 localStorage。结果 localStorage 里的 at 永远只等于本设备最后一次 save() 时的 Date.now()，和云端文件的 at 没有单调关系。
+  - 用户场景：A 机存 3 套（at=T1）→ bridgeWrite 成功 → 云端有 3 套 at=T1。B 机打开，localStorage 还是自己上一次存 2 套时打的 at=T2（T2 > T1，因为 B 最近操作过）。decideUsing 比较云端 T1 vs 本地 T2 → 本地更大 → 返回 local_newer → queueWrite → B 把自己的 2 套反写回云端 → 盖掉 A 的 3 套！
+  - 修复：`bridgeWrite()` 在 POST 成功后，把 `j.cfg.using`（mergeCfg 最终确定的 keys/last/at）写回 localStorage。这样本设备就知道"我最后一次成功推到云端的版本号是多少"，下次 bridgePull 比较 at 才有单调关系。
+  - 文件退路 fileWrite 不需要额外同步：它直接写文件，写的就是 save() 打进去的 at，ack 等价于写入成功本身。
+  - 提交：`3b2445e`。
 - **2026-09-22 阵容库刷新（官方 317 套 + stats 302 套 overlay + 23 套 unique）**：
   - 官方阵容从 game.gtimg.cn 重拉（原始 452 → 入库 317，丢 135：英雄不足 4 个 18 / 无任何入选理由 117）。
   - datawxq.com 大数据阵容同步：search 全服 + 19 棋手 + 14 冷门英雄，合计 612 聚类（样本 647743），命中官方套叠统计 302 条，独立成卡 23 条。
