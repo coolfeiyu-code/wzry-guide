@@ -78,15 +78,14 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;margin-top:8px;}
   .ccard{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:.16s;display:flex;flex-direction:column;}
   .ccard:hover{transform:translateY(-1px);border-color:var(--ink);}
-  .ccard .htags{display:flex;flex-wrap:wrap;gap:3px;padding:4px 6px 6px;border-top:1px solid var(--line);margin-top:auto;}
-  .ccard .htag{font-size:10px;padding:1px 5px;border-radius:4px;color:#fff;white-space:nowrap;line-height:1.4;}
-  .htag.role-front{background:#666;} .htag.role-dps{background:#d33;} .htag.role-func{background:#2b77cc;}
-  .htag.et-motor{background:#b8860b;} .htag.et-start{background:#2e8b57;} .htag.et-normal{background:#888;}
-  .htag.sys-sacrifice{background:#8b0000;} .htag.sys-coin{background:#c9a227;} .htag.sys-totem{background:#6b21a8;}
-  .htag.sys-debut{background:#1d4ed8;} .htag.sys-tactic{background:#ea580c;} .htag.sys-core{background:#0891b2;}
-  .htag.sys-compose{background:#78350f;} .htag.sys-flash{background:#db2777;} .htag.sys-seize{background:#c026d3;}
-  .htag.sys-levelup{background:#16a34a;} .htag.sys-revive{background:#475569;}
-  .htag.duo{background:#0d9488;}
+  .ccard .htags{display:flex;flex-wrap:wrap;gap:2px;padding:3px 4px;border-top:1px solid var(--line);margin-top:auto;max-height:20px;overflow:hidden;}
+  .ccard .htag{font-size:9px;padding:0 3px;border-radius:3px;color:#fff;white-space:nowrap;line-height:14px;font-weight:600;}
+  .htag.r-front{background:#666;} .htag.r-dps{background:#d33;} .htag.r-func{background:#2b77cc;}
+  .htag.e-mot{background:#b8860b;} .htag.e-sta{background:#2e8b57;} .htag.e-nor{background:#888;}
+  .htag.s-sac{background:#8b0000;} .htag.s-coin{background:#c9a227;} .htag.s-tot{background:#6b21a8;}
+  .htag.s-deb{background:#1d4ed8;} .htag.s-tac{background:#ea580c;} .htag.s-cor{background:#0891b2;}
+  .htag.s-com{background:#78350f;} .htag.s-fla{background:#db2777;} .htag.s-sei{background:#c026d3;}
+  .htag.s-lev{background:#16a34a;} .htag.s-rev{background:#475569;}
   .ccard .img{width:100%;aspect-ratio:1/1;background:var(--paper-2);object-fit:contain;display:block;}
   .ccard .meta{padding:9px 11px;border-top:1px solid var(--line);}
   .ccard .nm{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1014,14 +1013,15 @@
           +(c.craftFrom&&c.craftFrom.length?'<span class="badge">从'+esc(c.craftFrom.map(function(s){return s.name;}).join('、'))+'合成的</span>':'')
       var htagHtml='';
       if(type==='hero' && c.role){
-        var roleCls = c.role==='前排'?'role-front':c.role==='输出'?'role-dps':'role-func';
-        var etCls = c.energyType==='永动机'?'et-motor':c.energyType==='开局有能'?'et-start':'et-normal';
-        var sysMap={'牺牲流':'sys-sacrifice','古币经济':'sys-coin','图腾流':'sys-totem','登场流':'sys-debut','战术牌':'sys-tactic','核心成长':'sys-core','合成流':'sys-compose','闪现流':'sys-flash','夺取流':'sys-seize','养等级':'sys-levelup','复生':'sys-revive','图腾':'sys-totem'};
-        var chips=[];
-        chips.push('<span class="htag '+roleCls+'">'+esc(c.role)+'</span>');
-        chips.push('<span class="htag '+etCls+'">'+esc(c.energyType)+'</span>');
-        (c.systems||[]).forEach(function(s){var cls=sysMap[s]||'sys-tactic';chips.push('<span class="htag '+cls+'">'+esc(s)+'</span>');});
-        (c.duo||[]).forEach(function(d){chips.push('<span class="htag duo">'+esc(d.duo+'->'+d.with)+'</span>');});
+        var clsR=c.role==='前排'?'r-front':c.role==='输出'?'r-dps':'r-func';
+        var clsE=c.energyType==='永动机'?'e-mot':c.energyType==='开局有能'?'e-sta':'e-nor';
+        var rtxt=c.role==='前排'?'坦':c.role==='输出'?'C':'辅';
+        var etxt=c.energyType==='永动机'?'永':c.energyType==='开局有能'?'启':'蓄';
+        var sm={'牺牲流':'s-sac','古币经济':'s-coin','图腾流':'s-tot','登场流':'s-deb','战术牌':'s-tac','核心成长':'s-cor','合成流':'s-com','闪现流':'s-fla','夺取流':'s-sei','养等级':'s-lev','复生':'s-rev'};
+        var st={'牺牲流':'牺','古币经济':'币','图腾流':'图','登场流':'登','战术牌':'术','核心成长':'核','合成流':'合','闪现流':'闪','夺取流':'夺','养等级':'养','复生':'复'};
+        var sysList=(c.systems||[]).filter(function(s){return sm[s];}).slice(0,1);
+        var chips=['<span class="htag '+clsR+'">'+rtxt+'</span>','<span class="htag '+clsE+'">'+etxt+'</span>'];
+        sysList.forEach(function(s){chips.push('<span class="htag '+sm[s]+'">'+st[s]+'</span>');});
         htagHtml='<div class="htags">'+chips.join('')+'</div>';
       }
       +htagHtml;
