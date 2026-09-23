@@ -91,6 +91,18 @@
   .badge.htag-et-motor{background:#b8860b;}
   .badge.htag-et-start{background:#2e8b57;}
   .badge.htag-et-normal{background:#888;}
+  .badge.htag-sys-sacrifice{background:#8b0000;}
+  .badge.htag-sys-coin{background:#c9a227;}
+  .badge.htag-sys-totem{background:#6b21a8;}
+  .badge.htag-sys-debut{background:#1d4ed8;}
+  .badge.htag-sys-tactic{background:#ea580c;}
+  .badge.htag-sys-core{background:#0891b2;}
+  .badge.htag-sys-compose{background:#78350f;}
+  .badge.htag-sys-flash{background:#db2777;}
+  .badge.htag-sys-seize{background:#c026d3;}
+  .badge.htag-sys-levelup{background:#16a34a;}
+  .badge.htag-sys-revive{background:#475569;}
+  .badge.htag-duo{background:#0d9488;}
   .badge.q2{color:#3A4A68;border-color:#3A4A6855;background:#3A4A6814;}
   .badge.q3{color:#215A78;border-color:#215A7855;background:#215A7814;}
   .badge.q4{color:#8A5A12;border-color:#8A5A1255;background:#8A5A1214;}
@@ -1012,6 +1024,8 @@
           +(c.craftFrom&&c.craftFrom.length?'<span class="badge">从'+esc(c.craftFrom.map(function(s){return s.name;}).join('、'))+'合成的</span>':'')
           +(type==='hero'&&c.role?'<span class="badge htag htag-role-'+(c.role==='前排'?'front':c.role==='输出'?'dps':'func')+'">'+esc(c.role)+'</span>':'')
           +(type==='hero'&&c.energyType?'<span class="badge htag htag-et-'+(c.energyType==='永动机'?'motor':c.energyType==='开局有能'?'start':'normal')+'">'+esc(c.energyType)+'</span>':'')
+          +(type==='hero'&&c.systems?c.systems.slice(0,3).map(function(s){var m={'牺牲流':'htag-sys-sacrifice','古币经济':'htag-sys-coin','图腾流':'htag-sys-totem','登场流':'htag-sys-debut','战术牌':'htag-sys-tactic','核心成长':'htag-sys-core','合成流':'htag-sys-compose','闪现流':'htag-sys-flash','夺取流':'htag-sys-seize','养等级':'htag-sys-levelup','复生':'htag-sys-revive'};var cls=m[s]||'htag-sys-tactic';return '<span class="badge htag '+cls+'">'+esc(s)+'</span>';}).join(''):'')
+          +(type==='hero'&&c.duo&&c.duo.length?'<span class="badge htag htag-duo">'+esc(c.duo[0].duo)+'</span>':'')
           +'</div></div></div>';
       }).join('');
       linkifyTerms(grid);
