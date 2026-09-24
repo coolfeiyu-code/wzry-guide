@@ -94,8 +94,13 @@ function slimSources(list) {
 
 function replaceAssign(src, name, value) {
   const re = new RegExp('^window\\.' + name + ' = .*', 'm');
-  if (!re.test(src)) throw new Error('找不到 window.' + name + ' 赋值行');
-  return src.replace(re, 'window.' + name + ' = ' + JSON.stringify(value) + ';');
+  if (re.test(src)) {
+    return src.replace(re, 'window.' + name + ' = ' + JSON.stringify(value) + ';');
+  }
+  // 找不到就插到 TALENTS 之后（新数组场景：EQUIPS / EFFECTS）
+  const anchorRe = /^window\.WXQ_TALENTS = .*;/m;
+  if (!anchorRe.test(src)) throw new Error('找不到 window.WXQ_TALENTS 锚点（无法插入 ' + name + '）');
+    return src.replace(anchorRe, (m) => m + '\nwindow.' + name + ' = ' + JSON.stringify(value) + ';');
 }
 
 (async () => {
@@ -103,19 +108,50 @@ function replaceAssign(src, name, value) {
   vm.runInNewContext(fs.readFileSync(DATA, 'utf8'), ctx, { filename: 'wanxiangqi-data.js' });
   const W = ctx.window;
   const localHeroes = W.WXQ_HEROES;
-  const localEquips = W.WXQ_EQUIPS;
+  let localEquips = W.WXQ_EQUIPS;
+  let localEffects = W.WXQ_EFFECTS;
   const meta = W.WXQ_META;
-  if (!Array.isArray(localHeroes) || !Array.isArray(localEquips) || !meta) {
-    throw new Error('wanxiangqi-data.js 未导出 WXQ_HEROES / WXQ_EQUIPS / WXQ_META');
+  if (!Array.isArray(localHeroes) || !meta) {
+    throw new Error('wanxiangqi-data.js 未导出 WXQ_HEROES / WXQ_META');
   }
 
+  // 一次性从官方拉两个快照，EQUIPS/EFFECTS 缺失时从这里补
   const heroRes = await get(HERO_URL);
   const eqRes = await get(EQUIP_URL);
   if (heroRes.status !== 200 || eqRes.status !== 200) {
     throw new Error('oscard HTTP ' + heroRes.status + '/' + eqRes.status);
   }
-  const officialHeroes = parsePack(heroRes.body).heroCards || [];
-  const officialEquips = parsePack(eqRes.body).equipCards || [];
+  const pack1 = parsePack(heroRes.body);
+  const pack4 = parsePack(eqRes.body);
+  const officialHeroes = pack1.heroCards || [];
+  const officialEquipsRaw = (pack1.equipCards || []).concat(pack4.equipCards || []);
+  const officialEffectsRaw = (pack1.effectCards || []).concat(pack4.effectCards || []);
+
+  // 去重（按 id）
+  const dedup = (arr) => { const m = new Map(); arr.forEach(x => m.set(Number(x.id), x)); return [...m.values()]; };
+  const officialEquips = dedup(officialEquipsRaw);
+  const officialEffects = dedup(officialEffectsRaw);
+
+  // EQUIPS / EFFECTS 缺失 → 从官方快照取原始形态，写回 data.js（replaceAssign 会自动 insert）
+  if (!Array.isArray(localEquips)) {
+    console.warn('[sync-cards] WXQ_EQUIPS 缺失，从官方快照补 ' + officialEquips.length + ' 条');
+    localEquips = officialEquips.map((e) => ({
+      id: Number(e.id), name: T(e.name),
+      type: e.typeLabel === '装备' ? 'equip' : 'card', typeLabel: T(e.typeLabel) || '装备',
+      quality: Number(e.quality), faction: T(e.relationName),
+      desc: T(e.desc),
+    }));
+  }
+  if (!Array.isArray(localEffects)) {
+    console.warn('[sync-cards] WXQ_EFFECTS 缺失，从官方快照补 ' + officialEffects.length + ' 条');
+    localEffects = officialEffects.map((e) => ({
+      id: Number(e.id), name: T(e.name),
+      type: 'effect', typeLabel: T(e.typeLabel) || '效果',
+      quality: Number(e.quality), faction: T(e.relationName),
+      desc: T(e.desc),
+    }));
+  }
+
   const byHeroId = new Map(officialHeroes.map((h) => [Number(h.id), h]));
   const byEquipId = new Map(officialEquips.map((e) => [Number(e.id), e]));
 
@@ -197,18 +233,39 @@ function replaceAssign(src, name, value) {
   const withInto = nextEquips.filter((e) => e.craftInto && e.craftInto.length).length;
 
   const nextMeta = Object.assign({}, meta, {
-    version: '1.5.0',
-    note: '卡面与数值均取自官方公开数据快照；棋手阿离于 2026-09-18 按官方 lords 快照补录。「流派」对应游戏内阵营体系。v1.5.0 并入官方英雄技能/质变/觉醒/属性与装备类型/合成来源。',
+    version: meta.version === '1.5.0' ? '1.5.52' : meta.version,
+    note: '卡面与数值均取自官方公开数据快照；棋手阿离于 2026-09-18 按官方 lords 快照补录。「流派」对应游戏内阵营体系。v1.5.0 并入官方英雄技能/质变/觉醒/属性与装备类型/合成来源。v1.5.52 补齐 WXQ_EQUIPS(73) + WXQ_EFFECTS(98)，修复悬浮窗装备悬停图鉴。',
+  });
+
+  // === EFFECTS enrich（效果牌字段更简单，只补 desc 确认 + 存在即可）===
+  // localEffects 要么是 fix2 补进来的，要么就是 data.js 已有的——这里只走一遍 replaceAssign 保证对齐
+  let localEffectsForWrite = localEffects || [];
+  const effectIds = new Set(officialEffects.map(e => Number(e.id)));
+  let effectAdded = 0;
+  // 如果 localEffects 已存在但某些 id 官方有、本地没有 → 追加
+  const localEffectIds = new Set(localEffectsForWrite.map(e => Number(e.id)));
+  officialEffects.forEach((e) => {
+    if (!localEffectIds.has(Number(e.id))) {
+      localEffectsForWrite.push({
+        id: Number(e.id), name: T(e.name),
+        type: 'effect', typeLabel: T(e.typeLabel) || '效果',
+        quality: Number(e.quality), faction: T(e.relationName),
+        desc: T(e.desc),
+      });
+      effectAdded++;
+    }
   });
 
   let src = fs.readFileSync(DATA, 'utf8');
   src = replaceAssign(src, 'WXQ_META', nextMeta);
   src = replaceAssign(src, 'WXQ_HEROES', nextHeroes);
   src = replaceAssign(src, 'WXQ_EQUIPS', nextEquips);
+  src = replaceAssign(src, 'WXQ_EFFECTS', localEffectsForWrite);
   fs.writeFileSync(DATA, src);
 
   console.log('heroes', nextHeroes.length, 'official', officialHeroes.length, 'miss', heroMiss, 'skill', withSkill, 'awake', withAwake, 'stats', withStats);
   console.log('equips', nextEquips.length, 'official', officialEquips.length, 'miss', equipMiss, 'craftFrom', withFrom, 'craftInto', withInto);
+  console.log('effects', localEffectsForWrite.length, '(added', effectAdded, ')');
   console.log('WXQ_META', meta.version, '->', nextMeta.version);
 })().catch((e) => {
   console.error(e);
