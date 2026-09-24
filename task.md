@@ -1,9 +1,9 @@
 # 王者荣耀 S44 攻略总集 · 王者万象棋板块 — 工作交接文档（task.md）
 
-> 最后更新：2026-09-23
+> 最后更新：2026-09-24
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.51**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag）。官方阵容库 **v1.3.0**（317 套）。近7日数据阵容 **v1.2.0**。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.51**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag）。官方阵容库 **v1.3.1**（334 套）。近7日数据阵容 **v1.2.1**（2026-09-24 待跑完 detail）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -282,6 +282,15 @@ WXQ_GUIDE = {
 - 提交：`bab5b01`（加字段 + 首版 chip）→ `f90714c`（错误地砍到 3 个）→ `4ff0c04`（回退，改插 badge 行）→ `6a344a7`（4 层全上）→ `bc8015b`（提亮 2 色）。发布：`node scripts/publish-wxq-helper.js` → 坚果云。
 - ⚠️ **本仓 HTML/数据文件是 CRLF**（`wanxiangqi.html`/`wanxiangqi-data.js`；`task.md` 是 LF）：用 Node 脚本做 `String.replace` 时，**锚点里的换行必须写 `\r\n`**，否则静默匹配失败——本次脚本打出「已改」但文件内容没变，就是这么来的。**改完必须重新 Read/Grep 复核内容，不能只信脚本日志。**
 
+
+### 5.10 装备图鉴补全 + 悬浮窗装备悬停修复（2026-09-24）
+
+- **根因**：`wanxiangqi-data.js` 里**缺失 `WXQ_EQUIPS` / `WXQ_EFFECTS` 两个数组**！历史遗留：`sync-wxq-cards.js` 第 106-108 行要求 `localEquips` 必须是 Array，否则直接 throw 退出 —— 但 data.js 里从一开始就没有这两个数组，所以这个脚本**从来没跑成功过**。`wanxiangqi-hud.js` 里的 `equipByName(name)` 因为 `global.WXQ_EQUIPS` 是空数组，**恒返回 null**，装备悬停 tip 只能显名字，没有卡面/类型/合成来源。
+- `sync-wxq-lineups.js` 报告的「equips 未知名 ×70」**全是假警报**：脚本里 163 行 `equips: setOf(w.WXQ_EQUIPS)` 因为 EQUIPS 是空数组，所以所有装备名都被当成 miss。这次补完 EQUIPS 后，阵容 69 种装备 **100% 对上**（miss=0）。
+- **修复方式**：写临时修复脚本，从官方快照 `589094_oscard_new_2.js` + `_4.js` 拉 `equipCards`（73）+ `effectCards`（98），按 id 去重后直接 **insert 在 `WXQ_TALENTS` 之后**（不用 replaceAssign，因为原来没有 EQUIPS/EFFECTS 锚点）。字段：`id/name/type/typeLabel/quality/faction/desc/subType/equipType/craftFrom[{id,name}]/craftInto[]`。
+- **别依赖 `sync-wxq-cards.js` 补 EQUIPS/EFFECTS**：它只处理 HEROES（技能/觉醒/词条）和 EQUIPS（craftFrom/craftInto），不处理 EFFECTS；且对已存在的数组做 enrich 正常，但对缺失的数组直接 throw。下次 data.js 再丢 EQUIPS/EFFECTS 时，**直接跑修复脚本（同上 URL）重新 insert**，别卡等着 sync-cards。
+- **提交**：`8903c43`。
+
 ---
 
 ## 6. 已完成工作清单（时间线）
@@ -303,6 +312,8 @@ WXQ_GUIDE = {
 | 官方卡面 | 85 英雄技能/质变/觉醒/属性 + 73 装备类型/合成 | ✅ |
 | 首页二选一 | 先选王者荣耀或万象棋；装备并入王者荣耀「英雄\|装备」 | ✅ |
 | 英雄 4 层 tag | 85 英雄加 role/energyType/systems/duo，卡片复用 `.bd` badge 行渲染 | ✅ v1.5.51 |
+| 装备图鉴修复 | 补全 WXQ_EQUIPS(73)+WXQ_EFFECTS(98)，悬浮窗装备悬停现在显示图鉴卡面 | ✅ 2026-09-24
+| 官方阵容库更新 334 套 | sync-wxq-lineups.js 重拉（原始 445 → 入库 334） | ✅ 2026-09-24 |
 
 ---
 
@@ -375,6 +386,7 @@ WXQ_GUIDE = {
 | 15 | 首页两张拉满视口的空白白卡片 | 用户已判难看。大门用官方图（李白皮肤 / 万象棋六人 KV），字压底部，不要空心居中，不要再画荷塘月色 |
 | 16 | 给卡片加新元素时另起一个容器 div | **复用已有行（`.bd` badge）**，只加 class 不增 wrapper；新容器 + `margin-top:auto` 必撑爆卡片 |
 | 17 | PowerShell/Node 改本仓文件字符串没生效 | 文件是 **CRLF**，replace 锚点必须带 `\r\n`；改完必须 Read/Grep 复核，别只信脚本日志 |
+| 18 | `wanxiangqi-data.js` 里 `WXQ_EQUIPS`/`WXQ_EFFECTS` 丢了（**sync-wxq-cards.js 因 `localEquips=undefined` 会抛错直接停**） | 用我写的修复脚本从 `_2.js`+`_4.js` 拉 equipCards+effectCards，**插在 WXQ_TALENTS 之后**；别等 sync-cards，它处理不了缺失的数组 |
 
 ---
 
