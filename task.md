@@ -3,7 +3,7 @@
 > 最后更新：2026-09-24
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.51**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag）。官方阵容库 **v1.3.1**（334 套）。近7日数据阵容 **v1.2.1**（2026-09-24 待跑完 detail）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.53**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步）。官方阵容库 **v1.3.1**（334 套）。近7日数据阵容 **v1.2.1**（2026-09-24 待跑完 detail）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -81,7 +81,10 @@ wzry-guide/
 - **英雄技能**：`herolist.json` 取 ename → `pvp.qq.com/web201605/herodetail/<ename>.shtml`（**GBK，须 `TextDecoder('gbk')`**）。脚本范式见 `2026-09-04.md`。三坑：① async 漏 `await`（假"0 差异"）② 技能图标 `heroimg/106/10600.png` 被当成分级数值（先剥 `<img>`）③ 官方页 CD 排在描述前，**按序号对齐必错位，须按技能名对齐**。
 - **万象棋**：
   ① 棋手 `vasd-cms.qq.com/cms/osgamewsq/prod/api/v1/osgamewsqwsq_info_article_3019.json?ts=<floor(now/10000)>`；
-  ② 主快照 `game.gtimg.cn/images/amside/ide_timer/589094_oscard_new_{1,2,4,8,16}.js`（_1 heroCards85/_2 effectCards98/_4 equipCards73/_8 talentCards255/_16 lords18），每卡含 `thumb`(网格)/`cardImage`(弹窗)/`icon`/`portrait` + `relationName`(阵营) + `desc`(`<color=...>` 富文本)。
+  ② 主快照 `game.gtimg.cn/images/amside/ide_timer/589094_oscard_new_{1,2,4,8,16}.js`（_1 heroCards85/_2 effectCards98/_4 equipCards73/_8 talentCards255/_16 lords19），每卡含 `thumb`(网格)/`cardImage`(弹窗)/`icon`/`portrait` + `relationName`(阵营) + `desc`(`<color=...>` 富文本)。**注意 `_2/_4/_8/_16` 里的 `heroCards` 都是 `[]`，英雄必须取 `_1.js`（`sync-wxq-cards.js` 里写的 `HERO_URL` 用 `_2.js` 是历史 bug，导致英雄永远 enrich 0 条）**。文件是**纯 JSON**，用 `vm.runInContext` 跑会静默返回 0 条，必须 `JSON.parse`。
+  ③ **官方图鉴免登录接口（最权威，推荐）**：`POST https://kohcamp.qq.com/game/os/sharedbooks`，头必须带 `Content-Type: application/json` + `isTRPCRequest: trpc`（+ `Origin: https://camp.qq.com`），体 `{"roleID":"0","bookType":N,"mode":0}`。`bookType` 是位标志：`1`英雄/`2`效果/`4`装备/`8`天赋/`16`棋手（32 及以上报 `-105:invalid param`；不能组合成 15）。返回 `data.heroCards[]`，明细在 `heroCard.{skillList,properties,awakeingCard,keywordDescription}`（`properties` 的键与本地 `stats` 完全同名）。`/game/os/books` 需登录（`-30314 登录态参数不全`）。页面 `https://camp.qq.com/h5/webdist/os-handbook-detail/index.html`，bundle `static/js/index.*.js` —— **bundle 里只有这两个接口，参数只有 `roleID/bookType/mode`，没有版本/赛季开关**。
+  ④ **官方新闻/公告接口**：详情 `https://apps.game.qq.com/wmp/v3.1/public/searchNews.php?p0=389&source=web_pc&id=<newsid>`（返回 `var searchObj={...}`，须正则 `var searchObj=(\{[\s\S]*\});?$` 剥离再 `JSON.parse`；`id` 必填，缺则 `id error`；正文在 `msg.sContent`）。**列表接口至今没打通**（`zmMcnTargetContentList` 的 `target=389/7059/7063` 全返空；`tagId/tag/iTagId` 参数无效），只能靠邻号 newsid 枚举。
+- **⚠️ 官方数据源会滞后于游戏版本**：2026-09-24 全服更新 v1.3.1（6:00–8:00），当天 18:00 再查，`kohcamp` 图鉴与 `589094` 快照**仍全是更新前的旧值**（亚连仍带 `【日落海】`、韩信仍 `+1`、天赋仍 255、3 个新天赋未上架）。所以**版本更新当天不能只等接口，要去官方公告拿"调整前/调整后"原文先同步**；接口刷新后再重跑脚本做二次对齐（脚本幂等）。
 - **判"编造"前先核实是否新赛季前瞻英雄**（王维曾是 S45 前瞻，非编造，但技能名需按官方修正）。
 
 ---
@@ -291,6 +294,27 @@ WXQ_GUIDE = {
 - **别依赖 `sync-wxq-cards.js` 补 EQUIPS/EFFECTS**：它只处理 HEROES（技能/觉醒/词条）和 EQUIPS（craftFrom/craftInto），不处理 EFFECTS；且对已存在的数组做 enrich 正常，但对缺失的数组直接 throw。下次 data.js 再丢 EQUIPS/EFFECTS 时，**直接跑修复脚本（同上 URL）重新 insert**，别卡等着 sync-cards。
 - **提交**：`8903c43`。
 
+### 5.11 官方 v1.3.1 平衡性更新同步（2026-09-24，WXQ_META 1.5.53）
+
+- **背景**：官方 2026-09-24 全服更新 v1.3.1（不停机，6:00–8:00）。用户要求"官方更新了英雄和卡牌，同步助手"，且**只同步英雄/卡牌，不动阵容**。
+- **卡点**：官方所有可编程数据源（`kohcamp/game/os/sharedbooks` 图鉴接口 + `589094_oscard_new_*` 快照）当天仍是**更新前**的旧值，逐字段 diff 全部 0 差异；官方《小万更新情报》第二期（11:18 发布）也只说"本周四发布更新"。**结论：接口滞后，只能以官方更新公告为准**。
+- **资料来源**：官方更新公告 v1.3.1 全文（腾讯官方在 TapTap 官方号发布的原文，含每条的"调整前/调整后"）。
+- **已同步（`wanxiangqi-data.js`，9 处精确字符串替换，带命中数断言）**：
+  | 对象 | 项目 | 调整前 → 调整后 |
+  |---|---|---|
+  | 亚连 #5141 | 整备（desc + 觉醒 desc） | 去掉 `【日落海】`阵营限制 |
+  | 韩信 #1501 | 闪现 基础 / 觉醒 | `+1`→`+2` / `+2`→`+4` |
+  | 曜 #5221 | 逐星 基础技能 | `70+120%`→`100+130%` |
+  | 孙膑 #1181 | 时空爆弹 10 级 | `50+150%`→`100+175%` |
+  | 沈梦溪 #3121 | 综合爆款 10 级 | `100+150%`→`125+175%` |
+  | 马可波罗 #1321 | 华丽左轮 10 级 | `40+25%`→`40+30%` |
+  | 天赋 #614002 紧急行动 | desc | 棋手生命值 `15`→`10` |
+  | 天赋 #623003 兵行诡招 | desc | 棋手生命值 `-15`→`-10` |
+- **暂未同步（等官方数据源刷新，不猜）**：① 新增天赋 `神鹰锻匠`/`狂铁·强化`/`透支` —— 公告只有名字+描述，**没有官方 id/品质/阵营/图标**，编 id 会污染数据；② 棋手侧 `姜导·封神一瞬`、`昭君·冰心领域`(30%→35%)、`庄小鱼·如梦似幻` —— 本地 `WXQ_PLAYERS` 只存棋手的技能/秘技/专属三张，**这些秘技牌/增益卡本地根本没建实体**，无字段可改；③ 蒙犽"技能施法时长 2s→1.6s" —— 本地无此时长字段。
+- **坑（本次新增）**：`沈梦溪` 的 10 级文案 `技能伤害提升至100+150%法术攻击力` **大乔也有一模一样的**，只用这句做替换会命中 2 处；必须带上前置技能描述（`混合炸弹，造成<color=#d487e4>100+100%...`）一起定位。
+- **坑（本次新增）**：`Edit` 工具被限制在工作目录内，**改不了 `C:\Users\Zhuqi\Desktop\wzry-guide`**；改 data.js / task.md 一律走「写 node 脚本到工作区 → `node <file>` 执行」。
+- **提交**：`2d4610e`。
+
 ---
 
 ## 6. 已完成工作清单（时间线）
@@ -387,6 +411,7 @@ WXQ_GUIDE = {
 | 16 | 给卡片加新元素时另起一个容器 div | **复用已有行（`.bd` badge）**，只加 class 不增 wrapper；新容器 + `margin-top:auto` 必撑爆卡片 |
 | 17 | PowerShell/Node 改本仓文件字符串没生效 | 文件是 **CRLF**，replace 锚点必须带 `\r\n`；改完必须 Read/Grep 复核，别只信脚本日志 |
 | 18 | `wanxiangqi-data.js` 里 `WXQ_EQUIPS`/`WXQ_EFFECTS` 丢了（**sync-wxq-cards.js 因 `localEquips=undefined` 会抛错直接停**） | 用我写的修复脚本从 `_2.js`+`_4.js` 拉 equipCards+effectCards，**插在 WXQ_TALENTS 之后**；别等 sync-cards，它处理不了缺失的数组 |
+| 19 | Node 脚本用 `String.replace(OLD, NEW)` 替换长文本，而 NEW 里含 `$` 紧跟反引号（如正则 `);?$` 之后那个反引号） | 它会被当成特殊替换模式「插入匹配点之前的全部内容」，**静默把整篇文档复制一遍**（2026-09-24 task.md 就这样被复制了 header+§0–§4 共 85 行，脚本还报「✓ 已新增」）。**一律写成 `src.replace(OLD, () => NEW)`**（函数形式不做 `$` 解析），改完必须数章节数复核 |
 
 ---
 
