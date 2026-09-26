@@ -3,7 +3,7 @@
 > 最后更新：2026-09-24
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.53**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步）。官方阵容库 **v1.3.1**（334 套）。近7日数据阵容 **v1.2.1**（2026-09-24 待跑完 detail）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.53**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步）。官方阵容库 **v1.3.0**（358 套）。近7日数据阵容 **v1.1.0**（2026-09-26，overlay 342 + 独立卡 5）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -313,7 +313,16 @@ WXQ_GUIDE = {
 - **暂未同步（等官方数据源刷新，不猜）**：① 新增天赋 `神鹰锻匠`/`狂铁·强化`/`透支` —— 公告只有名字+描述，**没有官方 id/品质/阵营/图标**，编 id 会污染数据；② 棋手侧 `姜导·封神一瞬`、`昭君·冰心领域`(30%→35%)、`庄小鱼·如梦似幻` —— 本地 `WXQ_PLAYERS` 只存棋手的技能/秘技/专属三张，**这些秘技牌/增益卡本地根本没建实体**，无字段可改；③ 蒙犽"技能施法时长 2s→1.6s" —— 本地无此时长字段。
 - **坑（本次新增）**：`沈梦溪` 的 10 级文案 `技能伤害提升至100+150%法术攻击力` **大乔也有一模一样的**，只用这句做替换会命中 2 处；必须带上前置技能描述（`混合炸弹，造成<color=#d487e4>100+100%...`）一起定位。
 - **坑（本次新增）**：`Edit` 工具被限制在工作目录内，**改不了 `C:\Users\Zhuqi\Desktop\wzry-guide`**；改 data.js / task.md 一律走「写 node 脚本到工作区 → `node <file>` 执行」。
-- **提交**：`2d4610e`。
+- **提交**：`ee7e861`。
+
+### 5.12 官方阵容库 + 近7日数据同步（2026-09-26）
+
+- **官方阵容库 358 套**（上轮 334）。原始 453 → 丢 95（英雄不足 4 个 15 / 无任何入选理由 80）。入选理由计数 use 338 / guide 208 / heat 42 / rating 32 / hot 19 / official 5 / beginner 5。官方推荐 500 + 热门 20 + 新手 5，唯一作者 289。校验：英雄池未知 0、棋手池未知 0、重复阵容码 0、335 套带 3 段运营。
+- **近7日数据**（datawxq）样本 248,338 局 / 503 聚类 → **overlay 342 张 + 独立无码卡 5 张**（上一轮 51 + 44；官方库扩容后更多聚类能对上官方套，属正常收敛）。独立卡：镜·裴擒虎猪八戒太乙真人(n=394)、镜·裴擒虎猪八戒(n=372)、常小娥·苏烈艾琳瑶(n=160)、阿离·海月太乙真人(n=102)、常小娥·李信花木兰姜子牙(n=81)。overlay 场次 min 21 / 中位 587 / max 14970，无 0 值。
+- ⚠️ 同步前**必看 §9 #21**：`coreHeroes` 无 `name` 会让整轮静默变 0。若某轮 `overlay 0 / unique 0`，先怀疑它，别以为官方没数据。
+- `detail fail …该阵容的数据样本过少` 是正常噪音（低场次聚类拉不到明细），不影响产出。
+- `code 1` 是 `/wzwxq/lineups/search` 的**成功码**，不是错误码；只有 `42000`（"该版本数据暂无"）才要处理。列表键是 `data.lineups`，不是 `data.list`。
+- 提交 `ee7e861`。**未推 GitHub**（按惯例只发坚果云）。
 
 ---
 
@@ -412,6 +421,9 @@ WXQ_GUIDE = {
 | 17 | PowerShell/Node 改本仓文件字符串没生效 | 文件是 **CRLF**，replace 锚点必须带 `\r\n`；改完必须 Read/Grep 复核，别只信脚本日志 |
 | 18 | `wanxiangqi-data.js` 里 `WXQ_EQUIPS`/`WXQ_EFFECTS` 丢了（**sync-wxq-cards.js 因 `localEquips=undefined` 会抛错直接停**） | 用我写的修复脚本从 `_2.js`+`_4.js` 拉 equipCards+effectCards，**插在 WXQ_TALENTS 之后**；别等 sync-cards，它处理不了缺失的数组 |
 | 19 | Node 脚本用 `String.replace(OLD, NEW)` 替换长文本，而 NEW 里含 `$` 紧跟反引号（如正则 `);?$` 之后那个反引号） | 它会被当成特殊替换模式「插入匹配点之前的全部内容」，**静默把整篇文档复制一遍**（2026-09-24 task.md 就这样被复制了 header+§0–§4 共 85 行，脚本还报「✓ 已新增」）。**一律写成 `src.replace(OLD, () => NEW)`**（函数形式不做 `$` 解析），改完必须数章节数复核 |
+| 20 | `scripts/sync-wxq-lineups.js` 直接 `https.get` 拉 25 页 CDN，中途偶发 `ECONNRESET` 就整轮中断，前面已拉的页全白费 | 已加**直连**（删 `HTTP_PROXY`/`ICUBE_PROXY_HOST` 等代理环境变量，Clash fake-ip 会掐 gtimg）+ `getOnce`/`get` 分离 + **5 次退避重试**（800ms×i）+ 30s 超时；`fetchPages` 对 `get` 抛错改为该页 break 不崩全局 |
+| 21 | `/wzwxq/lineups/search` 返回的 `coreHeroes` **只有 `{id}` 没有 `name`**（`heroes[]` 才有 name） | `namesOfHeroes()` 按 name 索引英雄池 → 全部落进 `unknown` → 每条都 `skip no-heroes` → **overlay 0 / unique 0 整轮空**。2026-09-26 踩到。修法：新增 `idToName(list)` 从 `heroes[]` 建 id→name 表，`namesOfHeroes(list, idMap)` 取不到 name 时用 idMap 兜底；**两个调用点都要传**（search 分支 + detail 分支），漏一个就还是 0 |
+| 22 | 校验脚本里把 `WXQ_STATS` 结构想当然 | 实际是 **`{meta, overlay, list}`**：overlay 是「叠到官方套的统计」(`{officialKey, officialName, lineupKey, stats, overlap, talents, bestLords}`)，`list` 才是独立无码卡（字段是 `stats7d` 不是 `stats`、英雄在 `heroes` 不在 `cores`）。overlay 落 `WXQ_JOBS` 的说法是错的，别再按那个假设写校验 |
 
 ---
 
