@@ -40,11 +40,20 @@ const URLS = {
   beg: (p) => 'https://game.gtimg.cn/images/amside/ide_timer/600269_oslineupbybeginner_pro_' + p + '.js',
 };
 
-function get(url) {
+// 走直连，绕开本机代理（Clash fake-ip 会把 gtimg 掐掉）
+for (const k of ['http_proxy','https_proxy','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','all_proxy','ICUBE_PROXY_HOST']) delete process.env[k];
+process.env.NO_PROXY = '*';
+process.env.no_proxy = '*';
+
+const RETRY = 5;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function getOnce(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: UA }, (res) => {
+    const req = https.get(url, { headers: UA, timeout: 30000 }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return get(res.headers.location).then(resolve, reject);
+        res.resume();
+        return resolve(get(res.headers.location));
       }
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
@@ -52,8 +61,24 @@ function get(url) {
         status: res.statusCode,
         body: Buffer.concat(chunks).toString('utf8'),
       }));
-    }).on('error', reject);
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(new Error('timeout')); });
   });
+}
+
+// CDN 偶发 ECONNRESET / 超时，重试到成功为止
+async function get(url) {
+  let last;
+  for (let i = 1; i <= RETRY; i++) {
+    try { return await getOnce(url); }
+    catch (e) {
+      last = e;
+      console.log('  ! ' + url.split('/').pop() + ' 第' + i + '次失败(' + e.code || e.message + ')，重试…');
+      await sleep(800 * i);
+    }
+  }
+  throw last;
 }
 
 function parseJson(body) {
@@ -65,7 +90,8 @@ function parseJson(body) {
 async function fetchPages(kind) {
   const out = [];
   for (let p = 1; p <= 80; p++) {
-    const r = await get(URLS[kind](p));
+    let r;
+    try { r = await get(URLS[kind](p)); } catch (e) { console.log('  ' + kind + ' p' + p + ' 放弃：' + e.message); break; }
     if (r.status !== 200) break;
     const data = parseJson(r.body);
     if (!Array.isArray(data) || !data.length) break;

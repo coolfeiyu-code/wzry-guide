@@ -94,11 +94,26 @@ function uniq(arr) {
   return out;
 }
 
-function namesOfHeroes(list) {
+// coreHeroes 只带 {id}，名字要靠同一条记录的 heroes[] 兜底
+function idToName(list) {
+  const m = Object.create(null);
+  (list || []).forEach((h) => {
+    if (!h) return;
+    const n = typeof h === 'string' ? h : T(h.name || h.heroName || h.hero_name);
+    const id = typeof h === 'object' ? String(h.id || '') : '';
+    if (n && id) m[id] = n;
+  });
+  return m;
+}
+
+function namesOfHeroes(list, idMap) {
   return uniq((list || []).map((h) => {
     if (!h) return '';
     if (typeof h === 'string') return h;
-    return T(h.name || h.heroName || h.hero_name);
+    const n = T(h.name || h.heroName || h.hero_name);
+    if (n) return n;
+    if (idMap) return idMap[String(h.id || '')] || '';
+    return '';
   }));
 }
 
@@ -477,10 +492,10 @@ function equipDescOf(lu, pools) {
 
   for (let i = 0; i < searched.list.length; i++) {
     const raw = searched.list[i];
-    const cores = namesOfHeroes(raw.coreHeroes && raw.coreHeroes.length ? raw.coreHeroes : raw.heroes)
-      .filter((n) => pools.heroes[n]);
-    const unknown = namesOfHeroes(raw.coreHeroes && raw.coreHeroes.length ? raw.coreHeroes : raw.heroes)
-      .filter((n) => n && !pools.heroes[n]);
+    const idMap = idToName(raw.heroes);
+    const srcHeroes = raw.coreHeroes && raw.coreHeroes.length ? raw.coreHeroes : raw.heroes;
+    const cores = namesOfHeroes(srcHeroes, idMap).filter((n) => pools.heroes[n]);
+    const unknown = namesOfHeroes(srcHeroes, idMap).filter((n) => n && !pools.heroes[n]);
     const st = statsOf(raw);
     const carry = carryOf(cores);
     const hits = official.filter((L) => related(cores, L._names, carry));
@@ -532,7 +547,8 @@ function equipDescOf(lu, pools) {
     const cmd = cmdName && pools.players[cmdName];
     const detFilters = cmd ? [{ type: 'commander', id: String(cmd.id), switchVal: true }] : [];
     const det = await detailOf(raw.lineupKey, detFilters) || raw;
-    const cores = namesOfHeroes(det.coreHeroes && det.coreHeroes.length ? det.coreHeroes : det.heroes)
+    const detIdMap = idToName(det.heroes);
+    const cores = namesOfHeroes(det.coreHeroes && det.coreHeroes.length ? det.coreHeroes : det.heroes, detIdMap)
       .filter((n) => pools.heroes[n]);
     const board = boardHeroes(det, pools);
     const boardNames = namesOfHeroes(board);
