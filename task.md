@@ -3,7 +3,7 @@
 > 最后更新：2026-09-24
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.53**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步）。官方阵容库 **v1.3.0**（358 套）。近7日数据阵容 **v1.1.0**（2026-09-26，overlay 342 + 独立卡 5）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.55**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步）。官方阵容库 **v1.3.0**（358 套）。近7日数据阵容 **v1.1.0**（2026-09-26，overlay 342 + 独立卡 5）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -46,7 +46,8 @@ wzry-guide/
 │   ├── sync-wxq-cards.js   并入官方英雄技能/10·40·100质变/觉醒/属性与装备类型/合成来源（oscard_new_1/_4）
 │   ├── publish-wxq-helper.js 打成单文件写到坚果云 `王者万象棋助手/王者助手.html`（不覆盖 `王者助手.json.js`；顺带带同步桥 6 个文件：装/卸各 Win.cmd+macOS.command，见 5.2f）
 │   ├── wxq-cloud-bridge.js 本机同步桥：127.0.0.1:17871，读写坚果云配置 + 可静态托管助手页
-│   └── install-wxq-bridge.js 装/卸开机自启（复制桥到 %LOCALAPPDATA%\王者助手同步桥 并写 Startup VBS）
+│   ├── install-wxq-bridge.js 装/卸开机自启（复制桥到 %LOCALAPPDATA%\王者助手同步桥 并写 Startup VBS）
+│   └── test-wxq-sync.js     多机同步回归测试（起真桥+并发 POST，16 断言。**改 mergeUsing/decideUsing 后必跑**）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的阵容有「讲解这套」。版本只升 WXQ_META
 ├── wanxiangqi-explain.js   讲解：官方卡面 + 阵容原文。识别李信牺牲/木兰复生/三分倒转/大河开团/日落海整备/往生图腾。李信按上场牺牲位拆读法。
@@ -324,6 +325,18 @@ WXQ_GUIDE = {
 - `code 1` 是 `/wzwxq/lineups/search` 的**成功码**，不是错误码；只有 `42000`（"该版本数据暂无"）才要处理。列表键是 `data.lineups`，不是 `data.list`。
 - 提交 `ee7e861`。**未推 GitHub**（按惯例只发坚果云）。
 
+### 5.13 多机同步「一会存一会不存」修复（2026-09-27）
+
+- **症状**：用户多台电脑用同一家助手，在用阵容「总是一会存一会不存」。
+- **根因 1（主因）**：合并策略是**时间戳后写者胜**——`mergeCfg` 里 `if (inAt >= dsAt || inAt === 0 || dsAt === 0)` 整组覆盖。电脑时钟有偏差时，慢的那台新增的阵容被判成「旧数据」直接丢弃；删除方时钟慢则删除被忽略、**已删的套会复活**。
+- **根因 2**：桥的 `readCfg → mergeCfg → writeCfg` 无跨进程互斥，两台机器并发写时后写覆盖先写。
+- **改法**：新增 `mergeUsing(disk, incoming)` 走 CRDT 思路——`keys` 集合并集、`del` 删除墓碑（`del[k] >= addAt[k]` 才生效，所以重加不会被误删）、`rev` 版本号（`rev` 相同视为并发再用 `at` 兜底）。`at` 只决定列表顺序和 `last`，不再决定整组覆盖。POST 的读-改-写整体进 `withLock`。页面侧 `decideUsing` 从「`cloudAt >= localAt` 整组覆盖」改成「云端有本机没有的才并集进本机」，否则慢时钟机器每次拉云端都会被覆盖回去。
+- **旧数据兼容**：`rev`/`del` 缺失的老配置照常读，首次写入自动补齐，不用手工迁移。
+- **回归测试**：`node scripts/test-wxq-sync.js`（起真桥 + 临时目录 + 19871 端口，16 断言全过）。覆盖旧数据升级 / 慢时钟 10 分钟不丢 / 3 机并发不覆盖 / 删除穿透 / 重加不误删 / 8 套上限 / 空 using 不清云端 / 落盘格式兼容 / 无 tmp·lock 残骸。端口被占用 `$env:WXQ_TEST_PORT=19872` 换。
+- ⚠️ **测这类 bug 一定要测「不丢数据」这个不变量**，只测「能写进去」会漏掉覆盖类问题——本次第一版测试就是因为构造请求时漏了 `using` 外层（`Object.assign` 把字段摊平到顶层）而全红，桥本身其实是对的。
+- 发布：坚果云 `王者助手.html`（1378KB）+ `同步桥.js` 均已含新逻辑。**用户多台电脑都要重装一次同步桥**（或至少重启桥进程）才会生效。
+- 提交 `b1024d3`。
+
 ---
 
 ## 6. 已完成工作清单（时间线）
@@ -394,7 +407,8 @@ WXQ_GUIDE = {
 2. **Schema 校验**：遍历 lineups/combos 确认必需字段齐全、ops 长度 3。
 3. **语法**：`node --check wanxiangqi-guide.js`（SYNTAX_OK）。
 4. **Puppeteer 冒烟**（改 UI/弹窗/移动端必跑）：Chrome `C:/Program Files/Google/Chrome/Application/chrome.exe`，`headless:'new'`；本地 server **必须 `path.resolve(ROOT,'.'+p)`**（`path.join` 在 Windows 出反斜杠 → 全 404）。套件在 `C:/Users/Zhuqi/AppData/Local/Temp/`：`wxq_mobile_test.cjs`(24条)/`wxq_guide_test.cjs`/`wxq_text_test.cjs`(逐字比对)/`wxq_engine_test.cjs`(Node自检)/`wxq_chain_test.cjs`(50条)/`wxq_live_smoke.cjs`(线上16条)。必查：零 console/pageerror、关键 DOM 存在、亮/暗截图、深链。`openModal` 在 IIFE 内非全局 → 模拟点击触发；headless 自带 `navigator.share` 异常 → `Object.defineProperty(navigator,'share',{value:undefined})` 走复制分支。
-5. **点击类测试两个必防坑**：① 页面 `scroll-behavior:smooth` → 先注入 `*{scroll-behavior:auto!important}`；② 元素可能被吸顶栏遮挡 → 点前 `document.elementFromPoint` 确认命中。移动端专项断言：返回键可见 + `getBoundingClientRect` ≥44px、`history.length` 开弹窗后 +1、`history.back()` 后仍原页面、嵌套弹窗返回只退一层、深链可开且返回不退出、桌面端仍为右上角 `×`。测完 `taskkill.exe /PID <pid> /F` 关残留 server。
+5. **同步相关改动必跑**：`node scripts/test-wxq-sync.js`（多机同步回归，16 断言）。改了 `mergeUsing` / `decideUsing` / `withLock` / `wanxiangqi-cloud.js` 就必须跑，它测的是「不丢数据」这个不变量。
+6. **点击类测试两个必防坑**：① 页面 `scroll-behavior:smooth` → 先注入 `*{scroll-behavior:auto!important}`；② 元素可能被吸顶栏遮挡 → 点前 `document.elementFromPoint` 确认命中。移动端专项断言：返回键可见 + `getBoundingClientRect` ≥44px、`history.length` 开弹窗后 +1、`history.back()` 后仍原页面、嵌套弹窗返回只退一层、深链可开且返回不退出、桌面端仍为右上角 `×`。测完 `taskkill.exe /PID <pid> /F` 关残留 server。
 
 ---
 
@@ -424,6 +438,9 @@ WXQ_GUIDE = {
 | 20 | `scripts/sync-wxq-lineups.js` 直接 `https.get` 拉 25 页 CDN，中途偶发 `ECONNRESET` 就整轮中断，前面已拉的页全白费 | 已加**直连**（删 `HTTP_PROXY`/`ICUBE_PROXY_HOST` 等代理环境变量，Clash fake-ip 会掐 gtimg）+ `getOnce`/`get` 分离 + **5 次退避重试**（800ms×i）+ 30s 超时；`fetchPages` 对 `get` 抛错改为该页 break 不崩全局 |
 | 21 | `/wzwxq/lineups/search` 返回的 `coreHeroes` **只有 `{id}` 没有 `name`**（`heroes[]` 才有 name） | `namesOfHeroes()` 按 name 索引英雄池 → 全部落进 `unknown` → 每条都 `skip no-heroes` → **overlay 0 / unique 0 整轮空**。2026-09-26 踩到。修法：新增 `idToName(list)` 从 `heroes[]` 建 id→name 表，`namesOfHeroes(list, idMap)` 取不到 name 时用 idMap 兜底；**两个调用点都要传**（search 分支 + detail 分支），漏一个就还是 0 |
 | 22 | 校验脚本里把 `WXQ_STATS` 结构想当然 | 实际是 **`{meta, overlay, list}`**：overlay 是「叠到官方套的统计」(`{officialKey, officialName, lineupKey, stats, overlap, talents, bestLords}`)，`list` 才是独立无码卡（字段是 `stats7d` 不是 `stats`、英雄在 `heroes` 不在 `cores`）。overlay 落 `WXQ_JOBS` 的说法是错的，别再按那个假设写校验 |
+| 23 | 多机同步用「时间戳后写者胜」合并 `using`（谁的 `at` 大谁覆盖整组） | 电脑时钟有偏差（没校时/手动改/时区），**慢的那台一改就被当旧数据丢弃** → 用户看到「一会存一会不存」「刚加的阵容又没了」。2026-09-26 修：改 `mergeUsing`（并集 + `del` 墓碑 + `rev` 版本号），`at` 只决定顺序和 last。**不要再引入按时间戳整组覆盖** |
+| 24 | 桥的 POST 是 `readCfg → mergeCfg → writeCfg`，**跨进程无互斥** | 两台电脑各跑各的桥，A 读完 → B 写完 → A 再写回，后写覆盖先写。修：`withLock`（`fs.openSync(lock,"wx")` 独占创建，读-改-写全在锁内；等 3s 拿不到就当锁失效继续写，不卡死；残骸超 30s 视为过期删除）。`writeCfg` 的 tmp 名也带 pid 避免互删 |
+| 25 | 改 `scripts/*.js` 里跨多行的函数块时用行号 splice | Read 的行号与 `split()` 数组差 1，会切错行——实测把 `cors()` 函数头切掉，脚本语法直接炸。**用「唯一首行正则 + 唯一尾行正则」定位块**，或 `git show HEAD:file` 取干净基线再切片 |
 
 ---
 
