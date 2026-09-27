@@ -122,34 +122,136 @@ function readCfg(dir) {
   } catch (e) { return { v: 1 }; }
 }
 
-// 在用阵容整组覆盖：谁改得晚（at 大）谁说了算，删除能穿透。
+// 在用阵容合并：并集 + 删除墓碑 + 版本号。
+//
+// 为什么不再用「时间戳后写者胜」：多台电脑时钟必然有偏差（笔记本没校时、手动改过、
+// 时区/夏令时），慢的那台一改就被判成「旧数据」直接丢弃 —— 表现为「一会存一会不存」。
+// 这里改成 CRDT 思路，冲突不可能丢数据：
+//   keys  集合并集（任一端新增都保留）
+//   del   删除墓碑（谁删过就记下来；重加时若新增时间更新则穿透，不误删）
+//   rev   版本号，同端连续写入递增；rev 相同视为并发，再按 at 兜底
+//   at    只决定列表顺序和 last 指针，不再决定整组覆盖
+// 旧数据（没有 rev/del 字段）仍能读，首次写入自动补齐。
+function mergeUsing(diskUsing, incUsing) {
+  const d = diskUsing || null;
+  const i = incUsing || null;
+  if (!i || !i.keys) return d;              // 本机没带在用阵容，保留云端
+  if (!d || !d.keys) return i;              // 云端为空，直接采纳本机
+
+  const dRev = Number(d.rev || 0);
+  const iRev = Number(i.rev || 0);
+  const dAt = Number(d.at || 0);
+  const iAt = Number(i.at || 0);
+  // rev 相同说明是并发写入，用 at 兜底决定谁是「较新」
+  const dNewer = dRev > iRev || (dRev === iRev && dAt >= iAt);
+
+  const seen = Object.create(null);
+  const keys = [];
+  // 先按「较新」那端的顺序铺，再补另一端独有的，列表顺序稳定不跳动
+  const order = dNewer ? [d, i] : [i, d];
+  for (const src of order) {
+    for (const k of src.keys || []) {
+      const key = String(k);
+      if (!key || seen[key]) continue;
+      seen[key] = 1;
+      keys.push(key);
+    }
+  }
+
+  // 墓碑并集
+  const delMap = Object.create(null);
+  const tomb = (src) => {
+    const t = src && src.del;
+    if (!t || typeof t !== 'object') return;
+    for (const k of Object.keys(t)) {
+      const at2 = Number(t[k] || 0);
+      if (!delMap[k] || at2 > delMap[k]) delMap[k] = at2;
+    }
+  };
+  tomb(d);
+  tomb(i);
+
+  // 只有「删除时间 >= 新增时间」的墓碑才生效，否则用户重新加回来的会被误删
+  const addAt = Object.create(null);
+  for (const src of [d, i]) {
+    for (const k of src.keys || []) {
+      const key = String(k);
+      if (!addAt[key]) addAt[key] = Number(src.at || 0);
+    }
+  }
+  for (const k of Object.keys(delMap)) {
+    if (Number(delMap[k]) >= Number(addAt[k] || 0)) delete seen[k];
+  }
+  const kept = keys.filter((k) => seen[k]);
+
+  const rev = Math.max(dRev, iRev) + 1;
+  const atOut = Math.max(dAt, iAt, Date.now());
+  let last = String((dNewer ? d : i).last || '');
+  if (kept.length && kept.indexOf(last) < 0) last = kept[0];
+
+  const out = { keys: kept.slice(0, 8), last: last, at: atOut, rev: rev };
+  if (Object.keys(delMap).length) out.del = delMap;
+  return out;
+}
+
 function mergeCfg(disk, incoming) {
   const out = Object.assign({}, disk || {}, incoming || {});
   out.v = 1;
   out.updatedAt = new Date().toISOString();
-  const incUsing = (incoming && incoming.using) || null;
-  const diskUsing = (disk && disk.using) || null;
-  if (incUsing && incUsing.keys) {
-    const inAt = Number(incUsing.at || 0);
-    const dsAt = Number((diskUsing && diskUsing.at) || 0);
-    if (inAt >= dsAt || inAt === 0 || dsAt === 0) {
-      out.using = { keys: incUsing.keys.slice(0, 8), last: String(incUsing.last || ''), at: inAt };
-    } else {
-      out.using = diskUsing; // 旧的写进来，以云端(较新)为准，防止旧端覆盖
-    }
-  } else if (diskUsing) {
-    out.using = diskUsing; // incoming 未带有效 using，保留云端在用阵容
-  }
+  const merged = mergeUsing((disk && disk.using) || null, (incoming && incoming.using) || null);
+  if (merged) out.using = merged;
   if (disk && disk.hudSize && incoming && incoming.hudSize) {
     out.hudSize = Object.assign({}, disk.hudSize, incoming.hudSize);
   }
   return out;
 }
 
+// 跨进程文件锁：多台电脑各跑各的桥，没有互斥就会出现
+// 「A 读完 → B 写完 → A 再写回」的读-改-写竞态，后写覆盖先写。
+// wx 独占创建实现；等 3 秒拿不到就当锁失效继续写，绝不卡死同步。
+const LOCK_FILE = '王者助手.json.lock';
+const LOCK_WAIT = 3000;
+
+function sleepSync(ms) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) { /* spin */ }
+}
+
+function withLock(dir, fn) {
+  const lock = path.join(dir, LOCK_FILE);
+  const t0 = Date.now();
+  let fd = null;
+  for (;;) {
+    try { fd = fs.openSync(lock, 'wx'); break; }   // wx = 独占创建，失败即已存在
+    catch (e) {
+      // 锁文件是上次进程崩了留下的残骸，超过 30s 就当过期，删掉重来
+      if (Date.now() - t0 > LOCK_WAIT) {
+        try {
+          const st = fs.statSync(lock);
+          if (Date.now() - st.mtimeMs > 30000) { fs.unlinkSync(lock); continue; }
+        } catch (e2) {}
+        break;   // 等不到锁就继续，不让同步卡死
+      }
+      sleepSync(40);
+    }
+  }
+  try {
+    if (fd != null) {
+      try { fs.writeSync(fd, String(process.pid)); } catch (e) {}
+      try { fs.closeSync(fd); } catch (e) {}
+    }
+    return fn();
+  } finally {
+    if (fd != null) { try { fs.unlinkSync(lock); } catch (e) {} }
+  }
+}
+
+// 写盘统一走锁；tmp 文件名带 pid，避免多机/多进程互删对方的 tmp
 function writeCfg(dir, cfg) {
   const target = path.join(dir, CONFIG_FILE);
-  const tmp = target + '.tmp';
-  fs.writeFileSync(tmp, 'window.WXQ_CLOUD_BOOT = ' + JSON.stringify(cfg) + ';\n', 'utf8');
+  const tmp = target + '.' + process.pid + '.tmp';
+  const text = 'window.WXQ_CLOUD_BOOT = ' + JSON.stringify(cfg) + String.fromCharCode(10);
+  fs.writeFileSync(tmp, text, 'utf8');
   fs.renameSync(tmp, target);
   return target;
 }
@@ -226,8 +328,12 @@ function main() {
         readBody(req).then(function (incoming) {
           if (!incoming) { json(res, 400, { ok: false, err: 'bad body' }); return; }
           try {
-            const merged = mergeCfg(readCfg(dir), incoming);
-            writeCfg(dir, merged);
+            // 整个读-改-写必须在锁内完成，否则两台机器会互相覆盖
+            const merged = withLock(dir, function () {
+              const m = mergeCfg(readCfg(dir), incoming);
+              writeCfg(dir, m);
+              return m;
+            });
             json(res, 200, { ok: true, cfg: merged });
           } catch (e) {
             json(res, 500, { ok: false, err: String(e.message || e) });

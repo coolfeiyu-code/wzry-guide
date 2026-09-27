@@ -75,16 +75,41 @@
     return o;
   }
   // 返回 'adopt'(云端新，整组覆盖本机) | 'local_newer'(本机新，需写回云端) | 'none'(云端空)
+  // 返回 'adopt'(云端有本机没有的，整组收敛) | 'local_newer'(本机有云端没有的，写回) | 'none'(无变化)
+  //
+  // 关键：不能按时间戳整组覆盖。多台电脑时钟有偏差，慢的那台每次拉云端都会被
+  // 覆盖回去，用户表现为「我刚加的阵容一会就没了」。这里改成集合并集：
+  //   - 云端有、本机没有 → 采纳云端（多台机器的收藏会互相补齐）
+  //   - 本机有、云端没有 → 保留本机并回写（下次 bridgeWrite 会推上去）
+  // 删除靠 del 墓碑穿透，不靠时间戳。
   function decideUsing(cfgUsing) {
-    if (!cfgUsing || !cfgUsing.keys || !cfgUsing.keys.length) return 'none';
+    if (!cfgUsing || !cfgUsing.keys) return 'none';
     var local = parseJson(lsGet(KEYS.using)) || { keys: [], last: '' };
-    var cloudAt = Number(cfgUsing.at || 0);
-    var localAt = Number(local.at || 0);
-    if (cloudAt >= localAt) {
-      lsSet(KEYS.using, JSON.stringify({ keys: cfgUsing.keys.slice(0, 8), last: String(cfgUsing.last || ''), at: cloudAt }));
-      return 'adopt';
+    var cloudKeys = (cfgUsing.keys || []).map(String).filter(Boolean);
+    if (!cloudKeys.length && !(cfgUsing.del && Object.keys(cfgUsing.del).length)) return 'none';
+
+    var localKeys = (local.keys || []).map(String).filter(Boolean);
+    var hasNew = false;
+    for (var i = 0; i < cloudKeys.length; i++) {
+      if (localKeys.indexOf(cloudKeys[i]) < 0) { hasNew = true; break; }
     }
-    return 'local_newer';
+    if (!hasNew) return 'none';   // 云端没有本机缺的东西，不用动
+
+    // 合并：云端顺序在前（云端是大家共同的最新状态），本机独有的追加在后
+    var merged = [];
+    var seen = {};
+    var all = cloudKeys.concat(localKeys);
+    for (var j = 0; j < all.length; j++) {
+      if (all[j] && !seen[all[j]]) { seen[all[j]] = 1; merged.push(all[j]); }
+    }
+    merged = merged.slice(0, 8);
+    lsSet(KEYS.using, JSON.stringify({
+      keys: merged,
+      last: merged.indexOf(String(cfgUsing.last || '')) >= 0 ? String(cfgUsing.last) : (merged[0] || ''),
+      at: Number(cfgUsing.at || Date.now()),
+      rev: Number(cfgUsing.rev || 0)
+    }));
+    return 'adopt';
   }
   // 云端配置合进本机：在用阵容按时间戳整组覆盖（删除可穿透），其余字段本机没有才采纳。
   function mergeBoot(cfg) {
