@@ -376,12 +376,14 @@
       var L = find(k);
       if (!L) return '';
       var on = String(k) === String(cur);
-      // data-hud-del 和 data-hud-key 在同一个按钮上：
-      // bindMain 里**先判 del**，三击中未攒够时 confirmDel 会 stopPropagation，
-      // 事件就不会走到下面的 key 分支，所以「未攒够 = 不切换」。
-      return '<button type="button" class="hsw-b' + (on ? ' on' : '') + '"'
+      // 重绘后按模块级 DEL 状态回填进度：首击切阵容会重建按钮，
+      // 只靠 class 的话第二次点开就看不出已经点了两下了。
+      var arm = delArm(k);
+      return '<button type="button" class="hsw-b' + (on ? ' on' : '') + (arm ? ' ' + arm : '') + '"'
         + ' data-hud-key="' + esc(k) + '" data-hud-del="' + esc(k) + '"'
-        + ' title="' + esc(L.name) + '（连点三次可移出在用）">' + esc(L.name) + '</button>';
+        + (arm ? ' aria-pressed="true"' : '')
+        + ' title="' + esc(L.name) + (arm ? '（' + delPrompt(DEL.n) + '即可移出在用）' : '（连点三次可移出在用）') + '">'
+        + esc(L.name) + '</button>';
     }).join('') + '</div>';
   }
 
@@ -391,6 +393,24 @@
   var DEL_STEPS = 3;
   var DEL_GAP = 600;      // 相邻两击间隔上限（ms）
   var DEL_RESET = 2600;   // 整个三击序列的有效期
+
+  // ⚠️ 状态必须放模块级，**不能挂在按钮 DOM 上**。
+  // 首击会切阵容 → enterPage 重绘整个浮窗 → 旧按钮被销毁，
+  // 挂在它身上的 _wxqDelN / class / dataset 全部丢失，
+  // 结果第 2、3 击总从 1 开始，三击永远攒不齐（2026-09-28 用户报「删不掉」）。
+  var DEL = { key: '', n: 0, t0: 0, t1: 0, timer: 0 };
+
+  function delArm(k) {
+    if (!DEL.n || DEL.key !== String(k)) return '';
+    if (Date.now() - DEL.t0 > DEL_RESET) return '';
+    return DEL.n >= 2 ? 'arm2' : '';
+  }
+  function delReset() {
+    clearTimeout(DEL.timer);
+    DEL.key = ''; DEL.n = 0; DEL.t0 = 0; DEL.t1 = 0;
+    // 重绘，让 arm/arm2 立刻消失
+    try { if (isHudView()) enterPage(location.hash); else paintDock(); } catch (e) {}
+  }
   function delPrompt(n) {
     if (n >= DEL_STEPS) return '删除';
     if (n === 1) return '再点 2 下';
@@ -402,52 +422,34 @@
   // 关键：**第一击无法区分意图**（用户可能就想切过去），所以第一击照常切阵容，
   // 同时开始计数；从第二击起看间隔 —— 间隔 <DEL_GAP 判定为连击，拦住切换。
   // 这样「单击切换」完全不受影响，「连点三下」也能攒满。
-  function confirmDel(key, btn) {
+  function confirmDel(key) {
     var k = String(key);
     var now = Date.now();
-    var prev = Number(btn._wxqDelT1 || 0);
-    var had = !!btn._wxqDelT0 && (now - Number(btn._wxqDelT0)) <= DEL_RESET;
-    var gap = had ? (now - prev) : Infinity;
+    var had = DEL.key === k && (now - DEL.t0) <= DEL_RESET;
+    var gap = had ? (now - DEL.t1) : Infinity;
 
-    if (!had || gap > DEL_GAP) {
-      // 孤立一击：允许切换，同时把计数重置为 1（万一紧接着还有下一击）
-      btn._wxqDelN = 1;
-    } else {
-      btn._wxqDelN = (btn._wxqDelN || 0) + 1;
-    }
-    btn._wxqDelT0 = now;
-    btn._wxqDelT1 = now;
+    if (!had || gap > DEL_GAP) DEL.n = 1;      // 孤立一击：重新计数
+    else DEL.n = DEL.n + 1;
+    DEL.key = k; DEL.t0 = now; DEL.t1 = now;
 
-    // 还没攒到第二击 → 这是普通点击，交给调用方切阵容
-    if (btn._wxqDelN < 2) {
-      clearTimeout(btn._wxqDelT);
-      btn._wxqDelT = setTimeout(function () {
-        btn.classList.remove('arm'); btn.classList.remove('arm2');
-        delete btn.dataset.hudDelN;
-        btn._wxqDelN = 0; btn._wxqDelT0 = 0; btn._wxqDelT1 = 0;
-      }, DEL_RESET);
+    // 首击（或孤立一击）→ 返回 false，让调用方照常切阵容。
+    // 切完会重绘，但 DEL 在模块级，计数不会丢。
+    if (DEL.n < 2) {
+      clearTimeout(DEL.timer);
+      DEL.timer = setTimeout(delReset, DEL_RESET);
       return false;
     }
 
-    clearTimeout(btn._wxqDelT);
-    var n = btn._wxqDelN;
-    if (n >= DEL_STEPS) {
-      btn._wxqDelN = 0; btn._wxqDelT0 = 0; btn._wxqDelT1 = 0;
-      btn.classList.remove('arm'); btn.classList.remove('arm2');
-      delete btn.dataset.hudDelN;
+    clearTimeout(DEL.timer);
+    if (DEL.n >= DEL_STEPS) {
+      delReset();
       doRemove(k);
       return true;
     }
-    // 进度只用 class 表现，不改按钮文字 —— 名字长度不变才不会挤到相邻格子
-    btn.dataset.hudDelN = String(n);
-    btn.classList.toggle('arm', n >= 1);
-    btn.classList.toggle('arm2', n >= 2);
-    toast('「' + (find(k) ? find(k).name : k) + '」' + delPrompt(n) + '即可移出在用');
-    btn._wxqDelT = setTimeout(function () {
-      btn.classList.remove('arm'); btn.classList.remove('arm2');
-      delete btn.dataset.hudDelN;
-      btn._wxqDelN = 0; btn._wxqDelT0 = 0; btn._wxqDelT1 = 0;
-    }, DEL_RESET);
+    // 第2击：进入删除序列，重绘出红色提示
+    DEL.timer = setTimeout(delReset, DEL_RESET);
+    try { if (isHudView()) enterPage(location.hash); } catch (e) {}
+    toast('「' + (find(k) ? find(k).name : k) + '」' + delPrompt(DEL.n) + '即可移出在用');
     return true;
   }
   function doRemove(key) {
@@ -849,7 +851,7 @@
       // 所以这里无论哪种情况都先调 confirmDel，由它的返回值决定要不要 return。
       var del = t.closest('[data-hud-del]');
       if (del) {
-        if (confirmDel(del.getAttribute('data-hud-del'), del)) {
+        if (confirmDel(del.getAttribute('data-hud-del'))) {
           e.stopPropagation();
           return;                      // 进了删除序列（或已删）→ 不再走切换
         }
@@ -863,16 +865,8 @@
         if (isHudView()) enterHudInto(L);
         return;
       }
-      // 点别处就取消所有待删状态，避免「连点两下后点页面」被当成第三击
-      var pend = document.querySelectorAll('.hsw-b.arm, .hsw-b.arm2');
-      for (var pi = 0; pi < pend.length; pi++) {
-        clearTimeout(pend[pi]._wxqDelT);
-        pend[pi].classList.remove('arm'); btn.classList.remove('arm2');
-        delete pend[pi].dataset.hudDelN;
-        pend[pi]._wxqDelN = 0;
-        pend[pi]._wxqDelT0 = 0;
-        pend[pi]._wxqDelT1 = 0;
-      }
+      // 点别处就取消待删状态，避免「连点两下后点页面」被当成第三击
+      if (DEL.n) { delReset(); return; }
       if (t.closest('[data-hud-home]')) { goHome(); return; }
       if (t.closest('[data-hud-fitreset]')) { resetFit(); return; }
       if (t.closest('[data-hud-tips]')) { setTips(!tipsOn()); return; }
