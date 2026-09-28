@@ -18,7 +18,7 @@
 
 | 项 | 值 |
 |---|---|
-| 本地路径 | `C:\Users\Zhuqi\Desktop\wzry-guide` |
+| 本地路径 | `D:\AI 云同步\wzry-guide`（**2026-09-29 从桌面迁入 Syncthing 同步目录**，多台电脑 / 多个 AI 共用这同一份；仓库内脚本一律用 `__dirname` 定位，**禁止再写死盘符**） |
 | GitHub | `coolfeiyu-code/wzry-guide`（origin 是 SSH；本机 Clash fake-ip 会把 github.com 指到 `198.18.0.109:22` 超时。**HTTPS 推送**走 `git -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main`，然后 `git update-ref refs/remotes/origin/main <sha>`） |
 | 部署 | GitHub Pages，**main 分支根目录**，零构建 |
 | 重建 | push 后 **1–3 分钟**自动重建 |
@@ -47,7 +47,7 @@ wzry-guide/
 │   ├── publish-wxq-helper.js 打成单文件写到坚果云 `王者万象棋助手/王者助手.html`（不覆盖 `王者助手.json.js`；顺带带同步桥 6 个文件：装/卸各 Win.cmd+macOS.command，见 5.2f）
 │   ├── wxq-cloud-bridge.js 本机同步桥：127.0.0.1:17871，读写坚果云配置 + 可静态托管助手页
 │   ├── install-wxq-bridge.js 装/卸开机自启（复制桥到 %LOCALAPPDATA%\王者助手同步桥 并写 Startup VBS）
-│   └── test-wxq-sync.js     多机同步回归测试（起真桥+并发 POST，16 断言。**改 mergeUsing/decideUsing 后必跑**）
+│   └── test-wxq-sync.js     多机同步回归测试（起真桥+并发 POST，24 断言（含 mergeUsing 函数级用例）。**改 mergeUsing/decideUsing 后必跑**）
 │   └── item-changes.json   手工维护的赛季装备改动档（仅用户说"S45 装备改动"时更新）
 ├── wanxiangqi.html         万象棋页。默认「阵容」；tab：阵容/棋手/英雄/效果/装备/天赋/讲解。攻略与连锁 tab 已下线。需要讲解的阵容有「讲解这套」。版本只升 WXQ_META
 ├── wanxiangqi-explain2.js  **讲解规则引擎 v2**（独立文件，先加载）。按阵容数据现场生成六大区块，不再用预制文案
@@ -314,7 +314,7 @@ WXQ_GUIDE = {
   | 天赋 #623003 兵行诡招 | desc | 棋手生命值 `-15`→`-10` |
 - **暂未同步（等官方数据源刷新，不猜）**：① 新增天赋 `神鹰锻匠`/`狂铁·强化`/`透支` —— 公告只有名字+描述，**没有官方 id/品质/阵营/图标**，编 id 会污染数据；② 棋手侧 `姜导·封神一瞬`、`昭君·冰心领域`(30%→35%)、`庄小鱼·如梦似幻` —— 本地 `WXQ_PLAYERS` 只存棋手的技能/秘技/专属三张，**这些秘技牌/增益卡本地根本没建实体**，无字段可改；③ 蒙犽"技能施法时长 2s→1.6s" —— 本地无此时长字段。
 - **坑（本次新增）**：`沈梦溪` 的 10 级文案 `技能伤害提升至100+150%法术攻击力` **大乔也有一模一样的**，只用这句做替换会命中 2 处；必须带上前置技能描述（`混合炸弹，造成<color=#d487e4>100+100%...`）一起定位。
-- **坑（本次新增）**：`Edit` 工具被限制在工作目录内，**改不了 `C:\Users\Zhuqi\Desktop\wzry-guide`**；改 data.js / task.md 一律走「写 node 脚本到工作区 → `node <file>` 执行」。
+- **坑（本次新增）**：`Edit` 工具被限制在工作目录内，**改不了 `D:\AI 云同步\wzry-guide`**；改 data.js / task.md 一律走「写 node 脚本到工作区 → `node <file>` 执行」。
 - **提交**：`ee7e861`。
 
 ### 5.12 官方阵容库 + 近7日数据同步（2026-09-26）
@@ -585,34 +585,34 @@ WXQ_GUIDE = {
 
 ```bash
 # 校验英雄 detailed 无重复 id / 语法
-python -c "import re;s=open(r'C:/Users/Zhuqi/Desktop/wzry-guide/heroes-data.js',encoding='utf-8').read();b=re.findall(r'detailed:\s*`(.*?)`',s,re.S);print('块数',len(b),'最短',min(len(x) for x in b))"
+python -c "import re;s=open(r'D:/AI 云同步/wzry-guide/heroes-data.js',encoding='utf-8').read();b=re.findall(r'detailed:\s*`(.*?)`',s,re.S);print('块数',len(b),'最短',min(len(x) for x in b))"
 
 # 同步装备官方数据（赛季更新时）
-cd "C:/Users/Zhuqi/Desktop/wzry-guide" && /c/Users/Zhuqi/.workbuddy/binaries/python/versions/3.13.12/python.exe scripts/sync-items.py
+cd "D:/AI 云同步/wzry-guide" && /c/Users/Zhuqi/.workbuddy/binaries/python/versions/3.13.12/python.exe scripts/sync-items.py
 
 # 同步万象棋官方阵容库（使用量≥2000 且评分≥4.0）
-C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-lineups.js
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/wzry-guide/scripts/sync-wxq-lineups.js
 
 # 同步近7日前三率（datawxq.com）
-C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-stats.js
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/wzry-guide/scripts/sync-wxq-stats.js
 
 # 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
-C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-cards.js
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/wzry-guide/scripts/sync-wxq-cards.js
 
 # 打成单文件写到坚果云 王者万象棋助手/王者助手.html
-C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe C:/Users/Zhuqi/Desktop/wzry-guide/scripts/publish-wxq-helper.js
+C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/wzry-guide/scripts/publish-wxq-helper.js
 
 # HTTPS 推送（SSH 被 Clash fake-ip 挡时）
-git -C "C:/Users/Zhuqi/Desktop/wzry-guide" -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main
-git -C "C:/Users/Zhuqi/Desktop/wzry-guide" update-ref refs/remotes/origin/main HEAD
+git -C "D:/AI 云同步/wzry-guide" -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main
+git -C "D:/AI 云同步/wzry-guide" update-ref refs/remotes/origin/main HEAD
 
 # 命名校验（示例逻辑，实际用 vm 加载两 js 交叉比对）
 node -e "const fs=require('fs'),vm=require('vm');/* load data -> pool; load guide -> names; diff */"
 
 # 提交（注意：commit 后单独 push，勿 &&）
-git -C "C:/Users/Zhuqi/Desktop/wzry-guide" add wanxiangqi-guide.js
-git -C "C:/Users/Zhuqi/Desktop/wzry-guide" commit -m 'feat(万象棋): ...'
-git -C "C:/Users/Zhuqi/Desktop/wzry-guide" push origin main
+git -C "D:/AI 云同步/wzry-guide" add wanxiangqi-guide.js
+git -C "D:/AI 云同步/wzry-guide" commit -m 'feat(万象棋): ...'
+git -C "D:/AI 云同步/wzry-guide" push origin main
 
 # 本地预览：直接浏览器打开 index.html / wanxiangqi.html（数据本地加载，无需联网）
 ```

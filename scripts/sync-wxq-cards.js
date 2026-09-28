@@ -1,9 +1,10 @@
 ﻿const fs = require("fs");
 const vm = require("vm");
 
-const SCRIPT = "C:/Users/Zhuqi/Desktop/wzry-guide/scripts/sync-wxq-cards.js";
-const DATA = "C:/Users/Zhuqi/Desktop/wzry-guide/wanxiangqi-data.js";
-const OUT_DIR = "C:/Users/Zhuqi/Desktop/wzry-guide";
+const path = require("path");
+// 用脚本自身位置定位，别写死盘符。项目已迁到 D:\AI 云同步\wzry-guide
+// （Syncthing 同步目录，多台电脑 / 多个 AI 共用），写死 C:/Users/Zhuqi/Desktop 换台机器就废。
+const DATA = path.resolve(__dirname, "..", "wanxiangqi-data.js");
 
 // === 从官方拉快照 ===
 const https = require("https");
