@@ -370,20 +370,28 @@
   // 只有一套时也显示（否则「删掉最后一套」这个最常见的操作反而做不了）。
   // 复选框式二次确认：先点 × 变「确认?」，再点才真删，避免误触。
   function switcherHtml(cur) {
-    var keys = aliveKeys();
+    // 这里列的是「收藏里存着的全部 key」，不是全部能查到的 key。
+    // 官方阵容库会定期换阵容码（2026-09-26 那次 334 套里 214 个码直接没了），
+    // 按 aliveKeys() 过滤会让老收藏**静默消失**，用户只看到切换条越来越少，
+    // 甚至以为收藏丢了（2026-09-28 用户报「没办法阵容」）。
+    // 现在查不到的码灰着显示成「已下架」，连点三次照样能移出在用。
+    var keys = load().keys;
     if (!keys.length) return '';
     return '<div class="hsw">' + keys.map(function (k) {
       var L = find(k);
-      if (!L) return '';
       var on = String(k) === String(cur);
       // 重绘后按模块级 DEL 状态回填进度：首击切阵容会重建按钮，
       // 只靠 class 的话第二次点开就看不出已经点了两下了。
       var arm = delArm(k);
-      return '<button type="button" class="hsw-b' + (on ? ' on' : '') + (arm ? ' ' + arm : '') + '"'
+      var cls = 'hsw-b' + (on ? ' on' : '') + (L ? '' : ' off') + (arm ? ' ' + arm : '');
+      var tip = L
+        ? esc(L.name) + (arm ? '（' + delPrompt(DEL.n) + '即可移出在用）' : '（连点三次可移出在用）')
+        : '官方阵容库已下架（码 ' + esc(k) + '）· 连点三次可移出在用';
+      return '<button type="button" class="' + cls + '"'
         + ' data-hud-key="' + esc(k) + '" data-hud-del="' + esc(k) + '"'
         + (arm ? ' aria-pressed="true"' : '')
-        + ' title="' + esc(L.name) + (arm ? '（' + delPrompt(DEL.n) + '即可移出在用）' : '（连点三次可移出在用）') + '">'
-        + esc(L.name) + '</button>';
+        + ' title="' + tip + '">'
+        + esc(L ? L.name : '已下架') + '</button>';
     }).join('') + '</div>';
   }
 
@@ -408,8 +416,27 @@
   function delReset() {
     clearTimeout(DEL.timer);
     DEL.key = ''; DEL.n = 0; DEL.t0 = 0; DEL.t1 = 0;
-    // 重绘，让 arm/arm2 立刻消失
-    try { if (isHudView()) enterPage(location.hash); else paintDock(); } catch (e) {}
+    paintDel();
+  }
+  // 就地把切换条上的待删样式对齐到当前 DEL 状态。
+  // ⚠️ 这里**不能整页重绘**（enterPage）：① 会把用户滚到一半的位置清零
+  // ② 重绘发生在 click 处理中途，被点的按钮会被销毁，同一次点击后面的分支
+  // （回到助手 / 图鉴 / 适配 / 复制）就全失效了 —— 这正是 2026-09-28 用户报
+  // 「点了没反应、没办法阵容」的原因。
+  function paintDel() {
+    var bs = document.querySelectorAll('.hsw-b');
+    for (var i = 0; i < bs.length; i++) {
+      var b = bs[i];
+      var arm = delArm(b.getAttribute && b.getAttribute('data-hud-del'));
+      b.classList.remove('arm');
+      b.classList.remove('arm2');
+      if (arm) {
+        b.classList.add(arm);
+        if (b.setAttribute) b.setAttribute('aria-pressed', 'true');
+      } else if (b.removeAttribute) {
+        b.removeAttribute('aria-pressed');
+      }
+    }
   }
   function delPrompt(n) {
     if (n >= DEL_STEPS) return '删除';
@@ -446,11 +473,28 @@
       doRemove(k);
       return true;
     }
-    // 第2击：进入删除序列，重绘出红色提示
+    // 第2击：进入删除序列，就地刷出红色提示（不整页重绘，见 paintDel 注释）
     DEL.timer = setTimeout(delReset, DEL_RESET);
-    try { if (isHudView()) enterPage(location.hash); } catch (e) {}
+    paintDel();
     toast('「' + (find(k) ? find(k).name : k) + '」' + delPrompt(DEL.n) + '即可移出在用');
     return true;
+  }
+  // 一键清掉「已从官方库下架」的收藏（官方换码后老码永远查不到，
+  // 留着只会让切换条一直挂着灰按钮）。写墓碑，免得别的机器又同步回来。
+  function purgeStale() {
+    var st = load();
+    var kept = [];
+    var gone = [];
+    st.keys.forEach(function (k) { if (find(k)) kept.push(k); else gone.push(k); });
+    if (!gone.length) { toast('在用的阵容都还在库里'); return; }
+    st.at = Date.now();
+    st.del = Object.assign({}, st.del || {});
+    gone.forEach(function (k) { st.del[k] = st.at; });
+    st.keys = kept;
+    if (kept.indexOf(st.last) < 0) st.last = kept[0] || '';
+    save(st);
+    toast('已清掉 ' + gone.length + ' 套已下架的收藏');
+    if (isHudView()) enterPage(location.hash); else paintDock();
   }
   function doRemove(key) {
     var k = String(key);
@@ -865,8 +909,12 @@
         if (isHudView()) enterHudInto(L);
         return;
       }
-      // 点别处就取消待删状态，避免「连点两下后点页面」被当成第三击
-      if (DEL.n) { delReset(); return; }
+      // 点别处就取消待删状态，避免「连点两下后点页面」被当成第三击。
+      // ⚠️ 只清状态，**绝对不能 return**：任何一次点名字都会把 DEL.n 记成 1，
+      // 之前这里直接 return，等于点过名字之后 2.6 秒内「回到助手 / 图鉴 / 适配 /
+      // 复制阵容码」全部失灵（2026-09-28 用户报「没办法阵容」）。
+      if (DEL.n) delReset();
+      if (t.closest('[data-hud-purge]')) { purgeStale(); return; }
       if (t.closest('[data-hud-home]')) { goHome(); return; }
       if (t.closest('[data-hud-fitreset]')) { resetFit(); return; }
       if (t.closest('[data-hud-tips]')) { setTips(!tipsOn()); return; }
@@ -911,8 +959,15 @@
     var L = lineupOf(key);
     if (!L) {
       grid.className = 'jobs-root';
-      grid.innerHTML = '<div class="hud"><p class="hmuted">还没有在用阵容。点「回到助手」给卡片点星标。</p>'
-        + '<p><button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button></p></div>';
+      // 有收藏但一套都取不到 = 官方换码了。这时不能只说「还没有在用阵容」，
+      // 否则用户会以为收藏丢了、浮窗坏了。
+      var stale = load().keys.filter(function (k) { return !find(k); });
+      var msg = stale.length
+        ? '在用的 ' + stale.length + ' 套都已被官方阵容库下架（官方会定期换阵容码），清掉后重新点星标收藏即可。'
+        : '还没有在用阵容。点「回到助手」给卡片点星标。';
+      grid.innerHTML = '<div class="hud"><p class="hmuted">' + esc(msg) + '</p>'
+        + '<p>' + (stale.length ? '<button type="button" class="hbtn" data-hud-purge="1">清掉 ' + stale.length + ' 套下架收藏</button> ' : '')
+        + '<button type="button" class="hbtn pri home" data-hud-home="1">回到助手</button></p></div>';
       bindMain();
       return;
     }

@@ -775,6 +775,8 @@
   /* 连点三次删除：进度用边框/底色表示，文字不变（名字长度不变才不挤邻格） */
   .hsw-b.arm{border-color:#f5a524;background:#fff4e0;color:var(--ink);}
   .hsw-b.arm2{border-color:#e5484d;background:#ffe8e5;color:#8a1c14;font-weight:700;animation:wxqArm .5s ease-in-out infinite alternate;}
+  /* 已从官方阵容库下架的老收藏码：灰着显示，不静默丢，连点三次仍可移出在用 */
+  .hsw-b.off{border-style:dashed;opacity:.6;font-style:italic;}
   @keyframes wxqArm{from{transform:scale(1);}to{transform:scale(1.06);}}
   .hud[data-hud-mobile="1"] .hsw-b{padding:7px 12px;font-size:13px;}
   @media (prefers-reduced-motion:no-preference){.hsw-b{transition:background .12s,color .12s,border-color .12s;}}
