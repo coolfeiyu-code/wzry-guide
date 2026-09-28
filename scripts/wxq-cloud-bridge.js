@@ -189,7 +189,7 @@ function mergeUsing(diskUsing, incUsing) {
   let last = String((dNewer ? d : i).last || '');
   if (kept.length && kept.indexOf(last) < 0) last = kept[0];
 
-  const out = { keys: kept.slice(0, 8), last: last, at: atOut, rev: rev };
+  const out = { keys: kept.slice(0, 1000), last: last, at: atOut, rev: rev };
   if (Object.keys(delMap).length) out.del = delMap;
   return out;
 }

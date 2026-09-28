@@ -102,7 +102,7 @@
     for (var j = 0; j < all.length; j++) {
       if (all[j] && !seen[all[j]]) { seen[all[j]] = 1; merged.push(all[j]); }
     }
-    merged = merged.slice(0, 8);
+    merged = merged.slice(0, 1000);
     lsSet(KEYS.using, JSON.stringify({
       keys: merged,
       last: merged.indexOf(String(cfgUsing.last || '')) >= 0 ? String(cfgUsing.last) : (merged[0] || ''),
@@ -219,7 +219,7 @@
       // localStorage.at vs 云端 at 没有单调关系，会把本设备旧数据反写覆盖新设备。
       if (j.cfg && j.cfg.using && j.cfg.using.keys) {
         lsSet(KEYS.using, JSON.stringify({
-          keys: j.cfg.using.keys.slice(0, 8),
+          keys: j.cfg.using.keys.slice(0, 1000),
           last: String(j.cfg.using.last || ''),
           at: Number(j.cfg.using.at || Date.now())
         }));

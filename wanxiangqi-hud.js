@@ -15,7 +15,10 @@
   'use strict';
 
   var STORE = 'wxq-using-v1';
-  var MAX = 8;
+  // 不限套数。用户明确要求「可以无限加」。
+  // 上限放到一个很大但仍能防手滑的值：localStorage 单键约 5MB，
+  // 一套阵容码平均 3-8 字节，1000 套也就几 KB，不会撑爆。
+  var MAX = 1000;
   var COLS = 7;
   var ROWS = 4;
   var PHASE = ['前期', '中期', '后期'];
@@ -88,7 +91,7 @@
     try {
       var o = JSON.parse(localStorage.getItem(STORE) || '');
       if (!o || !o.keys) return { keys: [], last: '' };
-      return { keys: o.keys.map(String).filter(Boolean).slice(0, MAX), last: String(o.last || ''), at: o.at };
+      return { keys: o.keys.map(String).filter(Boolean).slice(0, MAX), last: String(o.last || ''), at: o.at, rev: o.rev, del: o.del };
     } catch (e) { return { keys: [], last: '' }; }
   }
   function save(st) {
@@ -118,7 +121,7 @@
       return false;
     }
     if (st.keys.length >= MAX) {
-      toast('在用最多 ' + MAX + ' 套，先取消一套');
+      toast('在用最多 ' + MAX + ' 套（正常用不到）');
       return true;
     }
     st.keys.push(key);
@@ -126,6 +129,23 @@
     save(st);
     return true;
   }
+  // 从在用移除（浮窗 × 与主页面星标共用）
+  function remove(key) {
+    var k = String(key || '');
+    if (!k) return false;
+    var st = load();
+    var i = st.keys.indexOf(k);
+    if (i < 0) return false;
+    st.keys.splice(i, 1);
+    if (st.last === k) st.last = st.keys[0] || '';
+    // 记墓碑，这样别的机器不会把删掉的套同步回来（桥的 mergeUsing 会用）
+    st.at = Date.now();
+    st.del = Object.assign({}, st.del || {});
+    st.del[k] = st.at;
+    save(st);
+    return true;
+  }
+
   function setLast(key) {
     var st = load();
     st.last = String(key || '');
@@ -346,14 +366,55 @@
     return bits.join('');
   }
 
+  // 浮窗里直接删：每套右上角一个 ×，不用回助手页。
+  // 只有一套时也显示（否则「删掉最后一套」这个最常见的操作反而做不了）。
+  // 复选框式二次确认：先点 × 变「确认?」，再点才真删，避免误触。
   function switcherHtml(cur) {
     var keys = aliveKeys();
-    if (keys.length <= 1) return '';
+    if (!keys.length) return '';
     return '<div class="hsw">' + keys.map(function (k) {
       var L = find(k);
       if (!L) return '';
-      return '<button type="button" class="hsw-b' + (String(k) === String(cur) ? ' on' : '') + '" data-hud-key="' + esc(k) + '">' + esc(L.name) + '</button>';
+      var on = String(k) === String(cur);
+      return '<span class="hsw-i' + (on ? ' on' : '') + '">'
+        + '<button type="button" class="hsw-b' + (on ? ' on' : '') + '" data-hud-key="' + esc(k) + '" title="' + esc(L.name) + '">' + esc(L.name) + '</button>'
+        + '<button type="button" class="hsw-x" data-hud-del="' + esc(k) + '" title="从在用移除：' + esc(L.name) + '" aria-label="移除 ' + esc(L.name) + '">×</button>'
+        + '</span>';
     }).join('') + '</div>';
+  }
+
+  // 点 × 删除：先点一下变「确认?」，3 秒内再点才真删
+  function confirmDel(key, btn) {
+    var k = String(key);
+    if (btn.dataset.hudArmed === k) { doRemove(k); return; }
+    btn.dataset.hudArmed = k;
+    btn.classList.add('arm');
+    btn.textContent = '确认?';
+    var done = function () {
+      btn.classList.remove('arm');
+      btn.textContent = '×';
+      delete btn.dataset.hudArmed;
+    };
+    setTimeout(done, 3000);
+    btn._wxqUnarm = done;
+  }
+  function doRemove(key) {
+    var k = String(key);
+    var L = find(k);
+    var name = L ? L.name : k;
+    if (!remove(k)) { toast('移除失败'); return; }
+    toast('已移除「' + name + '」');
+    // 删掉的可能正是当前显示的这套 → 切到还剩的第一套；一套不剩就回空态
+    var rest = aliveKeys();
+    var next = rest.length ? lineupOf(rest[0]) : null;
+    if (next) {
+      setLast(next.key);
+      if (isHudView()) enterHudInto(next); else paintDock();
+    } else if (isHudView()) {
+      enterPage('');
+    } else {
+      paintDock();
+    }
   }
 
   // 7 日数据卡：把接口带的胜率压成一行行小字，浮窗里也要能看
@@ -737,6 +798,12 @@
         if (isHudView()) enterHudInto(L);
         return;
       }
+      var del = t.closest('[data-hud-del]');
+      if (del) {
+        e.stopPropagation();
+        confirmDel(del.getAttribute('data-hud-del'), del);
+        return;
+      }
       if (t.closest('[data-hud-home]')) { goHome(); return; }
       if (t.closest('[data-hud-fitreset]')) { resetFit(); return; }
       if (t.closest('[data-hud-tips]')) { setTips(!tipsOn()); return; }
@@ -835,6 +902,7 @@
     has: has,
     keys: aliveKeys,
     toggle: toggle,
+    remove: remove,
     open: open,
     enterPage: enterPage,
     // 触屏手机：浮窗和收藏在用都不适用（游戏在电脑上，手机只是看）

@@ -125,10 +125,23 @@ function cleanup() {
   r = await post(S(r.cfg.using.keys.concat(['m1']), Date.now() + 5000));
   check('重加 m1 成功（不误删）', r.cfg.using.keys.indexOf('m1') >= 0, JSON.stringify(r.cfg.using.keys));
 
-  // 5. 上限 8 套
-  console.log('\n【5】上限 8 套');
-  r = await post(S(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'], Date.now() + 9000));
-  check('截断到 8 套', r.cfg.using.keys.length === 8, '实际 ' + r.cfg.using.keys.length);
+  // 5. 不限套数（2026-09-27 用户要求：8 套上限太紧）
+  console.log('\n【5】不限套数');
+  const many = [];
+  for (let i = 1; i <= 30; i++) many.push('k' + i);
+  r = await post(S(many, Date.now() + 9000));
+  // 并集语义：本机 30 套 + 云端还留着前面几组的 8 套 = 38，所以用「>=30」而不是等号
+  check('30 套全部保留（并集后 ≥30）', r.cfg.using.keys.length >= 30, '实际 ' + r.cfg.using.keys.length);
+  // 注意：前面几组的 a/b/c/SLOW/base/m2… 都还在（并集语义），所以不能断言下标，要断言存在性
+  check('k1 在列表', r.cfg.using.keys.indexOf('k1') >= 0);
+  check('k30 在列表', r.cfg.using.keys.indexOf('k30') >= 0);
+  check('并集语义：旧套 a 仍在', r.cfg.using.keys.indexOf('a') >= 0, JSON.stringify(r.cfg.using.keys.slice(0, 8)));
+
+  // 上限仍有兜底（防手滑灌爆 localStorage），但已放宽到 1000
+  const huge = [];
+  for (let i = 0; i < 1200; i++) huge.push('x' + i);
+  r = await post(S(huge, Date.now() + 9500));
+  check('超量时按 1000 兜底截断', r.cfg.using.keys.length === 1000, '实际 ' + r.cfg.using.keys.length);
 
   // 6. 不带 using 的 POST 不能清空云端
   console.log('\n【6】空 using 不能清掉云端数据');
