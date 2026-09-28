@@ -383,20 +383,39 @@
     }).join('') + '</div>';
   }
 
-  // 点 × 删除：先点一下变「确认?」，3 秒内再点才真删
+  // 点 × 删除要连点三下，每一步都明确告诉用户还要几下。
+  // 二击确认实测还是太容易误触（浮窗里格子小、鼠标一划就点中），所以提到三击。
+  // 状态：idle → 「再点 2 下」→ 「再点 1 下」→ 真删；任一步超时 2.6s 就退回 idle。
+  var DEL_STEPS = 3;
+  var DEL_RESET = 2600;
+  function delPrompt(n) {
+    if (n >= DEL_STEPS) return '删';
+    if (n === 1) return '再点 2 下';
+    return '再点 1 下';
+  }
   function confirmDel(key, btn) {
     var k = String(key);
-    if (btn.dataset.hudArmed === k) { doRemove(k); return; }
-    btn.dataset.hudArmed = k;
-    btn.classList.add('arm');
-    btn.textContent = '确认?';
-    var done = function () {
+    var n = Number(btn.dataset.hudDelN || 0);
+    if (n + 1 >= DEL_STEPS) {
+      clearTimeout(btn._wxqDelT);
+      delete btn.dataset.hudDelN;
       btn.classList.remove('arm');
       btn.textContent = '×';
-      delete btn.dataset.hudArmed;
-    };
-    setTimeout(done, 3000);
-    btn._wxqUnarm = done;
+      doRemove(k);
+      return;
+    }
+    n += 1;
+    btn.dataset.hudDelN = String(n);
+    btn.classList.add('arm');
+    btn.classList.toggle('arm2', n >= 2);
+    btn.textContent = delPrompt(n);
+    toast('删除「' + (find(k) ? find(k).name : k) + '」：' + delPrompt(n) + '即可移除');
+    clearTimeout(btn._wxqDelT);
+    btn._wxqDelT = setTimeout(function () {
+      btn.classList.remove('arm', 'arm2');
+      btn.textContent = '×';
+      delete btn.dataset.hudDelN;
+    }, DEL_RESET);
   }
   function doRemove(key) {
     var k = String(key);
@@ -803,6 +822,17 @@
         e.stopPropagation();
         confirmDel(del.getAttribute('data-hud-del'), del);
         return;
+      }
+      // 点别处就取消待删状态，避免「点一下 × 再点页面」把误触变成真删
+      var armed = t.closest && t.closest('.hsw-x');
+      if (!armed) {
+        var pend = document.querySelectorAll('.hsw-x.arm');
+        for (var pi = 0; pi < pend.length; pi++) {
+          clearTimeout(pend[pi]._wxqDelT);
+          pend[pi].classList.remove('arm', 'arm2');
+          pend[pi].textContent = '×';
+          delete pend[pi].dataset.hudDelN;
+        }
       }
       if (t.closest('[data-hud-home]')) { goHome(); return; }
       if (t.closest('[data-hud-fitreset]')) { resetFit(); return; }
