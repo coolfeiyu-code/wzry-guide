@@ -218,11 +218,20 @@
       // 让本设备知道「我最后一次成功推到云端的版本号」。否则下次 bridgePull 比较
       // localStorage.at vs 云端 at 没有单调关系，会把本设备旧数据反写覆盖新设备。
       if (j.cfg && j.cfg.using && j.cfg.using.keys) {
-        lsSet(KEYS.using, JSON.stringify({
-          keys: j.cfg.using.keys.slice(0, 1000),
-          last: String(j.cfg.using.last || ''),
-          at: Number(j.cfg.using.at || Date.now())
-        }));
+        // 必须「全量」回写。以前只写 keys/last/at，把 rev 和 del 丢了：
+        //   - rev 一丢，本机 rev 永远是 0，而桥那边 rev 随每次合并递增，
+        //     mergeUsing 里 dRev > iRev 恒成立 → 云端永远被当成「较新」，
+        //     at 顺序和 last 都取自云端，用户刚点星标收藏的那套不会成为当前阵容。
+        //   - del 一丢，本机失去墓碑，删掉的老收藏更容易被别的机器同步回来。
+        var ack = j.cfg.using;
+        var keep = {
+          keys: ack.keys.slice(0, 1000),
+          last: String(ack.last || ''),
+          at: Number(ack.at || Date.now()),
+          rev: Number(ack.rev || 0)
+        };
+        if (ack.del && typeof ack.del === 'object') keep.del = ack.del;
+        lsSet(KEYS.using, JSON.stringify(keep));
       }
       return true;
     });

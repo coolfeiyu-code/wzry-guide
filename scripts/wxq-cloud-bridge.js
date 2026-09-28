@@ -176,7 +176,12 @@ function mergeUsing(diskUsing, incUsing) {
   for (const src of [d, i]) {
     for (const k of src.keys || []) {
       const key = String(k);
-      if (!addAt[key]) addAt[key] = Number(src.at || 0);
+      const a = Number(src.at || 0);
+      // ⚠️ 必须取「最大」而不是「先扫到的那个」。at 是整组级别的编辑时间：
+      // 如果先扫到的是那份旧副本（at 早于删除时刻），而它恰好还残留着这个 key，
+      // 就会判定 del>=addAt 生效、把用户刚重新收藏的那套又删掉 —— 表现就是
+      // 删过一套再点星标收藏它，怎么点都存不进去。
+      if (!addAt[key] || a > addAt[key]) addAt[key] = a;
     }
   }
   for (const k of Object.keys(delMap)) {

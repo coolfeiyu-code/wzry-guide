@@ -3,7 +3,7 @@
 > 最后更新：2026-09-24
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.62**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步 + 浮窗修「点名字后其它按钮被吞」与「下架收藏静默丢失」）。官方阵容库 **v1.3.0**（358 套）。近7日数据阵容 **v1.1.0**（2026-09-26，overlay 342 + 独立卡 5）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.12**；万象棋 `WXQ_META` **v1.5.63**（棋手以数据为准 + 修词条高亮盖色 + 英雄 4 层 tag + 官方 v1.3.1 平衡性同步 + 浮窗修「点名字后其它按钮被吞」与「下架收藏静默丢失」+ 保存阵容四处静默失败）。官方阵容库 **v1.3.0**（358 套）。近7日数据阵容 **v1.1.0**（2026-09-26，overlay 342 + 独立卡 5）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -443,6 +443,22 @@ WXQ_GUIDE = {
 - **教训（已进永久记忆 #18）**：**同一次点击的处理链里，中途整页重绘会让后续分支全部失效**；清理类分支**绝不能 return**，刷视觉一律就地改 class。
 
 
+### 5.19 「没办法保存阵容」：点★完全没反应（2026-09-28，用户纠正「我是说没办法阵容」）
+
+- **症状纠偏**：上一轮把用户的「没办法阵容」理解成「浮窗切换阵容失灵」（§5.18），用户明确纠正为**保存阵容** —— 主页面卡片右上角**点★毫无反应**：星不亮、无提示，等于点了没用。
+- **先排除**（浏览器子代理 + vm 实跑，避免瞎改）：源码页(8399)与坚果云成品(8400)上★都能正常存 —— `toggle` 返回 true、localStorage 更新、`.jstar` 灰(`--line #D8D3DF`)→红(`--accent #D63E24`)对比明显、hud.js 18 个函数各只定义 1 次（无同名覆盖）、`data()` 渲染出的卡片必能被 `find()` 找到。
+  → 结论：**不是★链路断了，而是这条链路上有多处「静默失败」**。任何一处命中，用户看到的都只是「点了没反应」。
+- **四处真缺陷（全部已修）**：
+  1. **A｜`hud.js toggle()` 静默 return**：`if (!key || !find(key)) return false;` —— `find` 查不到时不写库、不报错、连提示都没有。改为明确 toast「这套阵容不在官方库里（码 X），存不了」。
+  2. **B｜`hud.js save()` 吞异常**：`try { localStorage.setItem } catch (e) {}` —— 配额满/隐私模式下收藏等于没存，界面却一声不吭。改为只报一次 toast（模块级 `stWarned`，避免每切一套阵容都弹）。
+  3. **A2｜成功/取消完全静默**：原本只有星标变色，无任何文字反馈，用户无法确认到底存上没有。补 `toast('已收藏「X」为在用')` / `toast('已移出在用「X」')`。
+  4. **C｜桥 `mergeUsing()` 墓碑误杀重加**：墓碑判定用的 `addAt` 取「先扫到的那组」的**组级 `at`**。旧副本若还残留该 key（真会发生：**删除那一下桥没开 → POST 失败 → 磁盘仍留着该 key**），就会用更早的 `at` 判定 `del >= addAt` 生效，把**刚重新收藏**的那套又删掉 —— 表现就是「怎么点都存不进去」。改为**遍历两份副本取 `at` 最大值**。
+  5. **D｜`wanxiangqi-cloud.js bridgeWrite()` ack 回写丢字段**：只回写 `keys/last/at`，**丢了 `rev` 和 `del`**。`rev` 一丢 → 本机 rev 永远 0，而桥那边 rev 随每次合并递增 → `mergeUsing` 里 `dRev > iRev` 恒成立 → **云端永远被当成「较新」**，`at` 顺序与 `last` 全取自云端，用户刚点星标收藏的那套**不会成为当前显示的阵容**；`del` 一丢 → 本机失去墓碑，删掉的老收藏更容易被别的机器同步回来。改为**全量回写 `keys/last/at/rev/del`**。
+- **验证**：
+  - `node scripts/test-wxq-sync.js` → **24 通过 / 0 失败**。新增【0】`mergeUsing` 函数级用例（HTTP 接口构造不出「磁盘副本 at 比墓碑更早」，只能函数级覆盖），四条断言：墓碑早于重加**不许误杀** / `last` 指向刚收藏的那套 / rev 落后时**也不许误删** / 墓碑确实更新时**仍要删**（最后一条防把删除功能改坏）。
+  - **成品验收**（从坚果云单文件 **1442939 字节** 抽内联 script，11 个块）：11 项文本断言全过 + hud 段在 vm 里真跑 —— `toggle('4')`→`true`、localStorage 存入 `["4"]`、`last==='4'`、toast「已收藏「河洛古币流」为在用」；再点一次 → `false`、keys 清空、toast「已移出在用…」；`toggle('999999')` → toast「这套阵容不在官方库里（码 999999），存不了」。
+- **教训（已进永久记忆 #19 / #20）**：**面向用户的失败点绝不能静默** —— 不写库、吞异常、无提示三者任一，用户看到的都只是「点了没反应」，比报错更难查。**同步类**：ack 回写必须**全量**，少写 `rev` 会让「谁更新」的判定恒定失真（表现为「存了但当前阵容没变」）。
+
 ## 6. 已完成工作清单（时间线）
 
 | 阶段 | 内容 | 状态 |
@@ -511,7 +527,7 @@ WXQ_GUIDE = {
 2. **Schema 校验**：遍历 lineups/combos 确认必需字段齐全、ops 长度 3。
 3. **语法**：`node --check wanxiangqi-guide.js`（SYNTAX_OK）。
 4. **Puppeteer 冒烟**（改 UI/弹窗/移动端必跑）：Chrome `C:/Program Files/Google/Chrome/Application/chrome.exe`，`headless:'new'`；本地 server **必须 `path.resolve(ROOT,'.'+p)`**（`path.join` 在 Windows 出反斜杠 → 全 404）。套件在 `C:/Users/Zhuqi/AppData/Local/Temp/`：`wxq_mobile_test.cjs`(24条)/`wxq_guide_test.cjs`/`wxq_text_test.cjs`(逐字比对)/`wxq_engine_test.cjs`(Node自检)/`wxq_chain_test.cjs`(50条)/`wxq_live_smoke.cjs`(线上16条)。必查：零 console/pageerror、关键 DOM 存在、亮/暗截图、深链。`openModal` 在 IIFE 内非全局 → 模拟点击触发；headless 自带 `navigator.share` 异常 → `Object.defineProperty(navigator,'share',{value:undefined})` 走复制分支。
-5. **同步相关改动必跑**：`node scripts/test-wxq-sync.js`（多机同步回归，16 断言）。改了 `mergeUsing` / `decideUsing` / `withLock` / `wanxiangqi-cloud.js` 就必须跑，它测的是「不丢数据」这个不变量。
+5. **同步相关改动必跑**：`node scripts/test-wxq-sync.js`（多机同步回归，24 断言）。改了 `mergeUsing` / `decideUsing` / `withLock` / `wanxiangqi-cloud.js` 就必须跑，它测的是「不丢数据」这个不变量。
 6. **点击类测试两个必防坑**：① 页面 `scroll-behavior:smooth` → 先注入 `*{scroll-behavior:auto!important}`；② 元素可能被吸顶栏遮挡 → 点前 `document.elementFromPoint` 确认命中。移动端专项断言：返回键可见 + `getBoundingClientRect` ≥44px、`history.length` 开弹窗后 +1、`history.back()` 后仍原页面、嵌套弹窗返回只退一层、深链可开且返回不退出、桌面端仍为右上角 `×`。测完 `taskkill.exe /PID <pid> /F` 关残留 server。
 
 ---
@@ -549,6 +565,9 @@ WXQ_GUIDE = {
 | 27 | 改了代码就以为完事，没写 task.md | 用户定过规矩「每次改动必须同步更新 task.md」，而且**小改动最容易漏**（本次又漏了一次 `cd13c6e`）。只要动了代码就必须记，哪怕只是补一行清单；坑更要记进 §9 |
 | 28 | 清理状态的分支里顺手 `return`，且顺手整页重绘 | `if (DEL.n) { delReset(); return; }` 一行两个坑：① 后续所有判断被 return 掉（点「回到助手」「图鉴」变死键，且只在点过名字后 2.6s 内失灵）② 重绘销毁正在被点的节点。**清理只改状态、绝不 return**；**刷视觉用 `querySelectorAll` 就地改 class**，别为改颜色重绘 |
 | 29 | 用 `keys.filter(k => find(k))` 渲染「在用阵容」 | 官方**会定期换阵容码**（实测 334→358 时 214 个旧码消失），过滤后老收藏**静默消失**、切换条凭空变少→用户以为功能坏了。**原样列出 + 灰显「已下架」+ 一键清理（写 `del` 墓碑）** |
+| 30 | 面向用户的操作失败点写成静默 `return false` / 空 `catch` | 用户看到的就是「点了没反应」。**不写库、吞异常、无提示**三者任一都算 bug：查不到要说明原因，写失败要报错（配额满/隐私模式），**成功也要给正反馈**（toast），否则用户无法确认到底存上没有 |
+| 31 | 同步时 ack 回写只写部分字段（`keys/last/at`） | 少写 `rev` → 本机 rev 恒 0，而桥 rev 单调递增 → `dRev > iRev` 恒成立 → **云端永远被当成「较新」**，`last` 与顺序全取自云端（**用户刚收藏的那套不会成为当前阵容**）；少写 `del` → 本机丢墓碑，删掉的老收藏会被别的机器同步回来。**ack 必须全量回写** |
+| 32 | 墓碑/版本比较里用「先扫到的那份」的组级时间戳 | 组级 `at` 不能代表单个 key 的加入时刻：旧副本残留该 key 时，会用比墓碑更早的 `at` 判 `del >= addAt` 生效，把**刚重新收藏**的 key 误杀（表现：怎么点都存不进去）。**同一 key 取两份副本 `at` 的最大值** |
 
 ---
 

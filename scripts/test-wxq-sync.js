@@ -89,6 +89,32 @@ function cleanup() {
   }
   console.log('测试目录:', CFG_DIR, '\n');
 
+  // 0. mergeUsing 函数级单测
+  // 桥的 HTTP 接口构造不出「磁盘那份副本的 at 比墓碑更早」的状态（落盘 at 总是
+  // Math.max(..., Date.now())），所以这块只能用函数级用例覆盖。这个场景是真会发生的：
+  // 删除那一下如果桥没开（POST 失败），磁盘上那个 key 就留着了，之后在另一台机器
+  // 重新点星标收藏它，旧墓碑就可能把新收藏又杀掉 —— 表现就是「怎么点都存不进去」。
+  console.log('【0】mergeUsing：删过的一套重新收藏，不能被旧墓碑误杀');
+  {
+    const src = fs.readFileSync(BRIDGE, 'utf8');
+    const m = src.match(/function mergeUsing\([\s\S]*?\n\}/);
+    const mergeUsing = new Function(m[0] + '; return mergeUsing;')();
+    const T = 1790000000000;
+    // 磁盘：k 早就被删过（墓碑 T+2000），但旧副本里还留着 k
+    const disk = { keys: ['base', 'k'], last: 'base', at: T + 1000, rev: 3, del: { k: T + 2000 } };
+    // A. 正常情况：本机 rev 已跟上云端（靠 cloud.js 的 ack 全量回写），刚点星标收藏 k
+    const outA = mergeUsing(disk, { keys: ['base', 'k'], last: 'k', at: T + 5000, rev: 3 });
+    check('重加的 k 没被旧墓碑误杀', outA.keys.indexOf('k') >= 0, JSON.stringify(outA));
+    check('last 指向刚收藏的那套', outA.last === 'k', outA.last);
+    // B. 本机 rev 还没跟上（首次 POST 前的状态）：云端 rev 更大是合理的，
+    //    这里只要求「不许把刚重加的 key 删掉」
+    const outB = mergeUsing(disk, { keys: ['base', 'k'], last: 'k', at: T + 5000, rev: 0 });
+    check('rev 落后时也不许误删刚重加的 k', outB.keys.indexOf('k') >= 0, JSON.stringify(outB));
+    // 反向：墓碑确实比「重新加回来的时间」更新 → 仍要删掉，别把删除功能改坏
+    const out2 = mergeUsing(disk, { keys: ['base', 'k'], last: 'k', at: T + 1500, rev: 3 });
+    check('墓碑更新的老收藏仍被删', out2.keys.indexOf('k') < 0, JSON.stringify(out2));
+  }
+
   // 1. 旧格式数据（无 rev/del）能被读并升级
   console.log('【1】旧格式数据（无 rev/del）能被读并升级');
   fs.writeFileSync(CFG_FILE, 'window.WXQ_CLOUD_BOOT = {"v":1,"using":{"keys":["a","b"],"last":"a","at":1000}};\n', 'utf8');

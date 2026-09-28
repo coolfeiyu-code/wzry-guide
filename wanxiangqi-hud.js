@@ -94,9 +94,19 @@
       return { keys: o.keys.map(String).filter(Boolean).slice(0, MAX), last: String(o.last || ''), at: o.at, rev: o.rev, del: o.del };
     } catch (e) { return { keys: [], last: '' }; }
   }
+  var stWarned = false; // 本地存储写不进去只提醒一次，别每切一套阵容都弹
   function save(st) {
     st.at = Date.now(); // 最近一次本地编辑时刻，供云端按时间戳后写者胜同步
-    try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) {}
+    try {
+      localStorage.setItem(STORE, JSON.stringify(st));
+    } catch (e) {
+      // 以前这里是空的 catch：写不进去时收藏等于没存，但界面一声不吭，
+      // 用户只能看到「点星标没反应」。这种失败必须报出来。
+      if (!stWarned) {
+        stWarned = true;
+        toast('保存失败：浏览器本地存储写不进去（已满或处于隐私模式）');
+      }
+    }
     paintDock();
     cloudTouch();
   }
@@ -111,13 +121,21 @@
 
   function toggle(key) {
     key = String(key || '');
-    if (!key || !find(key)) return false;
+    if (!key) return false;
+    // 以前是「key 或 find(key) 不成立就静默 return」：查不到时不写库、不报错、
+    // 连提示都没有，用户看到的就是「点星标完全没反应」。现在明确告知原因。
+    var L = find(key);
+    if (!L) {
+      toast('这套阵容不在官方库里（码 ' + key + '），存不了');
+      return false;
+    }
     var st = load();
     var i = st.keys.indexOf(key);
     if (i >= 0) {
       st.keys.splice(i, 1);
       if (st.last === key) st.last = st.keys[0] || '';
       save(st);
+      toast('已移出在用「' + L.name + '」');
       return false;
     }
     if (st.keys.length >= MAX) {
@@ -127,6 +145,9 @@
     st.keys.push(key);
     st.last = key;
     save(st);
+    // 收藏成功原本是「完全静默」的：只有星标变色，没有任何文字反馈。
+    // 补一句提示，否则用户没法确认到底存上没有。
+    toast('已收藏「' + L.name + '」为在用');
     return true;
   }
   // 从在用移除（浮窗 × 与主页面星标共用）
