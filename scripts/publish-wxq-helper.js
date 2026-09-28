@@ -23,6 +23,9 @@ const SCRIPTS = [
   'wanxiangqi-stats.js',
   'wanxiangqi-jobs.js',
   'wanxiangqi-rules.js',
+  // 讲解规则引擎 v2，**必须在 explain.js 之前**进清单。
+  // 漏掉它 = 打包单文件时没打进去 = 页面显示「讲解引擎未加载」。
+  'wanxiangqi-explain2.js',
   'wanxiangqi-explain.js',
   'wanxiangqi-cloud.js',
   'wanxiangqi-hud.js'

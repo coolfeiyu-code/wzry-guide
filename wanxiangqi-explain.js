@@ -280,8 +280,14 @@
       + '<div class="jdoc-sub">' + (arch ? esc(arch.name) + ' · ' : '') + '先读懂机制，再对照卡面</div>'
       + '</div></header>';
     // 规则引擎 v2 输出（核心位/联动/节奏/装备/作者原文/风险）
-    h += (global.WXQ_EXPLAIN_V2 ? global.WXQ_EXPLAIN_V2.pageHtml(L)
-      : '<section class="jbox"><h3>读懂这套</h3><p class="jmuted">讲解引擎未加载。</p></section>');
+    // 引擎没加载 = 打包脚本 SCRIPTS 清单漏了 wanxiangqi-explain2.js（2026-09-28 踩过）。
+    // 这是部署事故，必须显式报出来，不要静默降级成一句"未加载"让人以为功能没做。
+    if (!global.WXQ_EXPLAIN_V2) {
+      h += '<section class="jbox"><h3>读懂这套</h3><p class="jmuted">讲解引擎未加载：'
+        + '打包脚本 scripts/publish-wxq-helper.js 的 SCRIPTS 清单里缺 wanxiangqi-explain2.js。</p></section>';
+    } else {
+      h += global.WXQ_EXPLAIN_V2.pageHtml(L);
+    }
     if (cards) h += '<section class="jbox"><h3>上场卡面 <span>官方原文</span></h3>' + cards + '</section>';
     if (L.brief) h += '<section class="jbox"><h3>这套怎么介绍的</h3><p>' + esc(L.brief) + '</p></section>';
     if (ops.length) {
