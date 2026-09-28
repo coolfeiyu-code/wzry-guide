@@ -210,6 +210,27 @@
     return null;
   }
 
+  // 讲解入口判断（2026-09-28 改）：
+  // 旧逻辑用 matchArch（L）—— 只有命中 6 个 archetype 之一的阵容才给「讲解这套」按钮，
+  // 结果 363 套里只有 35.8% 有入口，用户想看讲解却找不到。
+  // 现在规则引擎对**任何有英雄数据的阵容**都能生成讲解，所以放宽为：
+  //   有 ≥4 个能对上官方卡面的英雄  →  给入口
+  var HERO_POOL = null;
+  function heroPool() {
+    if (HERO_POOL) return HERO_POOL;
+    HERO_POOL = Object.create(null);
+    ((global.WXQ_HEROES || [])).forEach(function (h) { HERO_POOL[h.name] = 1; });
+    return HERO_POOL;
+  }
+  function canExplain(L) {
+    var ns = heroNames(L);
+    if (ns.length < 4) return false;
+    var pool = heroPool();
+    var hit = 0;
+    for (var i = 0; i < ns.length; i++) if (pool[ns[i]]) hit++;
+    return hit >= 4;
+  }
+
   function jobsOf(arch) {
     return jobs().filter(function (L) { return arch.match(heroNames(L)); });
   }
@@ -258,22 +279,9 @@
       + '<h1>讲解 · ' + esc(L.name) + '</h1>'
       + '<div class="jdoc-sub">' + (arch ? esc(arch.name) + ' · ' : '') + '先读懂机制，再对照卡面</div>'
       + '</div></header>';
-    if (arch) {
-      var readTxt = typeof arch.readOf === 'function' ? arch.readOf(ns) : arch.read;
-      h += '<section class="jbox ex-read"><h3>读懂这套</h3><p>' + esc(readTxt) + '</p></section>';
-      var steps = typeof arch.turnOf === 'function'
-        ? arch.turnOf(ns)
-        : (arch.turn || []).filter(function (s) {
-          return !s.need || !s.need.length || s.need.every(function (n) { return has(ns, n); });
-        });
-      if (steps.length) {
-        h += '<section class="jbox"><h3>这一回合怎么走</h3><ol class="ex-ol">';
-        steps.forEach(function (s) { h += '<li>' + esc(s.text) + '</li>'; });
-        h += '</ol></section>';
-      }
-    } else {
-      h += '<section class="jbox"><h3>读懂这套</h3><p class="jmuted">这套没有对上李信牺牲、花木兰复生、三分倒转、大河开团、日落海整备、往生图腾。下面只列上场卡面。</p></section>';
-    }
+    // 规则引擎 v2 输出（核心位/联动/节奏/装备/作者原文/风险）
+    h += (global.WXQ_EXPLAIN_V2 ? global.WXQ_EXPLAIN_V2.pageHtml(L)
+      : '<section class="jbox"><h3>读懂这套</h3><p class="jmuted">讲解引擎未加载。</p></section>');
     if (cards) h += '<section class="jbox"><h3>上场卡面 <span>官方原文</span></h3>' + cards + '</section>';
     if (L.brief) h += '<section class="jbox"><h3>这套怎么介绍的</h3><p>' + esc(L.brief) + '</p></section>';
     if (ops.length) {
@@ -353,7 +361,8 @@
   }
 
   global.WXQ_EXPLAIN = {
-    match: matchArch,
+    match: canExplain,        // 入口判断：v2 对所有有卡面的阵容都能讲
+    matchArch: matchArch,    // 旧 archetype 匹配，仅 hub 页与卡面排序用
     pageHtml: pageHtml,
     render: render,
     onGridClick: onGridClick,

@@ -755,6 +755,21 @@
     text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
   .hlink:hover{color:var(--ink);}
   .hsw{display:flex;flex-wrap:wrap;gap:5px;}
+  /* 讲解 v2 区块 */
+  .ex-fact{font-size:11.5px;color:var(--ink-soft);background:var(--paper-2);border-radius:8px;padding:5px 8px;margin:0 0 8px;line-height:1.5;}
+  .ex-read h4{font-size:12.5px;margin:14px 0 6px;color:var(--ink);}
+  .ex-read h4:first-of-type{margin-top:10px;}
+  .ex-syn ul,.ex-roles ul,.ex-eq ul,.ex-risk ul{margin:0;padding-left:18px;}
+  .ex-syn li,.ex-roles li,.ex-eq li,.ex-risk li{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin:3px 0;}
+  .ex-syn li b,.ex-roles li b,.ex-eq li b{color:var(--ink);}
+  .ex-phase ol{margin:0;padding-left:20px;}
+  .ex-phase li{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin:6px 0;}
+  .ex-phase li b{color:var(--ink);display:block;margin-bottom:2px;}
+  .ex-mn{font-size:11px;color:var(--ink-soft);opacity:.85;}
+  .ex-quote p{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin:4px 0;}
+  .ex-quote p b{color:var(--ink);}
+  .ex-risk li{color:#b3543f;}
+
   .hsw-b{border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);border-radius:999px;padding:4px 9px;font-size:11.5px;font-family:inherit;cursor:pointer;}
   .hsw-b.on{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600;}
   .hsw-i{display:inline-flex;align-items:stretch;border-radius:999px;overflow:hidden;max-width:100%;}
@@ -900,7 +915,8 @@
 <script src="wanxiangqi-stats.js"></script>
 <script src="wanxiangqi-jobs.js"></script>
 <script src="wanxiangqi-rules.js"></script>
-<script src="wanxiangqi-explain.js"></script>
+<script src="wanxiangqi-explain2.js"></script>
+  <script src="wanxiangqi-explain.js"></script>
 <script src="wanxiangqi-cloud.js"></script>
 <script src="wanxiangqi-hud.js"></script>
 <script>
