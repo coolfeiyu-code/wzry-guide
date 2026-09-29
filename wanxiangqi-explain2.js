@@ -443,9 +443,11 @@
           return '<img src="' + equipImg(n) + '" alt="' + esc(n) + '" title="' + esc(n) + '">';
         }).join('');
         cells += '<button type="button" class="gx-cell filled" data-job-hero="' + esc(h.name) + '" title="' + esc(h.name + (h.eqs.length ? ' · ' + h.eqs.join('、') : '')) + '">'
+          + '<span class="gx-slot">'
           + pips(h.quality)
-          + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
+          + '<img class="gx-ava" src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
           + (eqs ? '<span class="gx-eqs">' + eqs + '</span>' : '')
+          + '</span>'
           + '<em>' + esc(h.name) + '</em>'
           + '</button>';
       }
