@@ -1,24 +1,21 @@
 /* ============================================================================
- * 王者万象棋 · 阵容讲解引擎 v2
+ * 王者万象棋 · 阵容讲解（游戏内版式）
  * ----------------------------------------------------------------------------
- * 为什么要重写：旧版是「一个阵容挑一个 archetype → 吐一段预制文案」。
- * 6 个 archetype 里只有「李信」写了动态函数，其余 5 个是写死的字符串常量，
- * 于是几百套阵容的「读懂这套」逐字节相同 —— 用户反馈「千篇一律」。
+ * 页面按游戏里的讲解来排：大卡、英雄墙、思路图、棋盘、推荐棋手。
  *
- * 现在改成规则驱动：每套阵容按自己的数据现场生成六个部分
- *   ① 读懂这套   核心位是谁、站位结构、整体靠什么撑
- *   ② 它靠什么咬合 命中机制的两人/多人联动，逐条说明关系
- *   ③ 核心位     每人标注职业/费用/装备/词条（全部取自官方卡面）
- *   ④ 这一局怎么走 直接吃这套自己的 ops 原文，按回合区间拆段
- *   ⑤ 装备分配   照官方 eqs，标注装备类型
- *   ⑥ 作者自己怎么说 brief/equipDesc/positionDesc/talentDesc/effectDesc 原文
- *   ⑦ 要注意     按构成找短板（无前排/输出单一/资源过度集中…）
+ * 谁是王牌 / 坦克核心 / 功能核心：用官方在这一套上标的 spot
+ *   1 王牌（大卡，思路图右边）
+ *   2 坦克核心
+ *   3 功能核心（思路图中间）
+ *   0 其余
+ * 资料站阵容没有 spot。大卡改用近7日觉醒率或平均等级，并写明数字来源。
+ * 功能核心只在卡面原文写了「每当你…」且关键词能对上棋盘上其他人时才标。
  *
- * 原则：只依据站内官方数据（卡面/技能/装备/站位/运营原文/7日数据），
- * 不编数值、不编胜率、不假装读过某段原文。写不出来的部分直接不写。
- *
- * 差异率保障：正文开头有 facts 行（阵容名/作者/棋手/使用量/评分/7日数据），
- * 同英雄构成但不同码的阵容靠它区分开。实测 363 套 100% 唯一。
+ * 【阵容思路】【站位解读】官方接口里没有这两段短文，按下面的材料现写，
+ * 不使用写死的流派文案：
+ *   思路  —— 作者运营里点名的英雄 + 卡面里的【关键词】和「每当你使用」
+ *   站位  —— 战斗技能原文里的范围（周围 / 身前 / 最远 / 牺牲）
+ * 写不出来的句子直接不写。
  * ========================================================================== */
 (function (global) {
   'use strict';
@@ -28,412 +25,561 @@
     if (ui().esc) return ui().esc(s);
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      .replace(/"/g, '&quot;');
   }
-  function fmt(s) { return ui().fmt ? ui().fmt(s) : esc(s); }
-  function uniq(a) {
-    var s = {}, o = [];
-    (a || []).forEach(function (x) { if (x && !s[x]) { s[x] = 1; o.push(x); } });
-    return o;
+  function fmt(s) { return ui().fmt ? ui().fmt(s) : esc(plain(s)); }
+  function plain(s) {
+    return String(s == null ? '' : s)
+      .replace(/<a[^>]*>/gi, '').replace(/<\/a>/gi, '')
+      .replace(/<color[^>]*>/gi, '').replace(/<\/color>/gi, '')
+      .replace(/<\/?b>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
-  function clean(s) { return String(s == null ? '' : s).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); }
+  function pct(n) {
+    n = Number(n);
+    if (!Number.isFinite(n) || n <= 0) return '';
+    return (Math.round(n * 1000) / 10) + '%';
+  }
+
+  var VERBS = ['登场', '整备', '牺牲', '开团', '复生', '觉醒', '唤醒', '过载', '连击', '召唤'];
+  var SPOT_NAME = { 1: '王牌', 2: '坦克核心', 3: '功能核心' };
 
   function poolOf(name) {
-    var arr = global[name] || [];
     var m = Object.create(null);
-    arr.forEach(function (x) { m[x.name || x.lord || String(x)] = x; });
+    (global[name] || []).forEach(function (x) { if (x && x.name) m[x.name] = x; });
     return m;
   }
   var POOL = null;
   function pools() {
-    if (POOL) return POOL;
-    POOL = { hero: poolOf('WXQ_HEROES'), lord: poolOf('WXQ_PLAYERS'), equip: poolOf('WXQ_EQUIPS'), talent: poolOf('WXQ_TALENTS') };
+    if (!POOL) POOL = { hero: poolOf('WXQ_HEROES'), lord: poolOf('WXQ_PLAYERS'), equip: poolOf('WXQ_EQUIPS') };
     return POOL;
   }
 
-  var BACK_X = 1;   // x<=1 视为后排
-
-  // WXQ_HEROES 的 typeLabel 实测有 'hero' / '法师' / '射手' 等混值，
-  // 这里归一成中文职业；认不出来就不显示职业，不要把 'hero' 露给用户。
-  var ROLE_MAP = {
-    hero: '', mage: '法师', 法师: '法师', 法刺: '法师', 法强: '法师',
-    shooter: '射手', archer: '射手', 射手: '射手', marksman: '射手',
-    tank: '坦克', warrior: '战士', 战士: '战士', 坦克: '坦克', 肉: '坦克',
-    support: '辅助', 辅助: '辅助', assist: '辅助',
-    assassin: '刺客', 刺客: '刺客',
-  };
-  function roleName(t) {
-    var s = String(t == null ? '' : t).trim();
-    if (!s) return '';
-    if (Object.prototype.hasOwnProperty.call(ROLE_MAP, s)) return ROLE_MAP[s];
-    if (/[法射辅战坦刺]/.test(s) && s.length <= 4) return s;
-    return '';
-  }
-
-  /* ---------- 解析阵容 ---------- */
   function parse(L) {
     var P = pools();
     var hs = (L.heroes || []).map(function (h) {
       var n = typeof h === 'string' ? h : h.name;
       var card = P.hero[n] || null;
-      var types = card ? uniq([roleName(card.typeLabel), roleName(card.type)]) : [];
+      var spot = (h && typeof h === 'object' && h.spot != null && h.spot !== '') ? Number(h.spot) : null;
+      if (spot != null && !Number.isFinite(spot)) spot = null;
       return {
         name: n,
-        x: typeof h === 'object' ? Number(h.x) : -1,
-        z: typeof h === 'object' ? Number(h.z) : -1,
-        evo: !!(typeof h === 'object' && h.evo),
-        eqs: (typeof h === 'object' && h.eqs) || [],
+        x: (h && typeof h === 'object') ? Number(h.x) : -1,
+        z: (h && typeof h === 'object') ? Number(h.z) : -1,
+        evo: !!(h && typeof h === 'object' && h.evo),
+        eqs: (h && typeof h === 'object' && h.eqs) || [],
+        spot: spot,
         card: card,
-        cost: card ? Number(card.cost && card.cost.count) || 0 : 0,
-        types: types,
-        isDmg: types.some(function (t) { return /法师|射手|输出/.test(t); }),
-        isTank: types.some(function (t) { return /坦克|战士|肉/.test(t); }),
-        kw: (card && card.kwHelp || []).map(function (k) { return k.name; }).filter(Boolean),
+        cost: card ? (Number(card.cost && card.cost.count) || 0) : 0,
+        quality: card ? (Number(card.quality) || 0) : 0,
       };
     }).filter(function (h) { return h.name; });
     return { L: L, hs: hs, P: P };
   }
 
-  /* ---------- 核心位判定 ---------- */
-  function roles(p) {
-    var hs = p.hs;
-    if (!hs.length) return { main: null, sub: null, front: [], back: [], costMax: 0, sorted: [] };
-    var costMax = 0, front = [], back = [];
+  function cardRaw(h, awake) {
+    var c = h && h.card;
+    if (!c) return '';
+    if (awake) return c.awakeDesc || '';
+    return c.desc || '';
+  }
+  function cardPlain(h) { return plain(cardRaw(h, false)); }
+  function skillPlain(h) {
+    var sk = h && h.card && h.card.skills && h.card.skills[0];
+    return sk ? plain(sk.desc) : '';
+  }
+
+  function keywords(desc) {
+    var out = [], re = /【([^】]+)】/g, m;
+    while ((m = re.exec(desc))) {
+      var k = m[1].replace(/英雄牌|阵营|关键词/g, '').trim();
+      if (k && out.indexOf(k) < 0) out.push(k);
+    }
+    return out;
+  }
+  function verbs(desc) {
+    return VERBS.filter(function (v) { return desc.indexOf(v) >= 0; });
+  }
+  function factionHit(h, word) {
+    var f = h && h.card && h.card.faction || '';
+    return !!(word && f.indexOf(word) >= 0);
+  }
+
+  function inferFunc(hs, ace) {
+    var best = null, bestS = 0;
     hs.forEach(function (h) {
-      if (h.cost > costMax) costMax = h.cost;
-      if (h.x < 0) back.push(h);
-      else if (h.x <= BACK_X) back.push(h);
-      else front.push(h);
-    });
-    function score(h) {
-      var s = h.cost * 10;
-      if (h.eqs.length) s += 12;
-      if (h.evo) s += 6;
-      if (h.isDmg) { s += 4; if (h.x >= 0 && h.x <= BACK_X) s += 10; }
-      if (h.isTank) s -= 4;
-      return s;
-    }
-    var sorted = hs.slice().sort(function (a, b) { return score(b) - score(a); });
-    var main = sorted[0] || null;
-    var sub = null;
-    for (var i = 1; i < sorted.length; i++) {
-      if (sorted[i].cost === main.cost) { sub = sorted[i]; break; }
-    }
-    if (!sub) sub = sorted[1] || null;
-    return { main: main, sub: sub, front: front, back: back, costMax: costMax, sorted: sorted };
-  }
-
-  /* ---------- 机制联动词典 ----------
-     只收「两人以上同时上场才有意义」的机制。 */
-  function synHas(ns, names) {
-    for (var i = 0; i < names.length; i++) if (ns.indexOf(names[i]) >= 0) return true;
-    return false;
-  }
-
-  // 在这套自己的运营原文里找某人第一次被点名的阶段
-  function firstAppear(ops, ns) {
-    if (!ops || !ops.length) return '开局';
-    for (var i = 0; i < ops.length; i++) {
-      var o = ops[i];
-      var pool = (o.main || []).concat(o.sub || []);
-      for (var k = 0; k < ns.length; k++) {
-        if (pool.indexOf(ns[k]) >= 0) {
-          return '回合 ' + (o.from || i + 1) + '（' + (o.from <= 3 ? '前期' : o.from <= 10 ? '中期' : '后期') + '）';
-        }
-      }
-    }
-    return '开局';
-  }
-
-  var SYNERGY = [
-    {
-      id: 'sacrifice', need: ['李信'],
-      text: function (ns) {
-        var seats = ns.filter(function (n) { return ['李信', '铠', '花木兰', '盾山', '苏烈', '大司命'].indexOf(n) >= 0; });
-        var others = seats.filter(function (n) { return n !== '李信'; });
-        if (!others.length) return '李信要有人喂：他的临时等级只从「带牺牲词条的人阵亡」那里来，光有李信没有牺牲位，等于白带。';
-        var s = '李信只吃牺牲——这套的牺牲位是' + others.join('、') + '，每死一次他临时等级就跳一截。';
-        if (others.indexOf('花木兰') >= 0) s += '木兰自带复生，能死两次喂两口，是最划算的牺牲位。';
-        if (others.indexOf('盾山') >= 0) s += '盾山死了换钱，是经济位不是主粮。';
-        if (others.indexOf('苏烈') >= 0) s += '苏烈牺牲给自己，同时还能永久加等级。';
-        return s;
-      }
-    },
-    {
-      id: 'revive', need: ['花木兰'],
-      text: function (ns) {
-        var s = '木兰靠「复生」吃古币：每复活一次，后续每用掉 5 张古币就多一次复生。所以别攒着古币不用——捏在手里等于浪费她的机制。';
-        if (ns.indexOf('太乙真人') >= 0) s += '太乙真人在场能把她拉起来，等于多一条命。';
-        if (ns.indexOf('程咬金') >= 0) s += '程咬金产的古币正好喂她。';
-        return s;
-      }
-    },
-    {
-      id: 'coin', need: ['程咬金'],
-      text: function (ns) {
-        var s = '程咬金产古币。';
-        if (ns.indexOf('花木兰') >= 0) s += '木兰吃古币，这两人必须一起上，攒币喂复生才是闭环。';
-        else s += '古币除了换钱还能喂需要「用掉牌数」的英雄，攒着别乱花。';
-        if (ns.indexOf('李信') >= 0) s += '李信在的话，古币还能顺带把他的等级顶上去。';
-        return s;
-      }
-    },
-    {
-      id: 'fen', need: ['蔡文姬'],
-      text: function () {
-        return '蔡文姬是这套的等级发动机：找到她之后三分牌和登场牌都能变成等级，等于「多打牌就多升级」。所以这套前中期的运营是围绕「尽快找到她」写的。';
-      }
-    },
-    {
-      id: 'zhaoyun', need: ['赵云', '曹操'],
-      text: function (ns, ops) {
-        return '赵云和曹操是一对：曹操每回合固定触发一次赵云的卡牌效果，等于每回合白嫖一次触发。两人在 ' + firstAppear(ops, ns) + ' 之前就要留手，别当过渡牌卖掉。';
-      }
-    },
-    {
-      id: 'yingsheng', need: ['赢政', '芈月'],
-      text: function () {
-        return '赢政靠法强叠层，芈月靠反复打效果牌帮他叠——这两个是同一条链上的。芈月不是在打输出，是在给赢政喂层数，所以别急着把她换掉。';
-      }
-    },
-    {
-      id: 'guard', need: ['钟馗'],
-      text: function (ns) {
-        var t = ns.filter(function (n) { return ['大司命', '明世隐', '露娜', '太乙真人', '花木兰'].indexOf(n) >= 0; });
-        var s = '钟馗在场，需要挨打的单位可以安全上场换钱，不怕血量被消耗。';
-        if (t.length) s += '这套就是靠他把' + t.join('、') + '依次换成收益。';
-        return s;
-      }
-    },
-    {
-      id: 'sikong', need: ['司空震'],
-      text: function (ns) {
-        var s = '司空震是这套的主输出，金色圣剑（大棒）是他战斗力的一部分，别省。';
-        if (ns.indexOf('苏烈') >= 0) s += '苏烈拿肉装顶在前面就行，两个不抢资源。';
-        return s;
-      }
-    },
-    {
-      id: 'diaochan', need: ['貂蝉'],
-      text: function (ns) {
-        var s = '貂蝉是这套的中期战力：等级跟上就能撑过渡，等核心找到再把资源转走。';
-        if (ns.indexOf('吕布') >= 0) s += '她前期不喂，后期资源全给吕布。';
-        return s;
-      }
-    },
-    {
-      id: 'zhuangzhou', need: ['庄周', '蒙犽'],
-      text: function () {
-        return '庄周 + 蒙犽 是这套的「唤醒」触发点：先把这两张养起来，再拿发号施令这类便宜好用的效果牌去触发，唤醒一次全队提质量。';
-      }
-    },
-    {
-      id: 'luxian', need: ['露娜'],
-      text: function (ns) {
-        var s = '露娜的登场会再触发一轮整备，等于白送一次装备整理。';
-        if (ns.indexOf('花木兰') >= 0) s += '配合木兰的复生，整备次数就是复生次数的上限。';
-        if (ns.indexOf('明世隐') >= 0) s += '明世隐能把临时等级转成永久，这两件事要一起做。';
-        return s;
-      }
-    },
-    {
-      id: 'chengxu', need: ['程咬金', '大司命'],
-      text: function () {
-        return '程咬金的古币 + 大司命的往生图腾是同一套经济：图腾把低价值单位换成高价值，古币再把换来的东西喂给需要吃牌的英雄。';
-      }
-    },
-    {
-      id: 'mingshiyin', need: ['明世隐'],
-      text: function (ns) {
-        var s = '明世隐的价值在于把「临时」等级转成「永久」——临时等级打完就清，贴着他转才是真收益。';
-        if (ns.indexOf('李信') >= 0) s += '所以李信的位要留给明世隐贴住，别让牺牲位占了他的位置。';
-        return s;
-      }
-    },
-  ];
-
-  // 权重：主 C 链 > 经济/等级链 > 保护/工具链
-  var SYN_W = {
-    sacrifice: 10, revive: 10, coin: 9, chengxu: 9, fen: 9, yingsheng: 8,
-    mingshiyin: 7, luxian: 7, zhaoyun: 6, zhuangzhou: 6, sikong: 5, guard: 4, diaochan: 3,
-  };
-  function synergies(ns, ops) {
-    var out = [];
-    for (var i = 0; i < SYNERGY.length; i++) {
-      var s = SYNERGY[i];
-      if (!synHas(ns, s.need)) continue;
-      var t = '';
-      try { t = s.text(ns, ops) || ''; } catch (e) { t = ''; }
-      if (t) out.push({ id: s.id, text: t, w: SYN_W[s.id] || 1 });
-    }
-    out.sort(function (a, b) { return b.w - a.w; });
-    return out;
-  }
-
-  /* ---------- 节奏：吃这套自己的 ops ---------- */
-  function phases(p) {
-    var ops = p.L.ops || [];
-    return ops.map(function (o, i) {
-      var from = Number(o.from), to = Number(o.to);
-      return {
-        stage: from <= 3 ? '前期' : from <= 10 ? '中期' : '后期',
-        range: from ? ('回合 ' + from + (from === to ? '' : '–' + to)) : ('第' + (i + 1) + '段'),
-        desc: clean(o.desc),
-        main: uniq(o.main || []),
-        sub: uniq(o.sub || []),
-      };
-    }).filter(function (x) { return x.desc; });
-  }
-
-  /* ---------- 装备 ---------- */
-  function equipLines(p) {
-    var out = [];
-    p.hs.forEach(function (h) {
-      if (!h.eqs.length) return;
-      var kinds = h.eqs.map(function (e) {
-        var c = p.P.equip[e];
-        if (!c) return e;
-        var t = c.subType || c.equipType || c.type || '';
-        return t && t !== '装备' ? (e + '（' + t + '）') : e;
+      if (ace && h === ace) return;
+      var d = cardPlain(h);
+      var s = 0;
+      if (d.indexOf('每当你') >= 0) s += 5;
+      keywords(d).forEach(function (k) {
+        var n = 0;
+        hs.forEach(function (o) {
+          if (o === h) return;
+          if (factionHit(o, k) || cardPlain(o).indexOf(k) >= 0) n++;
+        });
+        if (n >= 2) s += 3;
       });
-      out.push({ name: h.name, text: kinds.join('、') });
+      if (s > bestS) { bestS = s; best = h; }
     });
-    return out;
+    return bestS >= 5 ? best : null;
   }
 
-  /* ---------- 作者原文 ---------- */
-  function quotes(p) {
-    var L = p.L, out = [];
-    if (clean(L.brief)) out.push({ k: '这套怎么定位', v: clean(L.brief) });
-    if (clean(L.equipDesc)) out.push({ k: '装备思路', v: clean(L.equipDesc) });
-    if (clean(L.positionDesc) && clean(L.positionDesc) !== '如图所示') out.push({ k: '站位与替换', v: clean(L.positionDesc) });
-    if (clean(L.talentDesc)) out.push({ k: '天赋优先级', v: clean(L.talentDesc) });
-    if (clean(L.effectDesc)) out.push({ k: '效果牌用法', v: clean(L.effectDesc) });
-    return out;
-  }
-
-  /* ---------- 风险 ---------- */
-  function risks(p, r) {
-    var hs = p.hs, out = [];
-    if (!hs.length) return out;
-    var dmg = hs.filter(function (h) { return h.isDmg; });
-    var carry = hs.filter(function (h) { return h.eqs.length >= 2; });
-
-    if (r.front.length === 0) out.push('这套几乎没有前排（站位数据里全在后排），被贴脸时很容易被打崩，开局要想好谁去挨第一下。');
-    if (r.back.length === 0) out.push('这套没后排输出位置，缺一个能稳定打伤害的位，后期可能补不上来。');
-    if (dmg.length === 1 && hs.length >= 5) out.push('输出位只有 ' + dmg[0].name + ' 一个，一旦被针对或等级跟不上，整套就废了一半，建议留个副输出。');
-    if (dmg.length === 0) out.push('这套没有明显的法师/射手主输出，可能是靠效果牌和等级堆质量，节奏会偏慢。');
-    if (carry.length === 1) out.push('只有 ' + carry[0].name + ' 带了两件以上装备，资源集中度很高——好处是成型快，风险是这张卡被针对就断档。');
-    if (!p.L.lords || !p.L.lords.length) out.push('这套没写棋手，实际对局里棋手是随机给的，别把运营节奏押在某个特定棋手上。');
-    if (p.hs.length <= 4) out.push('这套上场人数偏少（' + p.hs.length + ' 个），容错低，哪张卡被抢就散。');
-    return out;
-  }
-
-  /* ---------- 事实标签（区分同构成不同码） ---------- */
-  function facts(p) {
-    var L = p.L, out = [];
-    if (L.name) out.push('「' + L.name + '」');
-    if (L.author) out.push('作者 ' + L.author);
-    if (L.lords && L.lords.length) out.push('棋手 ' + L.lords.join('、'));
-    if (Number(L.useNum) > 0) out.push('用过 ' + Number(L.useNum));
-    if (Number(L.score) > 0) out.push('评分 ' + L.score + '（' + (L.scoreNum || 0) + ' 人评）');
-    var s7 = L.stats7d || (L.d7 ? { count: L.d7.count, top3Rate: (L.stats7d || {}).top3Rate } : null);
-    if (L.stats7d && L.stats7d.count) out.push('近7日 ' + L.stats7d.count + ' 场 · 前三率 ' + Math.round((L.stats7d.top3Rate || 0) * 100) + '%');
-    if (L.nocode) out.push('第三方聚类，无可导入阵容码');
-    if (L.hot) out.push('在热门榜');
-    if (L.beg) out.push('官方新手教学套');
-    return out;
-  }
-
-  /* ---------- 组合 ---------- */
-  function compose(L) {
-    var p = parse(L);
-    var ns = p.hs.map(function (h) { return h.name; });
-    var r = roles(p);
-    var syn = synergies(ns, L.ops || []);
-    var ph = phases(p);
-    var eq = equipLines(p);
-    var q = quotes(p);
-    var rk = risks(p, r);
-
-    var lead = [];
-    if (r.main) {
-      lead.push('这套是**以 ' + r.main.name + ' 为核心**' + (r.sub ? '、' + r.sub.name + ' 为第二输出' : '') + '搭起来的' + (r.costMax ? '（最高 ' + r.costMax + ' 费）' : '') + '。');
+  function pickRoles(p) {
+    var hs = p.hs, L = p.L;
+    var ace = null, tank = null, func = null, aceWhy = '';
+    hs.forEach(function (h) {
+      if (h.spot === 1 && !ace) ace = h;
+      if (h.spot === 2 && !tank) tank = h;
+      if (h.spot === 3 && !func) func = h;
+    });
+    if (ace) aceWhy = '';
+    if (!ace) {
+      var builds = (L.d7 && L.d7.builds) || [];
+      var best = null, bestS = -1, why = '';
+      builds.forEach(function (b) {
+        var h = null;
+        hs.forEach(function (x) { if (x.name === b.name) h = x; });
+        if (!h) return;
+        var s = (Number(b.awaken) || 0) * 100 + (Number(b.level) || 0);
+        if (s > bestS) {
+          bestS = s;
+          best = h;
+          why = b.awaken ? ('近7日觉醒率 ' + pct(b.awaken)) : (b.level ? ('近7日平均 ' + b.level + ' 级') : '');
+        }
+      });
+      if (best) { ace = best; aceWhy = why; }
+      else if (hs.length) {
+        var sorted = hs.slice().sort(function (a, b) { return (b.eqs.length - a.eqs.length) || (b.cost - a.cost); });
+        ace = sorted[0];
+        aceWhy = ace.eqs.length ? '这套把装备给了这张' : '按费用先看这张';
+      }
     }
-    if (r.front.length && r.back.length) lead.push('站位上 ' + r.front.length + ' 个前排顶在前面，' + r.back.length + ' 个后排打输出。');
-    else if (r.front.length) lead.push('这套 ' + r.front.length + ' 个单位都在前排，靠站位和等级硬顶，不是那种躲后排的类型。');
-    else if (r.back.length) lead.push('这套 ' + r.back.length + ' 个单位都排在后面，前面的事得靠效果牌和等级解决。');
-    lead.push(syn.length >= 2 ? '它的强度不是来自某个单卡，而是下面几组联动咬合出来的。' : syn.length === 1 ? '这套的关键在下面这组联动。' : '这套没有明显的组合技，靠的是卡面质量与运营节奏。');
-
-    // hs 必须一起返回：pageHtml 里再 parse 一次会生成新对象，
-    // 用引用比较 (x !== main) 就失效，核心位会被重复列进「其余」。
-    return { read: lead, syn: syn, phases: ph, equip: eq, quotes: q, risks: rk, roles: r, hs: p.hs, names: ns, facts: facts(p) };
+    if (!func) func = inferFunc(hs, ace);
+    return { ace: ace, tank: tank, func: func, aceWhy: aceWhy };
   }
 
-  function roleWhy(h) {
-    var bits = [];
-    var t = uniq(h.types.filter(function (x) { return !!x; }));
-    if (t.length) bits.push(esc(t.join('/')));
-    if (h.cost) bits.push(h.cost + ' 费');
-    if (h.eqs.length) bits.push('带 ' + h.eqs.length + ' 件');
-    if (h.evo) bits.push('可觉醒');
-    if (h.kw.length) bits.push('词条 ' + uniq(h.kw).join('/'));
-    return bits.length ? '（' + bits.join(' · ') + '）' : '';
+  function phaseName(op) {
+    var from = Number(op && op.from) || 0;
+    if (from && from <= 3) return '前期';
+    if (from && from <= 10) return '中期';
+    if (from) return '后期';
+    return '';
+  }
+  function opMentions(ops, name) {
+    for (var i = 0; i < ops.length; i++) {
+      if (ops[i].desc && ops[i].desc.indexOf(name) >= 0) return ops[i];
+    }
+    return null;
+  }
+  function sentenceWith(desc, name) {
+    var parts = String(desc || '').split(/[。！？]/);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].indexOf(name) >= 0) return parts[i].replace(/^\s+|\s+$/g, '');
+    }
+    return '';
+  }
+
+  function secondHero(ops, hs, func, ace) {
+    var named = null;
+    ops.forEach(function (o) {
+      if (named || !o.desc || o.desc.indexOf('核心') < 0) return;
+      hs.forEach(function (h) {
+        if (named || h === func || h === ace) return;
+        if (o.desc.indexOf('核心英雄' + h.name) >= 0 || o.desc.indexOf('核心' + h.name) >= 0) named = h;
+      });
+    });
+    if (named) return named;
+    for (var i = 0; i < hs.length; i++) {
+      var h = hs[i];
+      if (h === func || h === ace) continue;
+      if (cardPlain(h).indexOf('每当') >= 0) return h;
+    }
+    return null;
+  }
+
+  function keywordStats(hs) {
+    var m = Object.create(null);
+    hs.forEach(function (h) {
+      var d = cardPlain(h);
+      var seen = Object.create(null);
+      keywords(d).concat(verbs(d)).forEach(function (k) {
+        if (!k || seen[k]) return;
+        seen[k] = 1;
+        if (!m[k]) m[k] = { k: k, n: 0, fac: false };
+        m[k].n++;
+        if (factionHit(h, k)) m[k].fac = true;
+      });
+    });
+    return Object.keys(m).map(function (k) { return m[k]; })
+      .filter(function (x) { return x.n >= 2; })
+      .sort(function (a, b) { return (b.fac - a.fac) || (b.n - a.n) || (a.k < b.k ? -1 : 1); });
+  }
+
+  function mechanismSentence(func) {
+    var raw = cardPlain(func);
+    if (!raw) return '';
+    var kw = keywords(raw)[0];
+    if (kw && /每当你使用|使用【/.test(raw)) {
+      var tail = raw.indexOf('等级') >= 0 ? '，提升英雄等级' : '';
+      return func.name + '上阵后不断使用【' + kw + '】英雄牌来触发' + func.name + '的卡牌效果' + tail + '。';
+    }
+    if (raw.indexOf('每当') >= 0) {
+      var body = raw.replace(/。$/, '');
+      if (body.length > 72) body = body.slice(0, 72) + '…';
+      return func.name + '上阵后，' + body + '。';
+    }
+    return func.name + '的卡面是：' + raw.replace(/。$/, '') + '。';
+  }
+
+  function followSentence(hero, ops) {
+    var op = opMentions(ops, hero.name);
+    var sent = op ? sentenceWith(op.desc, hero.name) : '';
+    var d = cardPlain(hero);
+    var kw = keywords(d)[0] || keywords(sent)[0] || verbs(d)[0] || verbs(sent)[0];
+    var shopping = /拍卖|优先选|优先买|升\d/.test(sent);
+    if (kw && sent.indexOf(kw) >= 0 && (d.indexOf('等级') >= 0 || sent.indexOf('等级') >= 0)) {
+      return hero.name + '来了后，配合【' + kw + '】英雄提升等级。';
+    }
+    if (kw && sent.indexOf('【' + kw + '】') >= 0) {
+      return hero.name + '来了后，配合【' + kw + '】。';
+    }
+    if (sent && !shopping && sent.length <= 42 && sent.indexOf(hero.name) >= 0) {
+      return hero.name + '来了后，' + sent.replace(/。$/, '') + '。';
+    }
+    if (d.indexOf('每当') >= 0) return hero.name + '的卡面是：' + d.replace(/。$/, '') + '。';
+    return '';
+  }
+
+  function ideaText(p, roles) {
+    var L = p.L, hs = p.hs, func = roles.func, ace = roles.ace;
+    var ops = (L.ops || []).filter(function (o) { return o && plain(o.desc); });
+    var third = !!(L.nocode || L.source === 'datawxq');
+    var parts = [];
+    if (third) {
+      var st = L.stats7d;
+      if (st && st.count) {
+        parts.push('近7日样本 ' + st.count + ' 场，前三率 ' + (pct(st.top3Rate) || '—') + '。这套没有作者写的运营。');
+      } else {
+        parts.push('这套来自对局聚类，没有作者写的运营。');
+      }
+    }
+    if (func && !third) {
+      var hit = opMentions(ops, func.name);
+      if (hit) {
+        var ph = phaseName(hit) || '开局';
+        parts.push(ph + '优先找' + func.name + '。');
+      }
+    }
+    if (func) {
+      var mech = mechanismSentence(func);
+      if (mech) parts.push(mech);
+    } else if (ace && cardPlain(ace)) {
+      parts.push(ace.name + '的卡面是：' + cardPlain(ace).replace(/。$/, '') + '。');
+    }
+    if (!third) {
+      var second = secondHero(ops, hs, func, ace);
+      if (second) {
+        var fol = followSentence(second, ops);
+        if (fol) parts.push(fol);
+      }
+    }
+    if (plain(L.talentDesc)) {
+      parts.push('天赋方面' + plain(L.talentDesc).replace(/。$/, '') + '。');
+    } else {
+      var stats = keywordStats(hs).slice(0, 2);
+      if (stats.length) {
+        var label = stats.map(function (x) { return x.fac ? (x.k + '阵营') : x.k; }).join('、');
+        parts.push('天赋方面优先选' + label + '相关的天赋。');
+      }
+    }
+    return parts.join('');
+  }
+
+  function stanceOf(h) {
+    var d = skillPlain(h);
+    if (!d) return '';
+    if (/周围|相邻/.test(d) && /友军|队友|英雄/.test(d) && /恢复|回血|治疗|生命/.test(d)) {
+      var range = (d.match(/周围\d*格/) || ['周围'])[0];
+      return h.name + '的技能可以给' + range + '的友军回血，建议放在同伴中间。';
+    }
+    if (/周围|相邻|范围内/.test(d) && /友军|队友/.test(d)) {
+      return h.name + '的技能作用于周围友军，建议放在同伴中间。';
+    }
+    if (/身前|面前|前方/.test(d)) {
+      return h.name + '的技能打身前的敌人，建议放在前排。';
+    }
+    if (/附近\d*格敌人|\d格内敌人|\d格敌人/.test(d)) {
+      return h.name + '的技能要打到身边的敌人，建议放在前排。';
+    }
+    if (d.indexOf('后排') >= 0) {
+      return h.name + '的技能适合后排，建议放在后排。';
+    }
+    if (/牺牲|阵亡/.test(d)) {
+      return h.name + '要被击败才触发技能，建议放在会先接触敌人的位置。';
+    }
+    return '';
+  }
+
+  function stanceText(p, roles) {
+    var L = p.L;
+    var order = [roles.func, roles.tank, roles.ace];
+    p.hs.forEach(function (h) { if (order.indexOf(h) < 0) order.push(h); });
+    var lines = [];
+    order.forEach(function (h) {
+      if (!h || lines.length >= 2) return;
+      var s = stanceOf(h);
+      if (s && lines.indexOf(s) < 0) lines.push(s);
+    });
+    var pos = plain(L.positionDesc);
+    if (!lines.length && pos && pos.indexOf('datawxq') < 0 && pos !== '如图所示' && pos.indexOf('不是官方投稿') < 0) {
+      lines.push(pos);
+    }
+    return lines.join('');
+  }
+
+  function arrowIn(func) {
+    var d = cardPlain(func);
+    if (/每当你使用|使用【/.test(d)) return '触发效果';
+    if (d.indexOf('牺牲') >= 0) return '牺牲';
+    if (d.indexOf('整备') >= 0) return '整备';
+    if (d.indexOf('登场') >= 0) return '登场';
+    if (d.indexOf('开团') >= 0) return '开团';
+    return '卡面效果';
+  }
+  function arrowOut(func, ace) {
+    var fd = cardPlain(func), ad = cardPlain(ace);
+    if (fd.indexOf('等级') >= 0 && (ad.indexOf('等级') >= 0 || /等级\s*\+|等级\+/.test(fd))) return '升级';
+    if (fd.indexOf('牺牲') >= 0 && ad.indexOf('牺牲') >= 0) return '牺牲';
+    if (ad.indexOf('复生') >= 0) return '复生';
+    var v = verbs(ad)[0];
+    return v || '生效';
+  }
+
+  function leftHeroes(hs, func) {
+    var evo = hs.filter(function (h) { return h.evo && h !== func; });
+    if (evo.length) return evo.slice(0, 4);
+    var kw = func ? keywords(cardPlain(func))[0] : '';
+    if (!kw) return [];
+    return hs.filter(function (h) {
+      if (h === func) return false;
+      return factionHit(h, kw) || cardPlain(h).indexOf('【' + kw + '】') >= 0 || cardPlain(h).indexOf(kw) >= 0;
+    }).slice(0, 4);
+  }
+
+  function heroImg(name) { return 'wxq-icon/heroes/' + encodeURIComponent(name) + '.png'; }
+  function lordImg(name) { return 'wxq-icon/players/' + encodeURIComponent(name) + '_icon.png'; }
+  function equipImg(name) { return 'wxq-icon/equips/' + encodeURIComponent(name) + '.png'; }
+
+  function pips(q) {
+    q = Math.max(0, Math.min(5, Number(q) || 0));
+    var s = '';
+    for (var i = 0; i < q; i++) s += '<i></i>';
+    return q ? '<span class="gx-pips">' + s + '</span>' : '';
+  }
+
+  function face(h, cls) {
+    return '<button type="button" class="gx-face' + (cls ? ' ' + cls : '') + '" data-job-hero="' + esc(h.name) + '">'
+      + pips(h.quality)
+      + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
+      + '<em>' + esc(h.name) + '</em>'
+      + (h.evo ? '<b class="gx-evo">觉</b>' : '')
+      + '</button>';
+  }
+
+  function cardBox(h) {
+    if (!h) return '';
+    var raw = cardRaw(h, false);
+    var awake = h.evo ? plain(cardRaw(h, true)) : '';
+    var base = cardPlain(h);
+    var fac = h.card && h.card.faction || '';
+    return '<div class="gx-mini-card">'
+      + '<button type="button" class="gx-mini-img" data-job-hero="' + esc(h.name) + '">'
+      + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
+      + '</button>'
+      + '<div class="gx-mini-tx"><b>' + esc(h.name) + '</b>'
+      + (raw ? '<p>' + fmt(raw) + '</p>' : '')
+      + (awake && awake !== base ? '<p class="gx-awake">觉醒后：' + fmt(cardRaw(h, true)) + '</p>' : '')
+      + (fac ? '<i>' + esc(fac) + '</i>' : '')
+      + '</div></div>';
+  }
+
+  function flowHtml(p, roles) {
+    var func = roles.func, ace = roles.ace;
+    if (!func || !ace || func === ace) return '';
+    var left = leftHeroes(p.hs, func);
+    if (!left.length) return '';
+    var facLabel = func.card && func.card.faction ? func.card.faction : '';
+    var side = left.map(function (h) {
+      var tag = (h.card && h.card.faction) || facLabel;
+      return '<div class="gx-side-row">' + face(h, 'sm')
+        + '<span><b>' + esc(h.name) + '</b>' + (tag ? '<i>' + esc(tag) + '</i>' : '') + '</span></div>';
+    }).join('');
+    return '<div class="gx-flow">'
+      + '<div class="gx-side">' + side + '</div>'
+      + '<div class="gx-arrow"><i></i><em>' + esc(arrowIn(func)) + '</em></div>'
+      + cardBox(func)
+      + '<div class="gx-arrow"><i></i><em>' + esc(arrowOut(func, ace)) + '</em></div>'
+      + cardBox(ace)
+      + '</div>';
+  }
+
+  function boardHtml(p) {
+    var L = p.L;
+    var map = {};
+    p.hs.forEach(function (h) {
+      if (h.x < 0 || h.z < 0) return;
+      map[h.x + ',' + h.z] = h;
+    });
+    var rows = '';
+    for (var z = 3; z >= 0; z--) {
+      var cells = '';
+      for (var x = 0; x < 7; x++) {
+        var h = map[x + ',' + z];
+        if (!h) { cells += '<div class="gx-cell"></div>'; continue; }
+        var eqs = (h.eqs || []).slice(0, 3).map(function (n) {
+          return '<img src="' + equipImg(n) + '" alt="' + esc(n) + '" title="' + esc(n) + '">';
+        }).join('');
+        cells += '<button type="button" class="gx-cell filled" data-job-hero="' + esc(h.name) + '" title="' + esc(h.name + (h.eqs.length ? ' · ' + h.eqs.join('、') : '')) + '">'
+          + pips(h.quality)
+          + '<img src="' + heroImg(h.name) + '" alt="' + esc(h.name) + '">'
+          + (eqs ? '<span class="gx-eqs">' + eqs + '</span>' : '')
+          + '<em>' + esc(h.name) + '</em>'
+          + '</button>';
+      }
+      rows += '<div class="gx-row">' + cells + '</div>';
+    }
+    var third = !!(L.nocode || L.source === 'datawxq');
+    var cap = third ? '一条登顶对局的站位' : '作者摆的站位';
+    var lord = (L.lordGuide && L.lordGuide[0] && L.lordGuide[0].name) || (L.lords && L.lords[0]) || '';
+    var foot = lord
+      ? '<button type="button" class="gx-lord-pin" data-job-lord-go="' + esc(lord) + '"><img src="' + lordImg(lord) + '" alt="' + esc(lord) + '"><span>' + esc(lord) + '</span></button>'
+      : '';
+    return '<div class="gx-board"><div class="gx-board-cap">' + cap + ' · 上为前排</div>' + rows + foot + '</div>';
+  }
+
+  function lordRows(L) {
+    var guide = L.lordGuide || [];
+    var byName = Object.create(null);
+    guide.forEach(function (g) { if (g && g.name) byName[g.name] = g; });
+    var stat = Object.create(null);
+    ((L.d7 && L.d7.lords) || L.bestLords || []).forEach(function (r) { if (r && r.name) stat[r.name] = r; });
+    var names = [];
+    if (guide.length) guide.forEach(function (g) { if (names.indexOf(g.name) < 0) names.push(g.name); });
+    else Object.keys(stat).sort(function (a, b) {
+      return (Number(stat[b].top3) || 0) - (Number(stat[a].top3) || 0);
+    }).forEach(function (n) { names.push(n); });
+    if (!names.length) (L.lords || []).forEach(function (n) { if (names.indexOf(n) < 0) names.push(n); });
+    return names.slice(0, 3).map(function (n) {
+      return { name: n, guide: byName[n] || null, stat: stat[n] || null, player: pools().lord[n] || null };
+    });
+  }
+
+  function lordsHtml(L) {
+    var rows = lordRows(L);
+    if (!rows.length) return '';
+    return rows.map(function (r) {
+      var skills = '';
+      if (r.guide && r.guide.skills && r.guide.skills.length) {
+        skills = r.guide.skills.map(function (s) {
+          return '<span class="gx-sk">' + (s.icon ? '<img src="' + esc(s.icon) + '" alt="">' : '') + '<i>' + esc(s.name) + '</i></span>';
+        }).join('');
+      } else if (r.player && r.player.skills) {
+        skills = r.player.skills.map(function (s) {
+          return '<span class="gx-sk"><i>' + esc(s.kind || s.name || '') + '</i></span>';
+        }).join('');
+      }
+      var desc = (r.guide && r.guide.desc) || '';
+      if (!desc && r.player && r.player.skills && r.player.skills[0]) desc = plain(r.player.skills[0].desc);
+      var rate = '';
+      if (r.stat) {
+        var bits = [];
+        if (r.stat.count) bits.push(r.stat.count + ' 场');
+        if (pct(r.stat.top3)) bits.push('前三 ' + pct(r.stat.top3));
+        if (pct(r.stat.first)) bits.push('登顶 ' + pct(r.stat.first));
+        if (bits.length) rate = '<em class="gx-rate">' + esc(bits.join(' · ')) + '</em>';
+      }
+      return '<div class="gx-lord">'
+        + '<button type="button" class="gx-lord-av" data-job-lord-go="' + esc(r.name) + '"><img src="' + lordImg(r.name) + '" alt="' + esc(r.name) + '"><span>' + esc(r.name) + '</span></button>'
+        + '<div class="gx-lord-sk">' + skills + '</div>'
+        + '<div class="gx-lord-tx"><p>' + (desc ? fmt(desc) : '') + '</p>' + rate + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function opsHtml(L) {
+    var ops = (L.ops || []).filter(function (o) { return o && plain(o.desc); });
+    if (!ops.length) return '';
+    var h = '<section class="gx-sec"><h3>作者运营 <span>原文</span></h3>';
+    ops.forEach(function (o, i) {
+      var ph = phaseName(o) || ('第' + (i + 1) + '段');
+      var range = (o.from || o.to) ? (' · ' + o.from + (o.from === o.to ? '' : '–' + o.to) + ' 回合') : '';
+      h += '<div class="gx-op"><b>' + esc(ph + range) + '</b><p>' + esc(plain(o.desc)) + '</p></div>';
+    });
+    return h + '</section>';
+  }
+
+  function compose(L) {
+    var p = parse(L || {});
+    var roles = pickRoles(p);
+    return {
+      p: p,
+      roles: roles,
+      idea: ideaText(p, roles),
+      stance: stanceText(p, roles),
+    };
   }
 
   function pageHtml(L) {
     var c = compose(L);
-    if (!c.names.length) return '<section class="jbox"><h3>读懂这套</h3><p class="jmuted">这套没有可用的英雄数据。</p></section>';
+    var p = c.p, roles = c.roles;
+    var ace = roles.ace;
+    var chips = [];
+    p.hs.forEach(function (h) {
+      if (SPOT_NAME[h.spot] && chips.indexOf(SPOT_NAME[h.spot]) < 0) chips.push(SPOT_NAME[h.spot]);
+    });
+    if (!chips.length && (L.nocode || L.source === 'datawxq')) chips.push('对局聚类');
+    var wall = p.hs.map(function (h) { return face(h, h === ace ? 'on' : ''); }).join('');
+    var brief = plain(L.brief);
+    var h = '<div class="gx">';
+    h += '<div class="gx-top">';
+    if (ace) {
+      var raw = cardRaw(ace, false);
+      var awake = ace.evo ? plain(cardRaw(ace, true)) : '';
+      h += '<div class="gx-hero">'
+        + '<button type="button" class="gx-hero-img" data-job-hero="' + esc(ace.name) + '"><img src="' + heroImg(ace.name) + '" alt="' + esc(ace.name) + '"></button>'
+        + '<div class="gx-hero-tx"><b>' + esc(ace.name) + '</b>'
+        + (roles.aceWhy ? '<i class="gx-why">' + esc(roles.aceWhy) + '</i>' : '')
+        + (raw ? '<p>' + fmt(raw) + '</p>' : '')
+        + (awake && awake !== cardPlain(ace) ? '<p class="gx-awake">觉醒后：' + fmt(cardRaw(ace, true)) + '</p>' : '')
+        + ((ace.card && ace.card.faction) ? '<em>' + esc(ace.card.faction) + '</em>' : '')
+        + '</div></div>';
+    }
+    h += '<div class="gx-wall">' + wall
+      + (brief ? '<p class="gx-brief">' + esc(brief) + '</p>' : '')
+      + '</div></div>';
 
-    var h = '<section class="jbox ex-read"><h3>读懂这套</h3>';
-    if (c.facts.length) h += '<p class="ex-fact">' + esc(c.facts.join(' · ')) + '</p>';
-    c.read.forEach(function (t) { h += '<p>' + fmt(t) + '</p>'; });
-
-    if (c.syn.length) {
-      h += '<div class="ex-syn"><h4>它靠什么咬合</h4><ul>';
-      c.syn.forEach(function (s) { h += '<li>' + esc(s.text) + '</li>'; });
-      h += '</ul></div>';
+    var flow = flowHtml(p, roles);
+    if (flow || c.idea) {
+      h += '<section class="gx-sec"><h3>阵容思路</h3>' + flow
+        + (c.idea ? '<p class="gx-idea">' + esc(c.idea) + '</p><p class="gx-src">根据这套的卡面' + ((L.ops && L.ops.length) ? '和作者运营' : '') + '写成。</p>' : '')
+        + '</section>';
     }
 
-    if (c.roles.main) {
-      h += '<div class="ex-roles"><h4>核心位</h4><ul>';
-      h += '<li><b>' + esc(c.roles.main.name) + '</b>' + roleWhy(c.roles.main) + '</li>';
-      if (c.roles.sub) h += '<li><b>' + esc(c.roles.sub.name) + '</b>' + roleWhy(c.roles.sub) + '</li>';
-      var m = c.roles.main, s2 = c.roles.sub;
-      var rest = (c.hs || []).filter(function (x) { return x !== m && x !== s2; });
-      if (rest.length) h += '<li><b>其余</b>：' + rest.map(function (x) { return esc(x.name) + roleWhy(x); }).join('；') + '</li>';
-      h += '</ul></div>';
-    }
+    h += '<section class="gx-sec"><h3>阵容构成'
+      + (chips.length ? ' <span class="gx-chips">' + chips.map(function (t) { return '<i>' + esc(t) + '</i>'; }).join('') + '</span>' : '')
+      + '</h3>' + boardHtml(p)
+      + (c.stance ? '<p class="gx-idea"><b>【站位解读】</b>' + esc(c.stance) + '</p><p class="gx-src">根据战斗技能的攻击或治疗范围写成。</p>' : '')
+      + '</section>';
 
-    if (c.phases.length) {
-      h += '<div class="ex-phase"><h4>这一局怎么走</h4><ol>';
-      c.phases.forEach(function (s) {
-        h += '<li><b>' + esc(s.range) + '（' + esc(s.stage) + '）</b>' + fmt(s.desc) +
-          (s.main.length ? '<br><span class="ex-mn">重点：' + esc(s.main.join('、')) + '</span>' : '') + '</li>';
-      });
-      h += '</ol></div>';
-    }
-
-    if (c.equip.length) {
-      h += '<div class="ex-eq"><h4>装备分配</h4><ul>';
-      c.equip.forEach(function (e) { h += '<li><b>' + esc(e.name) + '</b>：' + esc(e.text) + '</li>'; });
-      h += '</ul></div>';
-    }
-
-    if (c.quotes.length) {
-      h += '<div class="ex-quote"><h4>作者自己怎么说</h4>';
-      c.quotes.forEach(function (q) { h += '<p><b>' + esc(q.k) + '</b>：' + esc(q.v) + '</p>'; });
-      h += '</div>';
-    }
-
-    if (c.risks.length) {
-      h += '<div class="ex-risk"><h4>要注意</h4><ul>';
-      c.risks.forEach(function (t) { h += '<li>' + esc(t) + '</li>'; });
-      h += '</ul></div>';
-    }
-    h += '</section>';
+    var lords = lordsHtml(L);
+    if (lords) h += '<section class="gx-sec"><h3>推荐棋手</h3>' + lords + '</section>';
+    h += opsHtml(L);
+    h += '</div>';
     return h;
   }
 
   global.WXQ_EXPLAIN_V2 = { pageHtml: pageHtml, compose: compose, _parse: parse };
-})(typeof window !== 'undefined' ? window : globalThis);
+})(window);

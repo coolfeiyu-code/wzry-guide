@@ -113,16 +113,39 @@ function namesOf(list) {
   }).filter(Boolean);
 }
 
+function skillIcon(s) {
+  const id = String(s && s.id || '').replace(/[^\w.-]/g, '');
+  const remote = T(s && s.icon);
+  if (!id) return remote;
+  const rel = 'wxq-icon/lord-skills/' + id + '.png';
+  return fs.existsSync(path.join(ROOT, rel)) ? rel : remote;
+}
+
+function lordGuideOf(raw) {
+  return (raw.lordList || []).map((lord) => ({
+    name: T(lord.name),
+    desc: T(lord.desc),
+    skills: (lord.skillList || []).map((s) => ({
+      name: T(s.name),
+      icon: skillIcon(s),
+    })).filter((s) => s.name),
+  })).filter((x) => x.name);
+}
+
 function slimHero(h) {
   if (!h) return null;
   const eqs = (h.equipList || []).map((e) => (typeof e === 'string' ? T(e) : T(e.name))).filter(Boolean);
-  return {
+  const hero = {
     name: T(h.name),
     x: Number(h.positionX) || 0,
     z: Number(h.positionZ) || 0,
     evo: !!h.isEvo,
     eqs: eqs,
   };
+  // 官方在这一套里给英雄标的角色：1 王牌，2 坦克核心，3 功能核心，0 其余。
+  // 讲解页靠它决定大卡和思路图，不要自己再打分猜核心。
+  if (h.type != null && h.type !== '') hero.spot = Number(h.type) || 0;
+  return hero;
 }
 
 function slimOp(op) {
@@ -162,6 +185,7 @@ function slim(raw, flags) {
     talentDesc: T(raw.talentCardDesc),
     effectDesc: T(raw.effectCardDesc),
     lords: namesOf(raw.lordList),
+    lordGuide: lordGuideOf(raw),
     recLords: namesOf(raw.recommendLords),
     heroes: (raw.heroList || []).map(slimHero).filter((h) => h && h.name),
     talents: namesOf(raw.talentCardList),
@@ -307,12 +331,13 @@ function collectUnknown(list, pools) {
   const unknown = collectUnknown(list, pools);
   const capturedAt = new Date().toISOString().slice(0, 10);
   const meta = {
-    version: '1.3.0',
+    version: '1.3.1',
     capturedAt: capturedAt,
     source: '王者万象棋官网阵容推荐库（oslineupbyrecommend / oslineupbyhot / oslineupbybeginner）',
     note: '主播投稿 + 官方推荐。入库门槛（2026-09-20 放宽）：官方出品 / 热门榜 / 官方新手 / 好评(≥4 分且≥3 人评) / 使用量≥' + MIN_USE_MAIN
       + ' / 热度(≥' + MIN_USE_HEAT + ' 且点赞≥' + MIN_LIKE_HEAT + ') / 攻略完整(≥' + MIN_USE_GUIDE + ' 且 3 段运营)，满足任一即收；并要求至少 4 个英雄。'
-      + '注意 score=0 表示没人评分，不是差评。理由见每条的 pick。阵容码 = key，可在游戏「阵容 → 我的阵容 → 导入」使用。本页只展示官方库原文，不模拟打架。',
+      + '注意 score=0 表示没人评分，不是差评。理由见每条的 pick。阵容码 = key，可在游戏「阵容 → 我的阵容 → 导入」使用。本页只展示官方库原文，不模拟打架。'
+      + ' v1.3.1 起每个英雄保留官方 spot（1 王牌 / 2 坦克核心 / 3 功能核心 / 0 其余），并保留 lordGuide（这套阵容写给棋手的推荐语和技能图标）。',
     counts: {
       total: list.length,
       raw: rawList.length,

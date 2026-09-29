@@ -266,74 +266,28 @@
   }
 
   function pageHtml(L) {
-    var arch = matchArch(L);
-    var ns = heroNames(L);
-    var order = (arch ? arch.order : ns).filter(function (n) { return has(ns, n); });
-    var cards = order.map(cardBlock).filter(Boolean).join('');
-    var tips = pullTips(L);
-    var ops = (L.ops || []).filter(function (o) { return o.desc; });
     var h = '<article class="jdoc ex-doc">'
       + '<button type="button" class="jback" data-job-explain-back="' + esc(L.key) + '" title="返回阵容" aria-label="返回阵容">'
       + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4 7.5 12l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
       + '<header class="jdoc-head"><div class="jdoc-tit">'
       + '<h1>讲解 · ' + esc(L.name) + '</h1>'
-      + '<div class="jdoc-sub">' + (arch ? esc(arch.name) + ' · ' : '') + '先读懂机制，再对照卡面</div>'
+      + '<div class="jdoc-sub">大卡、思路、棋盘、推荐棋手</div>'
       + '</div></header>';
-    // 规则引擎 v2 输出（核心位/联动/节奏/装备/作者原文/风险）
     // 引擎没加载 = 打包脚本 SCRIPTS 清单漏了 wanxiangqi-explain2.js（2026-09-28 踩过）。
-    // 这是部署事故，必须显式报出来，不要静默降级成一句"未加载"让人以为功能没做。
     if (!global.WXQ_EXPLAIN_V2) {
-      h += '<section class="jbox"><h3>读懂这套</h3><p class="jmuted">讲解引擎未加载：'
+      h += '<section class="jbox"><h3>讲解</h3><p class="jmuted">讲解引擎未加载：'
         + '打包脚本 scripts/publish-wxq-helper.js 的 SCRIPTS 清单里缺 wanxiangqi-explain2.js。</p></section>';
     } else {
       h += global.WXQ_EXPLAIN_V2.pageHtml(L);
-    }
-    if (cards) h += '<section class="jbox"><h3>上场卡面 <span>官方原文</span></h3>' + cards + '</section>';
-    if (L.brief) h += '<section class="jbox"><h3>这套怎么介绍的</h3><p>' + esc(L.brief) + '</p></section>';
-    if (ops.length) {
-      h += '<section class="jbox"><h3>运营原文</h3>';
-      ops.forEach(function (o, i) {
-        var ph = ['前期', '中期', '后期'][i] || ('第' + (i + 1) + '段');
-        h += '<div class="ex-op"><div class="ex-oph">' + ph
-          + (o.from || o.to ? ' · ' + o.from + '–' + o.to + ' 回合' : '')
-          + '</div><p>' + esc(o.desc).replace(/\n/g, '<br>') + '</p></div>';
-      });
-      h += '</section>';
-    }
-    if (L.effectDesc) h += '<section class="jbox"><h3>效果牌原文</h3><p>' + esc(L.effectDesc) + '</p></section>';
-    if (tips.length) {
-      h += '<section class="jbox ex-tips"><h3>实战要点 <span>从这套阵容原文抽出</span></h3><ul class="ex-ul">';
-      tips.forEach(function (t) { h += '<li>' + esc(t) + '</li>'; });
-      h += '</ul></section>';
     }
     h += '</article>';
     return h;
   }
 
   function hubHtml() {
-    var h = '<div class="explain-hub">'
-      + '<div class="jbox"><h3>讲解</h3>'
-      + '<p>李信牺牲、花木兰复生、大河开团，光看词条名不容易串起来。这里先用一段读法讲「这套到底在倒什么」，再对照官方卡面和该套阵容自己的介绍。</p>'
-      + '<p class="jmuted">对得上的阵容，详情里会有「讲解这套」。</p>'
-      + '</div>';
-    ARCH.forEach(function (a) {
-      var list = jobsOf(a);
-      h += '<section class="jbox ex-arch" data-ex-arch="' + a.id + '">'
-        + '<h3>' + esc(a.name) + ' <span>' + list.length + ' 套对得上</span></h3>'
-        + '<p class="ex-when">上场识别：' + esc(a.when) + '</p>'
-        + '<p class="ex-readp">' + esc(a.read) + '</p>';
-      if (list.length) {
-        h += '<div class="ex-jobs">';
-        list.slice(0, 8).forEach(function (L) {
-          h += '<button type="button" class="ex-job" data-ex-job="' + esc(L.key) + '">' + esc(L.name) + '</button>';
-        });
-        if (list.length > 8) h += '<span class="jmuted">等 ' + (list.length - 8) + ' 套，进阵容详情点「讲解这套」</span>';
-        h += '</div>';
-      }
-      h += '</section>';
-    });
-    h += '</div>';
-    return h;
+    return '<div class="explain-hub"><div class="jbox"><h3>讲解</h3>'
+      + '<p>每套阵容按游戏内的讲法来排：大卡、思路图、棋盘、推荐棋手。官方库里的核心以官方标记为准。资料站对不上官方库的阵容，用卡面和近7日对局来讲。</p>'
+      + '<p class="jmuted">在阵容详情里点「讲解这套」。</p></div></div>';
   }
 
   function render(grid, state) {
@@ -344,7 +298,7 @@
     var q = (state && state.q) || '';
     if (q) {
       var hit = jobs().filter(function (L) {
-        return matchArch(L) && (L.name.indexOf(q) >= 0 || heroNames(L).join('').indexOf(q) >= 0);
+        return canExplain(L) && (L.name.indexOf(q) >= 0 || heroNames(L).join('').indexOf(q) >= 0);
       });
       grid.innerHTML = '<div class="jbox"><h3>讲解里搜到 ' + hit.length + ' 套</h3></div>'
         + '<div class="ex-jobs">' + hit.slice(0, 24).map(function (L) {
