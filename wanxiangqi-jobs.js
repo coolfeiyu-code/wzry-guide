@@ -99,7 +99,7 @@
     return null;
   }
 
-  // 19 位棋手各给一对固定色（按官方 WXQ_PLAYERS 顺序取）：
+  // 20 位棋手各给一对固定色（按官方 WXQ_PLAYERS 顺序取）：
   // [浅色主题: 深底白字, 深色主题: 亮底深字]。深浅各一套是因为单一色值
   // 在另一套主题上必然糊掉（之前就是这个问题）。两套都不含黑、不重复。
   var LORD_COLORS = [
@@ -121,7 +121,8 @@
     ['#78350F', '#D8AE8A'],
     ['#334155', '#BCC9DA'],
     ['#155E75', '#93D0DC'],
-    ['#9D174D', '#EE99B8']
+    ['#9D174D', '#EE99B8'],
+    ['#4A044E', '#F5D0FE']
   ];
   var lordColorMap = null;
   function lordThemePair(name) {
