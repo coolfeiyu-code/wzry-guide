@@ -91,7 +91,13 @@
     try {
       var o = JSON.parse(localStorage.getItem(STORE) || '');
       if (!o || !o.keys) return { keys: [], last: '' };
-      return { keys: o.keys.map(String).filter(Boolean).slice(0, MAX), last: String(o.last || ''), at: o.at, rev: o.rev, del: o.del };
+      var rawKeys = o.keys.map(String).filter(Boolean).slice(0, MAX);
+      // 2026-10-02 修「已下架幽灵删不掉」：每次加载都把官方库里找不到的 key 过滤掉，
+      // 避免它们跟着多机同步一直复活。过滤不写回 localStorage（留到 save/purgeStale 时再写），
+      // 这样一次页面会话内不会反复写库。
+      var cleanKeys = rawKeys.filter(function (k) { return !!find(k); });
+      var out = { keys: cleanKeys, last: String(o.last || ''), at: o.at, rev: o.rev, del: o.del };
+      return out;
     } catch (e) { return { keys: [], last: '' }; }
   }
   var stWarned = false; // 本地存储写不进去只提醒一次，别每切一套阵容都弹

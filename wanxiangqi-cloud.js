@@ -103,12 +103,51 @@
       if (all[j] && !seen[all[j]]) { seen[all[j]] = 1; merged.push(all[j]); }
     }
     merged = merged.slice(0, 1000);
-    lsSet(KEYS.using, JSON.stringify({
-      keys: merged,
-      last: merged.indexOf(String(cfgUsing.last || '')) >= 0 ? String(cfgUsing.last) : (merged[0] || ''),
-      at: Number(cfgUsing.at || Date.now()),
-      rev: Number(cfgUsing.rev || 0)
-    }));
+    // ⚠️ 把云端的 del 墓碑也采纳进来。以前只写 keys/last/at/rev 没写 del，
+    //    导致：A 机器删了一套 → 云端有墓碑 → A 重启拉云端，本机 rev/del 都没了 →
+    //    A 再推云端 → 云端 mergeUsing 因为 A 没有墓碑，就把那套又加回来 →
+    //    用户看到「浮窗里一直在显示已下架，明明已经删了」（2026-10-02）。
+    //    这里做「墓碑并集 + addAt 取最大」（和桥 mergeUsing 里一样的逻辑）。
+    var localDel = (local.del && typeof local.del === 'object') ? local.del : {};
+    var cloudDel = (cfgUsing.del && typeof cfgUsing.del === 'object') ? cfgUsing.del : {};
+    var delMap = {};
+    Object.keys(localDel).forEach(function (k) {
+      const t = Number(localDel[k] || 0);
+      if (!delMap[k] || t > delMap[k]) delMap[k] = t;
+    });
+    Object.keys(cloudDel).forEach(function (k) {
+      const t = Number(cloudDel[k] || 0);
+      if (!delMap[k] || t > delMap[k]) delMap[k] = t;
+    });
+    // addAt 取最大（整机级别的编辑时间戳）
+    var addAtMap = {};
+    const allSrcs = [cfgUsing, local];
+    allSrcs.forEach(function (src) {
+      const at = Number(src.at || 0);
+      (src.keys || []).forEach(function (k) {
+        const key = String(k);
+        if (!key) return;
+        if (!addAtMap[key] || at > addAtMap[key]) addAtMap[key] = at;
+      });
+    });
+    const keptKeys = merged.filter(function (k) {
+      const t = delMap[k];
+      if (!t) return true;
+      // 墓碑时间 >= 新增时间 → 这条真的该删
+      return t < Number(addAtMap[k] || 0);
+    });
+    const out = {
+      keys: keptKeys,
+      last: keptKeys.indexOf(String(cfgUsing.last || '')) >= 0
+        ? String(cfgUsing.last)
+        : (keptKeys.indexOf(String(local.last || '')) >= 0
+           ? String(local.last)
+           : (keptKeys[0] || '')),
+      at: Math.max(Number(cfgUsing.at || 0), Number(local.at || 0), Date.now()),
+      rev: Math.max(Number(cfgUsing.rev || 0), Number(local.rev || 0))
+    };
+    if (Object.keys(delMap).length) out.del = delMap;
+    lsSet(KEYS.using, JSON.stringify(out));
     return 'adopt';
   }
   // 云端配置合进本机：在用阵容按时间戳整组覆盖（删除可穿透），其余字段本机没有才采纳。
