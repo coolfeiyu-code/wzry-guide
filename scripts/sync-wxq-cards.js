@@ -2,7 +2,7 @@
 const vm = require("vm");
 
 const path = require("path");
-// 用脚本自身位置定位，别写死盘符。项目已迁到 D:\AI 云同步\wzry-guide
+// 用脚本自身位置定位，别写死盘符。项目已迁到 D:\AI 云同步\王者万象棋助手
 // （Syncthing 同步目录，多台电脑 / 多个 AI 共用），写死 C:/Users/Zhuqi/Desktop 换台机器就废。
 const DATA = path.resolve(__dirname, "..", "wanxiangqi-data.js");
 
