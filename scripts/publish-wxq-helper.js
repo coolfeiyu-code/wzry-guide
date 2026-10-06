@@ -21,7 +21,10 @@ const SCRIPTS = [
   'wanxiangqi-data.js',
   'wanxiangqi-lineups.js',
   'wanxiangqi-stats.js',
+  'wanxiangqi-patch.js',
   'wanxiangqi-edit.js',
+  'wanxiangqi-match.js',
+  'wanxiangqi-record.js',
   'wanxiangqi-jobs.js',
   'wanxiangqi-rules.js',
   // 讲解规则引擎 v2，**必须在 explain.js 之前**进清单。

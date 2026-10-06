@@ -17,6 +17,7 @@
  *   GET  /api/health   → {ok, dir, file}
  *   GET  /api/cloud    → {ok, cfg}
  *   POST /api/cloud    → 合并写入，返回 {ok, cfg}
+ *   POST /api/capture  → 截屏 + Windows OCR，返回 {ok, rank, text}（战绩本识别名次）
  * 其它路径按静态文件返回（王者助手.html、王者助手.json.js、wxq-icon/...）。
  */
 'use strict';
@@ -235,10 +236,41 @@ function mergeCfg(disk, incoming) {
   if (merged) out.using = merged;
   const edits = mergeEdits(disk && disk.edits, incoming && incoming.edits);
   if (edits) out.edits = edits;
+  const recs = mergeRecords(disk && disk.records, incoming && incoming.records);
+  if (recs) out.records = recs;
   if (disk && disk.hudSize && incoming && incoming.hudSize) {
     out.hudSize = Object.assign({}, disk.hudSize, incoming.hudSize);
   }
   return out;
+}
+
+// 个人战绩合并：记完不改的追加流水，按 id 并集；删除走 del 墓碑穿透。
+// 战绩没有「同 id 重加」的场景，墓碑永续，不会出现 using 那类复活问题。
+function mergeRecords(disk, incoming) {
+  if (!disk && !incoming) return null;
+  if (!incoming) return disk || null;
+  const iList = Array.isArray(incoming.list) ? incoming.list : [];
+  const iDel = (incoming.del && typeof incoming.del === 'object') ? incoming.del : {};
+  if (!iList.length && !Object.keys(iDel).length) return disk || null;
+  const d = (disk && typeof disk === 'object') ? disk : {};
+  const dList = Array.isArray(d.list) ? d.list : [];
+  const dDel = (d.del && typeof d.del === 'object') ? d.del : {};
+  const byId = Object.create(null);
+  dList.forEach((r) => { if (r && r.id) byId[r.id] = r; });
+  iList.forEach((r) => { if (r && r.id && !byId[r.id]) byId[r.id] = r; });
+  const delMap = Object.create(null);
+  Object.keys(dDel).forEach((k) => { delMap[k] = Number(dDel[k] || 0); });
+  Object.keys(iDel).forEach((k) => {
+    const t = Number(iDel[k] || 0);
+    if (!delMap[k] || t > delMap[k]) delMap[k] = t;
+  });
+  const list = [];
+  dList.concat(iList).forEach((r) => {
+    if (!r || !r.id || delMap[r.id]) return;
+    const cur = byId[r.id];
+    if (list.indexOf(cur) < 0) list.push(cur);
+  });
+  return { v: 1, list: list.slice(-2000), del: delMap };
 }
 
 // 跨进程文件锁：多台电脑各跑各的桥，没有互斥就会出现
@@ -336,6 +368,123 @@ function serveStatic(res, dir, urlPath) {
   });
 }
 
+/* ---------- 截屏识别（战绩本用） ---------- */
+// Windows 自带 OCR（Windows.Media.Ocr，WinRT），不需要任何第三方依赖。
+// PowerShell 负责截屏 + OCR，把识别文本写到临时文件；Node 只负责拉起、
+// 读结果、从文本里抠名次。语言包优先 zh*，没有再用 en-US（读数字够用），
+// 都没有才算失败（提示用户去系统设置加语言）。
+const PS_CAPTURE = `
+$ErrorActionPreference = 'Stop'
+function Await($WinRtTask, $ResultType) {
+  $asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation\`1' })[0]
+  $asTask = $asTaskGeneric.MakeGenericMethod($ResultType)
+  $netTask = $asTask.Invoke($null, @($WinRtTask))
+  $netTask.Wait(-1) | Out-Null
+  $netTask.Result
+}
+try {
+  Add-Type -AssemblyName System.Windows.Forms
+  Add-Type -AssemblyName System.Drawing
+  Add-Type -AssemblyName System.Runtime.WindowsRuntime
+  $null = [Windows.Media.Ocr.OcrEngine, Windows.Foundation, ContentType = WindowsRuntime]
+  $null = [Windows.Globalization.Language, Windows.Foundation, ContentType = WindowsRuntime]
+  $null = [Windows.Graphics.Imaging.SoftwareBitmap, Windows.Foundation, ContentType = WindowsRuntime]
+  $null = [Windows.Graphics.Imaging.BitmapDecoder, Windows.Foundation, ContentType = WindowsRuntime]
+
+  # 1) OCR 引擎：优先 zh*（认中文名），退 en-US（读数字够用），再退系统首个
+  $eng = $null
+  $langs = [Windows.Media.Ocr.OcrEngine]::AvailableRecognizerLanguages
+  foreach ($l in $langs) {
+    if ($l.LanguageTag.ToLower().StartsWith('zh')) {
+      $eng = [Windows.Media.Ocr.OcrEngine]::TryCreateFromLanguage($l)
+      if ($eng) { break }
+    }
+  }
+  if (-not $eng) {
+    try { $eng = [Windows.Media.Ocr.OcrEngine]::TryCreateFromLanguage((New-Object Windows.Globalization.Language('en-US'))) } catch {}
+  }
+  if (-not $eng -and $langs.Count -gt 0) { $eng = [Windows.Media.Ocr.OcrEngine]::TryCreateFromLanguage($langs[0]) }
+  if (-not $eng) { Write-Output 'ERR no-ocr-language'; exit }
+
+  # 2) 截全屏（虚拟屏幕含多显示器）进内存 PNG
+  $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
+  $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  $g.CopyFromScreen($b.X, $b.Y, 0, 0, $bmp.Size)
+  $ms = New-Object System.IO.MemoryStream
+  $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+  $g.Dispose(); $bmp.Dispose(); $ms.Position = 0
+
+  # 3) 解码成 SoftwareBitmap 再喂 OCR。
+  #    三个实测过的坑（2026-10-06）：
+  #    a) $ms.AsRandomAccessStream() 实例语法 PS 解析不了 → 必须静态调
+  #       [System.IO.WindowsRuntimeStreamExtensions]::AsRandomAccessStream($ms)；
+  #    b) New-Object 出来的 InMemoryRandomAccessStream 传不进 RecognizeAsync
+  #       （MethodArgumentConversionInvalidCastArgument）；
+  #    c) StorageFile.OpenReadAsync 返回的是接口类型，投影成 System.__ComObject，
+  #       只能匹配到 RecognizeAsync(SoftwareBitmap) 重载再炸一次 —— 所以必须
+  #       走 BitmapDecoder → GetSoftwareBitmapAsync（密封类，投影正常）。
+  $ras = [System.IO.WindowsRuntimeStreamExtensions]::AsRandomAccessStream($ms)
+  $decoder = Await ([Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($ras)) ([Windows.Graphics.Imaging.BitmapDecoder])
+  $sbmp = Await ($decoder.GetSoftwareBitmapAsync()) ([Windows.Graphics.Imaging.SoftwareBitmap])
+  $res = Await ($eng.RecognizeAsync($sbmp)) ([Windows.Media.Ocr.OcrResult])
+
+  # 4) 结果写临时文本，Node 来读
+  $out = Join-Path $env:TEMP ('wxq-capture-' + $PID + '.txt')
+  [System.IO.File]::WriteAllText($out, $res.Text, [System.Text.Encoding]::UTF8)
+  Write-Output ('OK ' + $out)
+} catch {
+  Write-Output ('ERR ' + ($_.Exception.Message -replace '\\r?\\n', ' '))
+}
+`;
+
+function parseRank(text) {
+  // 结算页的名次无非几种写法：第2名 / 2名 / 2/8 / 2 /8 / Rank 2。
+  // OCR 可能插空格或把中文认错，所以规则要松，但绝不能把「8强」「季后赛」里的
+  // 数字当名次 —— 只认独立出现的 1-8。
+  const t = String(text || '').replace(/\s+/g, ' ');
+  const m1 = t.match(/第\s*([1-8])\s*名/);
+  if (m1) return Number(m1[1]);
+  const m2 = t.match(/\b([1-8])\s*名/);
+  if (m2) return Number(m2[1]);
+  const m3 = t.match(/\b([1-8])\s*\/\s*(8|十九|18|八)\b/);
+  if (m3) return Number(m3[1]);
+  const m4 = t.match(/(?:名次|排名|place|rank)[^0-9]{0,6}([1-8])\b/i);
+  if (m4) return Number(m4[1]);
+  // 独立一行只有一位数字 1-8（OCR 大字名次常见）
+  const lines = String(text || '').split(/\r?\n/);
+  for (const ln of lines) {
+    const s = ln.trim();
+    if (/^[1-8]$/.test(s)) return Number(s);
+  }
+  return 0;
+}
+
+function runCapture(cb) {
+  if (process.platform !== 'win32') { cb({ ok: false, err: '截屏识别目前只支持 Windows' }); return; }
+  const { spawn } = require('child_process');
+  const b64 = Buffer.from(PS_CAPTURE, 'utf16le').toString('base64');
+  const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', b64], { windowsHide: true });
+  let out = '';
+  const timer = setTimeout(function () {
+    try { ps.kill(); } catch (e) {}
+    cb({ ok: false, err: '截屏超时（游戏是否在前台？）' });
+  }, 20000);
+  ps.stdout.on('data', (d) => { out += d.toString(); });
+  ps.stderr.on('data', () => {});
+  ps.on('close', function () {
+    clearTimeout(timer);
+    const line = (out.split(/\r?\n/).find((l) => /^(OK|ERR) /i.test(l)) || '').trim();
+    if (/^ERR/i.test(line)) { cb({ ok: false, err: line.replace(/^ERR\s*/i, '') || '识别失败' }); return; }
+    const file = line.replace(/^OK\s*/i, '').trim();
+    if (!file) { cb({ ok: false, err: '识别脚本没有返回结果' }); return; }
+    let text = '';
+    try { text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''); } catch (e) {}   // PS WriteAllText 带 BOM
+    try { fs.unlinkSync(file); } catch (e) {}
+    cb({ ok: true, rank: parseRank(text), text: String(text || '').slice(0, 600) });
+  });
+}
+
 function main() {
   const dir = helperDir();
   if (!dir) {
@@ -380,6 +529,14 @@ function main() {
       return;
     }
 
+    if (urlPath === '/api/capture') {
+      if (req.method !== 'POST') { json(res, 405, { ok: false, err: 'method' }); return; }
+      readBody(req).then(function () {
+        runCapture(function (r) { json(res, 200, r); });
+      });
+      return;
+    }
+
     if (req.method !== 'GET') { json(res, 405, { ok: false, err: 'method' }); return; }
     serveStatic(res, pageDir(dir), urlPath);
   });
@@ -399,4 +556,6 @@ function main() {
   });
 }
 
-main();
+if (require.main === module) main();
+// 供回归测试直接调用（test-wxq-sync.js / parseRank 用例）
+module.exports = { mergeUsing, mergeEdits, mergeRecords, parseRank };

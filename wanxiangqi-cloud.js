@@ -21,6 +21,7 @@
   var KEYS = {
     using: 'wxq-using-v1',
     edits: 'wxq-lineup-edits-v1',
+    records: 'wxq-records-v1',
     hudSize: 'wxq-hud-size',
     hudPos: 'wxq-hud-pos',
     hudDb: 'wxq-hud-db',
@@ -75,6 +76,8 @@
     if (theme) o.theme = theme;
     var edits = parseJson(lsGet(KEYS.edits));
     if (edits && edits.items && Object.keys(edits.items).length) o.edits = edits;
+    var records = parseJson(lsGet(KEYS.records));
+    if (records && ((records.list && records.list.length) || (records.del && Object.keys(records.del).length))) o.records = records;
     return o;
   }
   // 阵容编辑按套合并：rev 大的赢，rev 相同才看 at。
@@ -194,12 +197,48 @@
     lsSet(KEYS.using, JSON.stringify(out));
     return 'adopt';
   }
+  // 个人战绩合并：战绩是「记完不改」的追加流水，按 id 并集即可，谁的副本都一样。
+  // 删除靠 del 墓碑穿透（和 using 同思路）；战绩没有「同 id 重加」的场景，墓碑永续。
+  function decideRecords(cfgRecords) {
+    if (!cfgRecords || typeof cfgRecords !== 'object') return 'none';
+    var cList = Array.isArray(cfgRecords.list) ? cfgRecords.list : [];
+    var cDel = (cfgRecords.del && typeof cfgRecords.del === 'object') ? cfgRecords.del : {};
+    if (!cList.length && !Object.keys(cDel).length) return 'none';
+    var local = parseJson(lsGet(KEYS.records)) || { v: 1, list: [], del: {} };
+    var lList = Array.isArray(local.list) ? local.list : [];
+    var lDel = (local.del && typeof local.del === 'object') ? local.del : {};
+    var byId = {};
+    lList.forEach(function (r) { if (r && r.id) byId[r.id] = r; });
+    cList.forEach(function (r) { if (r && r.id && !byId[r.id]) byId[r.id] = r; });
+    var delMap = {};
+    Object.keys(lDel).forEach(function (k) { delMap[k] = Number(lDel[k] || 0); });
+    Object.keys(cDel).forEach(function (k) {
+      var t = Number(cDel[k] || 0);
+      if (!delMap[k] || t > delMap[k]) delMap[k] = t;
+    });
+    var kept = [];
+    lList.concat(cList).forEach(function (r) {
+      if (!r || !r.id || delMap[r.id]) return;
+      var cur = byId[r.id];
+      if (kept.indexOf(cur) < 0) kept.push(cur);
+    });
+    var out = { v: 1, list: kept, del: delMap };
+    var lKept = lList.filter(function (r) { return r && !lDel[r.id]; });
+    var same = JSON.stringify(out) === JSON.stringify({ v: 1, list: lKept, del: lDel });
+    if (!same) lsSet(KEYS.records, JSON.stringify(out));
+    var localOnly = lKept.some(function (r) {
+      return !cList.some(function (c) { return c && c.id === r.id; });
+    });
+    if (localOnly) return 'local_newer';
+    return same ? 'none' : 'adopt';
+  }
   // 云端配置合进本机：在用阵容按时间戳整组覆盖（删除可穿透），其余字段本机没有才采纳。
   function mergeBoot(cfg) {
     if (!cfg || typeof cfg !== 'object') return false;
     var changed = false;
     if (decideUsing(cfg.using) === 'adopt') changed = true;
     if (decideEdits(cfg.edits) === 'adopt') changed = true;
+    if (decideRecords(cfg.records) === 'adopt') changed = true;
     if (cfg.theme && lsGet(KEYS.theme) == null) { lsSet(KEYS.theme, cfg.theme); changed = true; }
     if (cfg.hudSize && lsGet(KEYS.hudSize) == null) { lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize)); changed = true; }
     if (cfg.hudPos && lsGet(KEYS.hudPos) == null) { lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos)); changed = true; }
@@ -409,8 +448,9 @@
     cfg = cfg || {};
     var d = decideUsing(cfg.using);
     var e = decideEdits(cfg.edits);
+    var r = decideRecords(cfg.records);
     if ((d === 'adopt' || e === 'adopt') && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-    if (d === 'local_newer' || e === 'local_newer') return queueWrite();
+    if (d === 'local_newer' || e === 'local_newer' || r === 'local_newer') return queueWrite();
     return false;
   }
   function pull() {

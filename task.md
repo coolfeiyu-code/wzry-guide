@@ -3,7 +3,7 @@
 > 最后更新：2026-10-06
 > 用途：本文件记录项目从 0 到当前的全部工作脉络、架构、铁律、已踩的坑与下一步。任何 AI 接手前先通读本文件，可避免重复踩坑与重复提问。
 > **每次改动必须同步更新本文件**（用户 2026-09-18 起要求「每次更新 task」）。
-> 当前版本状态：站点 `GUIDE_META` **v2.6.13**；万象棋 `WXQ_META` **v1.5.72**。官方阵容库 **v1.3.1**（386 套，全部带官方 spot 与棋手推荐语）。近7日数据阵容 **v1.1.0**（2026-10-06 同步，overlay 371 + 独立卡 18）。
+> 当前版本状态：站点 `GUIDE_META` **v2.6.13**；万象棋 `WXQ_META` **v1.5.73**。官方阵容库 **v1.3.1**（386 套，全部带官方 spot 与棋手推荐语）。近7日数据阵容 **v1.1.0**（2026-10-06 同步，overlay 371 + 独立卡 18）。
 > 线上地址：`https://coolfeiyu-code.github.io/wzry-guide/`
 
 ---
@@ -59,6 +59,9 @@
 ├── wanxiangqi-stats.js     近7日数据阵容（WXQ_STATS，scripts/sync-wxq-stats.js 生成，**勿手改**）。overlay 叠到官方套，list 是对不上的无码卡
 ├── wanxiangqi-jobs.js      作业 tab 渲染（只画，不含规则）
 ├── wanxiangqi-edit.js      阵容编辑。本地覆盖层，可改棋手/站位/装备/运营并保存。不改官方阵容文件
+├── wanxiangqi-match.js     凑卡匹配。勾手里英雄→按重合度排全部阵容，标「缺谁」。选型存 wxq-match-v1
+├── wanxiangqi-record.js    个人战绩本。记（阵容,名次）→按套统计平均/前三率。存 wxq-records-v1，随坚果云同步
+├── wanxiangqi-patch.js     版本调整记录（WXQ_PATCH，scripts/sync-wxq-patch.js 生成，**勿手改**）。卡片标「调整」
 ├── wanxiangqi-rules.js     连锁 B 层：WXQ_RULES（规则+手补 MANUAL）
 ├── wanxiangqi-engine.js    连锁 C 层：WXQ_ENGINE.simulate(board,rules,cards) 纯函数 + selfTest(13 断言)
 ├── wanxiangqi-chain.js     连锁 D 层：WXQ_CHAIN 只渲染，经 __wxqUI 桥复用弹窗/主题
@@ -523,6 +526,20 @@ WXQ_GUIDE = {
 - 同步：桥 `mergeEdits` 按**每一套自己的 rev** 合并，rev 相同才看 `at`。慢时钟不能整组盖掉别人改过的套。没带到的套保留。墓碑要留在云端，恢复官方才能穿透。页面 `decideEdits` 同一规则，ack 也走它，避免回写时把刚保存的更高 rev 盖掉。`node scripts/test-wxq-sync.js` 第 8 组覆盖这些。
 - 编辑逻辑：`node scripts/test-wxq-edit.js`（18 项）。`publish-wxq-helper.js` 的 `SCRIPTS` 在 `jobs.js` 之前加上 `wanxiangqi-edit.js`。
 
+### 5.24 凑卡匹配 / 个人战绩 / 截屏识别 / 版本调整 / 阵容码结论（2026-10-06，WXQ_META 1.5.73）
+
+**回退点：tag `v1.5.72-baseline`（commit `0006fb1`）**，本节全部改动出问题可 `git reset --hard v1.5.72-baseline` 一键回退。本机 `.ssh` 不存在，SSH 推不了 GitHub；用 HTTPS+凭据管理器+代理 `git -c http.proxy=http://127.0.0.1:7897 push https://github.com/coolfeiyu-code/wzry-guide.git main`。
+
+- **凑卡匹配**（`wanxiangqi-match.js`，入口：阵容筛选条「凑卡匹配」，深链 `#match`）：官方池 85 英雄按阵营勾选（存 `wxq-match-v1`），`rankLineups(picks,list)` 纯函数给全部阵容（官方库+7日无码卡+编辑覆盖层）打分：matched 降序 → matched/total 占比降序 → 命中王牌(spot=1) → 7日前三率 → 使用量。结果标「已有 N/M + 缺某某」，点行进详情，返回经 `js.fromView` 回匹配视图且勾选保留。局部刷新不整页重画（勾一下滚回顶上没法用）。
+- **个人战绩本**（`wanxiangqi-record.js`，入口「个人战绩」，深链 `#records`）：记（阵容,名次1-8），阵容下拉取「在用」+ datalist 全库名字。统计：总局数/平均名次/前三率 + 按套分组。同步：`cfg.records`（`{list:[{id,at,key,name,rank}], del:{id:ts}}`）追加并集 + 删除墓碑（战绩记完不改，无重加同 id 场景，墓碑永续），桥端 `mergeRecords` 与页面端 `decideRecords` 同语义，`test-wxq-sync.js` 第 9 组覆盖。
+- **截屏识别**（桥 `POST /api/capture`，战绩本「截屏识别名次」按钮）：PowerShell 截全屏 → Windows.Media.Ocr（语言包优先 zh*，退 en-US，再退首个；都没有报 `no-ocr-language`，去系统设置加语言）→ 文本写临时文件 → Node `parseRank()` 抠名次（`第X名`/`X名`/`X/8`/`名次:X`/独立 1-8 行，单测覆盖）。**PS 5.1 WinRT 三个实测坑（2026-10-06）**：① `$ms.AsRandomAccessStream()` 实例语法解析不了，必须静态调 `[System.IO.WindowsRuntimeStreamExtensions]::AsRandomAccessStream($ms)`；② `New-Object` 出来的 InMemoryRandomAccessStream 传不进 `RecognizeAsync`（MethodArgumentConversionInvalidCastArgument）；③ `OpenReadAsync` 返回接口类型投影成 `System.__ComObject`，匹配到 SoftwareBitmap 重载再炸——最终走 **BitmapDecoder → GetSoftwareBitmapAsync → RecognizeAsync(SoftwareBitmap)** 这条全通。测试 PS 只能走真桥（`/api/capture`），从源码正则提取 PS 文本会拿到 `\`` 转义原文（假失败）。
+- **版本调整**（`scripts/sync-wxq-patch.js` → `wanxiangqi-patch.js` WXQ_PATCH）：官方公告列表接口至今没打通，newsid 人工给。两种输入：`--id <newsid>`（searchNews.php 详情）或 `--file <公告文本>`（转录稿放 `scripts/patch-notes/`）。解析「英雄/装备/天赋/棋手 名字 + 技能 X + 调整前/调整后（可折叠多行）」块，转录稿可用「变化：…」「方向：强/削/新/无」显式指定（负数值自动推断会错向，如兵行诡招 -15→-10）。方向箭头只是数值推断提示。页面：核心英雄/装备/天赋/棋手命中的阵容卡片标「调整」（`.jtag.patch`），详情加「版本调整」板块。首期数据 = v1.3.1 十五条（task.md §5.11 转录）。
+- **阵容码逆向结论（不可行，勿再尝试）**：55 对「同名同英雄」的套在两次同步间换了 key（如「大河龙蛇」新旧两码英雄集完全相同）；字节级分析显示不同阵容共享固定段（`249,49,137,49`）；官方新手套的 key 在 1 位（`1`-`5`）和 17 位间跳。**阵容码是服务端不透明 ID（含种子/哈希），不是英雄编码，无法本地解码**。游戏→助手的正确路：key 已进 `hay()` 搜索索引，贴码进搜索框即可定位本地库中的阵容；不在库里的码等官方池刷新（sync-wxq-lineups 已覆盖推荐 500）。
+- **回归**：`test-wxq-match.js`（23 项：打分/缺失/页面结构/战绩数学/墓碑/decideRecords 函数级）+ `test-wxq-smoke.cjs`（20 项 Puppeteer：调整标记/凑卡全流程/战绩全流程/深链/零 JS 错，puppeteer-core 装在 `%TEMP%\wxq-smoke`，Chrome 走 `C:/Program Files/Google/Chrome/Application/chrome.exe`）+ sync 40 项 + edit 18 项全绿。
+- **两个前端坑（本次实测）**：① **布尔 data 属性**：`<select data-rec-key>` 的 `getAttribute('data-rec-key')` 返回 `""` 不是 null，`if (attr)` 永远为假——change 监听整段失效，必须 `!= null` 判断；② **重绘游离节点**：paintRank 重绘按钮容器后，事件目标已游离，`closest()` 返回 null——回调里一律用 bind 闭包的 rootEl 查询，不持有事件目标。
+- 发布脚本 `SCRIPTS` 增加 `wanxiangqi-patch.js / wanxiangqi-match.js / wanxiangqi-record.js`（jobs 之前）。**老机器/其它电脑要重新双击坚果云文件夹里的 安装同步桥.cmd 才有 /api/capture 和 records 合并**（本机 2026-10-06 已重装）。
+
+
 ## 6. 已完成工作清单（时间线）
 
 | 阶段 | 内容 | 状态 |
@@ -553,6 +570,7 @@ WXQ_GUIDE = {
 | **阵容编辑** | 每套可改棋手/站位/装备/运营并保存。本地覆盖层，不改官方文件。同步按套 rev 合并 | ✅ 2026-10-03 v1.5.71 |
 | 官方阵容库更新 405 套 | sync-wxq-lineups.js 重拉（原始 460 → 入库 405，丢 55：英雄不足4个 7 / 无任何入选理由 48）+ datawxq overlay 385 | ✅ 2026-10-04 `ffa1bf7` |
 | 官方阵容库刷新 386 套 + 数据卡 18 | 官方 388→386（key 层 +253/−255，多为同套换新码）+ overlay 368→371、无码独立卡 3→18（样本 391,266 场）；发布坚果云；远端 10/4 两提交并入 | ✅ 2026-10-06 `8a9dce5` |
+| **凑卡匹配+战绩本+截屏识别+版本调整** | 五项游戏结合改造（§5.24），回退点 tag `v1.5.72-baseline`；阵容码逆向结论=服务端 ID 不可解码 | ✅ 2026-10-06 v1.5.73 |
 
 ---
 
@@ -677,6 +695,15 @@ C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同
 
 # 阵容编辑回归
 node scripts/test-wxq-edit.js
+
+# 凑卡匹配 / 个人战绩回归（Node，无需浏览器）
+node scripts/test-wxq-match.js
+
+# 页面冒烟（puppeteer-core 在 %TEMP%\wxq-smoke，Chrome 在 C:/Program Files/Google/Chrome）
+node scripts/test-wxq-smoke.cjs
+
+# 版本调整同步（版本更新日：把官方公告存成 md 丢进 scripts/patch-notes/ 再跑；或 --id <newsid>）
+node scripts/sync-wxq-patch.js --file scripts/patch-notes/2026-09-24-v1.3.1.md
 
 # 打成单文件写到坚果云 王者万象棋助手/王者助手.html
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/王者万象棋助手/scripts/publish-wxq-helper.js

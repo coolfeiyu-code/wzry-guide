@@ -11,7 +11,7 @@
   var COLS = 7;
   var ROWS = 4;
   var PHASE = ['前期', '中期', '后期'];
-  var js = { filter: 'all', sort: 'use', page: 1, lord: '', fac: '', openKey: '', view: '' };
+  var js = { filter: 'all', sort: 'use', page: 1, lord: '', fac: '', openKey: '', view: '', fromView: '' };
   // 流派归属：取阵容里人数最多的官方阵营（WXQ_HEROES.faction，全部来自官方，非自造）
   var FACMAP = null;
   function facOf(L) {
@@ -163,8 +163,71 @@
     return null;
   }
 
+  /* ---------- 版本调整标记（数据：wanxiangqi-patch.js，公告「调整前/调整后」） ---------- */
+  var patchIdx = null;
+  function patchIndex() {
+    if (patchIdx) return patchIdx;
+    patchIdx = { 英雄: {}, 装备: {}, 天赋: {}, 棋手: {} };
+    var P = global.WXQ_PATCH || { changes: [] };
+    (P.changes || []).forEach(function (c) {
+      var bucket = patchIdx[c.kind];
+      if (!bucket) return;
+      // 棋手条目是「姜导·封神一瞬」这种全名，阵容里挂的是短名
+      var k = c.kind === '棋手' ? String(c.name).split('·')[0] : c.name;
+      (bucket[k] || (bucket[k] = [])).push(c);
+    });
+    return patchIdx;
+  }
+  function patchAffecting(L) {
+    var idx = patchIndex();
+    var out = [], seen = {};
+    function push(c) {
+      if (!c) return;
+      var id = c.name + '|' + c.item;
+      if (seen[id]) return;
+      seen[id] = 1;
+      out.push(c);
+    }
+    (L.heroes || []).forEach(function (h) {
+      if (!h || !h.name) return;
+      (idx['英雄'][h.name] || []).forEach(push);
+      (h.eqs || []).forEach(function (eq) { (idx['装备'][eq] || []).forEach(push); });
+    });
+    (L.talents || []).forEach(function (t) { (idx['天赋'][t] || []).forEach(push); });
+    (L.lords || []).forEach(function (l) { (idx['棋手'][l] || []).forEach(push); });
+    return out;
+  }
+  function patchArrow(dir) {
+    if (dir === 'up') return '<i class="pc-up" title="数值推断为加强">⬆</i>';
+    if (dir === 'down') return '<i class="pc-down" title="数值推断为削弱">⬇</i>';
+    if (dir === 'new') return '<i class="pc-new" title="新增">新</i>';
+    if (dir === 'mix') return '<i class="pc-mix" title="有增有减">↕</i>';
+    return '<i class="pc-none" title="方向不明确">·</i>';
+  }
+  function patchDetailHtml(L) {
+    var list = patchAffecting(L);
+    if (!list.length) return '';
+    var m = (global.WXQ_PATCH && global.WXQ_PATCH.meta) || {};
+    var items = list.map(function (c) {
+      var head = patchArrow(c.dir) + ' <b>' + esc(c.name) + '</b>' + (c.item ? ' · ' + esc(c.item) : '');
+      var body = (c.before && c.after)
+        ? '<span class="pc-before">' + esc(c.before) + '</span><span class="pc-arrow">→</span><span class="pc-after">' + esc(c.after) + '</span>'
+        : esc(c.note || '官方公告有调整，本地未记录前后文。');
+      return '<div class="pc-item">' + head + '<div class="pc-body">' + body + '</div></div>';
+    }).join('');
+    return '<div class="pc-list">' + items + '</div>'
+      + '<p class="pc-src">来源：' + esc(m.source || '官方更新公告')
+      + (m.capturedAt ? '（' + esc(m.capturedAt) + ' 整理）' : '')
+      + '。方向箭头由数值对比自动推断，仅供参考，文案以公告原文为准。</p>';
+  }
+  function patchTag(L) {
+    if (!global.WXQ_PATCH || !WXQ_PATCH.changes || !WXQ_PATCH.changes.length) return '';
+    return patchAffecting(L).length ? '<span class="jtag patch">调整</span>' : '';
+  }
+
   function hay(L) {
-    var parts = [L.name, L.author, L.brief, L.source === 'datawxq' ? '7日数据 datawxq' : '', (L.lords || []).join(' '), (L.heroes || []).map(function (h) { return h.name; }).join(' ')];
+    // key 也进索引：用户可以直接把游戏里复制来的阵容码贴进搜索框定位阵容
+    var parts = [L.name, L.author, L.brief, String(L.key), L.source === 'datawxq' ? '7日数据 datawxq' : '', (L.lords || []).join(' '), (L.heroes || []).map(function (h) { return h.name; }).join(' ')];
     return parts.join(' ').toLowerCase();
   }
 
@@ -252,6 +315,7 @@
       + (L.badge === '万象棋大神' ? '<span class="jtag god">大神</span>' : '')
       + (L.source === 'datawxq' ? '<span class="jtag d7">7日</span>' : '')
       + (on ? '<span class="jtag using">在用</span>' : '')
+      + patchTag(L)
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L) ? '<span class="jtag exp">讲解</span>' : '');
     var sc = parseFloat(L.score) || 0;
     var st = statsLine(L);
@@ -533,6 +597,8 @@
       + '</div></div>'
       + ((L.ops && L.ops.length) ? '<section class="jbox"><h3>运营思路 <span>前 / 中 / 后期上阵</span></h3>' + opsHtml(L) + '</section>' : '')
       + ((L.talents && L.talents.length) ? '<section class="jbox"><h3>关键天赋</h3>' + (d7 && !L._edited ? d7TalentsHtml(L) : talentsHtml(L)) + '</section>' : '')
+      // 版本调整：官方平衡性公告涉及这套的（数据 wanxiangqi-patch.js）
+      + (global.WXQ_PATCH && patchAffecting(L).length ? '<section class="jbox patchbox"><h3>版本调整 <span>官方平衡性更新涉及这套</span></h3>' + patchDetailHtml(L) + '</section>' : '')
       // 7 日数据卡专属：接口带回来的装备组合、变体阵容、多套参考站位
       + (d7 && (L.d7.builds || []).length ? '<section class="jbox"><h3>装备组合 <span>按前三率排序，只列场次≥5 的搭配</span></h3>' + d7BuildsHtml(L) + '</section>' : '')
       + (d7 && (L.d7.variants || []).length ? '<section class="jbox"><h3>同类变体 <span>同一套英雄，换了人之后的数据</span></h3>' + d7VariantsHtml(L) + '</section>' : '')
@@ -549,12 +615,23 @@
     } catch (e) {}
   }
 
-  function open(key, fromRoute) {
+  function open(key, fromRoute, fromView) {
     var L = find(key);
     if (!L) return;
     js.openKey = String(L.key);
     js.view = '';
+    js.fromView = fromView || '';
     if (!fromRoute) setHash('#j-' + encodeURIComponent(L.key), true);
+    var grid = document.getElementById('grid');
+    if (grid) render(grid, ui().state || { q: '' });
+  }
+
+  // 全页视图：凑卡匹配 / 个人战绩。从详情返回时经 fromView 回到原视图。
+  function openView(view, fromRoute) {
+    js.openKey = '';
+    js.view = view;
+    js.fromView = '';
+    if (!fromRoute) setHash('#' + view, true);
     var grid = document.getElementById('grid');
     if (grid) render(grid, ui().state || { q: '' });
   }
@@ -585,11 +662,31 @@
     if (grid) render(grid, st || { q: '', type: 'jobs' });
   }
 
+  // 从凑卡/战绩全页视图回到列表（它们没有 openKey，不能走 closeDetail）
+  function closeView(fromRoute) {
+    js.openKey = '';
+    js.view = '';
+    js.fromView = '';
+    if (!fromRoute) setHash('#j', true);
+    var grid = document.getElementById('grid');
+    if (grid) render(grid, ui().state || { q: '' });
+  }
+
   function closeDetail(fromRoute) {
     if (!js.openKey) return;
     js.openKey = '';
-    js.view = '';
-    if (!fromRoute) setHash('#j', true);
+    var back = js.fromView;
+    js.fromView = '';
+    if (back === 'match' && global.WXQ_MATCH) {
+      js.view = 'match';
+      if (!fromRoute) setHash('#match', true);
+    } else if (back === 'records' && global.WXQ_RECORD) {
+      js.view = 'records';
+      if (!fromRoute) setHash('#records', true);
+    } else {
+      js.view = '';
+      if (!fromRoute) setHash('#j', true);
+    }
     var grid = document.getElementById('grid');
     if (grid) render(grid, ui().state || { q: '' });
   }
@@ -637,6 +734,25 @@
   function render(grid, state) {
     var qEl = document.getElementById('q');
     var countEl = document.getElementById('count');
+    // 全页视图：凑卡匹配 / 个人战绩（不需要先点开某套阵容）
+    if (js.view === 'match' && global.WXQ_MATCH) {
+      if (qEl) qEl.style.display = 'none';
+      if (countEl) countEl.textContent = '凑卡匹配';
+      grid.className = 'jobs-root';
+      grid.style.gridTemplateColumns = '';
+      grid.innerHTML = global.WXQ_MATCH.pageHtml();
+      global.WXQ_MATCH.bind(grid);
+      return;
+    }
+    if (js.view === 'records' && global.WXQ_RECORD) {
+      if (qEl) qEl.style.display = 'none';
+      if (countEl) countEl.textContent = '个人战绩';
+      grid.className = 'jobs-root';
+      grid.style.gridTemplateColumns = '';
+      grid.innerHTML = global.WXQ_RECORD.pageHtml();
+      global.WXQ_RECORD.bind(grid);
+      return;
+    }
     if (js.openKey) {
       var L = find(js.openKey);
       if (qEl) qEl.style.display = 'none';
@@ -694,6 +810,8 @@
       + '<div class="jbar-row">' + fbtn('all', '全部') + fbtn('official', '官方') + fbtn('hot', '热门') + fbtn('god', '大神') + fbtn('beg', '新手') + fbtn('d7', '7日数据')
       + (phone ? '' : fbtn('using', usingN ? ('在用 · ' + usingN) : '在用'))
       + (phone || !usingN ? '' : '<button type="button" class="jchip loud" data-hud-open="">对局浮窗</button>')
+      + '<button type="button" class="jchip loud" data-job-match>凑卡匹配</button>'
+      + '<button type="button" class="jchip" data-job-records>个人战绩</button>'
       + '</div>'
       + '<div class="jbar-row">' + sbtn('use', '使用量') + sbtn('score', '评分') + sbtn('top3', '前三率') + sbtn('first', '登顶率') + sbtn('new', '时间') + lordSel + '</div>'
       + '<div class="jbar-row">' + facbtn('') + FAC.map(facbtn).join('') + '</div>'
@@ -718,6 +836,10 @@
 
   function onGridClick(e) {
     var t = e.target;
+    var mtBtn = t.closest && t.closest('[data-job-match]');
+    if (mtBtn) { openView('match'); return 'open'; }
+    var rcBtn = t.closest && t.closest('[data-job-records]');
+    if (rcBtn) { openView('records'); return 'open'; }
     var edRoot = t.closest && t.closest('[data-ed-root]');
     if (edRoot && global.WXQ_EDIT && WXQ_EDIT.onClick) {
       var er = WXQ_EDIT.onClick(e);
@@ -772,8 +894,10 @@
   global.WXQ_JOBS_UI = {
     render: render,
     open: open,
+    openView: openView,
     openExplain: openExplain,
     closeDetail: closeDetail,
+    closeView: closeView,
     onGridClick: onGridClick,
     onModalClick: onModalClick,
     onLordChange: onLordChange,

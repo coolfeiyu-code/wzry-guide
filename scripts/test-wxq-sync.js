@@ -213,6 +213,31 @@ function cleanup() {
   check('并发各改一套都留着', !!(r.cfg.edits.items.pA && r.cfg.edits.items.pB), JSON.stringify(Object.keys(r.cfg.edits.items)));
   check('并发没有弄丢 e1', r.cfg.edits.items.e1 && r.cfg.edits.items.e1.name === '甲改');
 
+  // 9. 个人战绩：追加并集 + 删除墓碑穿透（mergeRecords）
+  console.log('\n【9】个人战绩');
+  r = await post({ v: 1, records: { list: [
+    { id: 'r1', at: 100, key: 'k1', name: '甲', rank: 1 },
+    { id: 'r2', at: 110, key: 'k1', name: '甲', rank: 4 }
+  ], del: {} } });
+  check('两笔都进云端', r.cfg.records.list.length === 2, JSON.stringify(r.cfg.records));
+  // B 机只带了自己的一笔 → 并集，不能把 A 机的盖掉
+  r = await post({ v: 1, records: { list: [{ id: 'r3', at: 120, key: 'k2', name: '乙', rank: 8 }], del: {} } });
+  check('B 机写入后三笔都在', r.cfg.records.list.length === 3, JSON.stringify(r.cfg.records.list.map((x) => x.id)));
+  // A 机删掉 r2 → 墓碑，r2 从 list 消失但 r1/r3 不动
+  r = await post({ v: 1, records: { list: [], del: { r2: 999 } } });
+  check('删除穿透', r.cfg.records.list.length === 2 && !r.cfg.records.list.some((x) => x.id === 'r2'), JSON.stringify(r.cfg.records.list.map((x) => x.id)));
+  check('墓碑留在云端', r.cfg.records.del && r.cfg.records.del.r2 === 999, JSON.stringify(r.cfg.records.del));
+  // 不带 records 的写入（只同步主题）绝不能清战绩
+  r = await post({ v: 1, theme: 'dark' });
+  check('不带 records 的写入不清战绩', r.cfg.records.list.length === 2, JSON.stringify(r.cfg.records));
+  // 并发各记一笔
+  await Promise.all([
+    post({ v: 1, records: { list: [{ id: 'cA', at: 1, name: 'A', rank: 2 }], del: {} } }),
+    post({ v: 1, records: { list: [{ id: 'cB', at: 1, name: 'B', rank: 3 }], del: {} } })
+  ]);
+  r = await get();
+  check('并发各记一笔都留着', r.cfg.records.list.some((x) => x.id === 'cA') && r.cfg.records.list.some((x) => x.id === 'cB'), JSON.stringify(r.cfg.records.list.map((x) => x.id)));
+
   console.log('\n══ 结果: ' + pass + ' 通过 / ' + fail + ' 失败 ══');
   cleanup();
   process.exit(fail ? 1 : 0);
