@@ -58,6 +58,7 @@
 ├── wanxiangqi-lineups.js   官方阵容推荐库（WXQ_JOBS，scripts/sync-wxq-lineups.js 生成，**勿手改**）
 ├── wanxiangqi-stats.js     近7日数据阵容（WXQ_STATS，scripts/sync-wxq-stats.js 生成，**勿手改**）。overlay 叠到官方套，list 是对不上的无码卡
 ├── wanxiangqi-jobs.js      作业 tab 渲染（只画，不含规则）
+├── wanxiangqi-edit.js      阵容编辑。本地覆盖层，可改棋手/站位/装备/运营并保存。不改官方阵容文件
 ├── wanxiangqi-rules.js     连锁 B 层：WXQ_RULES（规则+手补 MANUAL）
 ├── wanxiangqi-engine.js    连锁 C 层：WXQ_ENGINE.simulate(board,rules,cards) 纯函数 + selfTest(13 断言)
 ├── wanxiangqi-chain.js     连锁 D 层：WXQ_CHAIN 只渲染，经 __wxqUI 桥复用弹窗/主题
@@ -512,6 +513,16 @@ WXQ_GUIDE = {
     3. A 再推新增一套 → 云端正常并入新套、墓碑保留、幽灵仍去 ✅
 - **教训（已进永久记忆 #21）**：**同步链路的每一个方向都要单独验证**。`bridgeWrite` → 云端 合并 这半段是对的，不代表 `decideUsing` → 本机回拉 这半段就也对。ack 回写、拉取合并、本地启动清理 —— 每一段都可能独立丢字段，必须一段一段测。
 
+### 5.23 每套阵容可编辑并保存（2026-10-03，WXQ_META 1.5.71）
+
+- 详情页「编辑」。能改阵容名、玩法介绍、站位分析、装备分析、天赋说明、效果说明、棋手、站位、英雄、每人最多 3 件装备、觉醒、王牌/坦克核心/功能核心、前中后期运营（回合、正文、主要上阵、备选）、天赋、效果牌。
+- **「已改」标在阵容名旁边**（详情标题、列表卡片、讲解标题、浮窗名）。不要只写在副标题末尾或作者行里，那一行又长又灰，保存后回到详情时等于没看见。
+- 棋手、英雄、装备、天赋、效果都是下拉，可搜索再添加。站位是 7×4：先点英雄，再点空格移动。上为前排。
+- **不改** `wanxiangqi-lineups.js`。修改写在 `localStorage` `wxq-lineup-edits-v1`，打开时盖在官方数据上。卡片标「已改」。保存后这套以修改为准，官方库以后更新不会盖掉；「恢复官方」写 `cleared` 墓碑，连点两次才执行。
+- 改过棋手之后，卡片、详情、浮窗、讲解都用这份名单，不再被近 7 日统计顶掉。没保存过的套，编辑页先填页面上正在显示的棋手（经常是近 7 日数据，不是官方原文）。
+- 同步：桥 `mergeEdits` 按**每一套自己的 rev** 合并，rev 相同才看 `at`。慢时钟不能整组盖掉别人改过的套。没带到的套保留。墓碑要留在云端，恢复官方才能穿透。页面 `decideEdits` 同一规则，ack 也走它，避免回写时把刚保存的更高 rev 盖掉。`node scripts/test-wxq-sync.js` 第 8 组覆盖这些。
+- 编辑逻辑：`node scripts/test-wxq-edit.js`（18 项）。`publish-wxq-helper.js` 的 `SCRIPTS` 在 `jobs.js` 之前加上 `wanxiangqi-edit.js`。
+
 ## 6. 已完成工作清单（时间线）
 
 | 阶段 | 内容 | 状态 |
@@ -539,6 +550,7 @@ WXQ_GUIDE = {
 | **迁库** | 整个项目从桌面迁到 `D:\AI 云同步\王者万象棋助手`（Syncthing 同步目录，多机/多 AI 共用）；唯一写死盘符的 `sync-wxq-cards.js` 改用 `__dirname` | ✅ 2026-09-29 `2dc8956` |
 | **已下架幽灵删不掉** | 修 `decideUsing()` 回拉丢 `del` 墓碑 + `load()` 不加过滤幽灵；真实桥端到端三关全过 | ✅ 2026-10-02 |
 | **目录改名** | `D:\AI 云同步\wzry-guide` → `D:\AI 云同步\王者万象棋助手`；全库指向（task.md / SKILL.md / MEMORY.md / 永久记忆 / 项目记忆 / 脚本注释）同步更新；清掉 `_upgrade/` 2.05MB 旧备份 | ✅ 2026-10-03 |
+| **阵容编辑** | 每套可改棋手/站位/装备/运营并保存。本地覆盖层，不改官方文件。同步按套 rev 合并 | ✅ 2026-10-03 v1.5.71 |
 | 官方阵容库更新 405 套 | sync-wxq-lineups.js 重拉（原始 460 → 入库 405，丢 55：英雄不足4个 7 / 无任何入选理由 48）+ datawxq overlay 385 | ✅ 2026-10-04 `ffa1bf7` |
 | 官方阵容库刷新 386 套 + 数据卡 18 | 官方 388→386（key 层 +253/−255，多为同套换新码）+ overlay 368→371、无码独立卡 3→18（样本 391,266 场）；发布坚果云；远端 10/4 两提交并入 | ✅ 2026-10-06 `8a9dce5` |
 
@@ -588,7 +600,7 @@ WXQ_GUIDE = {
 2. **Schema 校验**：遍历 lineups/combos 确认必需字段齐全、ops 长度 3。
 3. **语法**：`node --check wanxiangqi-guide.js`（SYNTAX_OK）。
 4. **Puppeteer 冒烟**（改 UI/弹窗/移动端必跑）：Chrome `C:/Program Files/Google/Chrome/Application/chrome.exe`，`headless:'new'`；本地 server **必须 `path.resolve(ROOT,'.'+p)`**（`path.join` 在 Windows 出反斜杠 → 全 404）。套件在 `C:/Users/Zhuqi/AppData/Local/Temp/`：`wxq_mobile_test.cjs`(24条)/`wxq_guide_test.cjs`/`wxq_text_test.cjs`(逐字比对)/`wxq_engine_test.cjs`(Node自检)/`wxq_chain_test.cjs`(50条)/`wxq_live_smoke.cjs`(线上16条)。必查：零 console/pageerror、关键 DOM 存在、亮/暗截图、深链。`openModal` 在 IIFE 内非全局 → 模拟点击触发；headless 自带 `navigator.share` 异常 → `Object.defineProperty(navigator,'share',{value:undefined})` 走复制分支。
-5. **同步相关改动必跑**：`node scripts/test-wxq-sync.js`（多机同步回归，24 断言）。改了 `mergeUsing` / `decideUsing` / `withLock` / `wanxiangqi-cloud.js` 就必须跑，它测的是「不丢数据」这个不变量。
+5. **同步相关改动必跑**：`node scripts/test-wxq-sync.js`（多机同步回归）。改了 `mergeUsing` / `mergeEdits` / `decideUsing` / `decideEdits` / `withLock` / `wanxiangqi-cloud.js` 就必须跑，它测的是「不丢数据」这个不变量。改阵容编辑再加 `node scripts/test-wxq-edit.js`。
 6. **点击类测试两个必防坑**：① 页面 `scroll-behavior:smooth` → 先注入 `*{scroll-behavior:auto!important}`；② 元素可能被吸顶栏遮挡 → 点前 `document.elementFromPoint` 确认命中。移动端专项断言：返回键可见 + `getBoundingClientRect` ≥44px、`history.length` 开弹窗后 +1、`history.back()` 后仍原页面、嵌套弹窗返回只退一层、深链可开且返回不退出、桌面端仍为右上角 `×`。测完 `taskkill.exe /PID <pid> /F` 关残留 server。
 
 ---
@@ -662,6 +674,9 @@ C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同
 
 # 并入官方英雄/装备卡面（技能、质变、觉醒、合成）
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/王者万象棋助手/scripts/sync-wxq-cards.js
+
+# 阵容编辑回归
+node scripts/test-wxq-edit.js
 
 # 打成单文件写到坚果云 王者万象棋助手/王者助手.html
 C:/Users/Zhuqi/.workbuddy/binaries/node/versions/22.22.2-3/node.exe D:/AI 云同步/王者万象棋助手/scripts/publish-wxq-helper.js

@@ -597,6 +597,7 @@
   // 棋手名单以近7日数据为准（bestLords 已按前三率排好）；
   // 没有数据才退回官方库原文的 lords。用户要求「数据第一位」。
   function hudLordNames(L) {
+    if (L && L._editLords) return (L.lords || []).slice();
     var adapt = (L.bestLords || []).length ? L.bestLords
       : ((L.d7 && L.d7.lords) || []);
     if (adapt.length) return adapt.map(function (r) { return r.name; });
@@ -638,7 +639,7 @@
       + '<div class="hcodewrap"></div>'
       + switcherHtml(L.key)
       + '<div class="hbody">'
-      + '<div class="hside"><div class="hname">' + esc(L.name) + '</div>'
+      + '<div class="hside"><div class="hname">' + esc(L.name) + (L._edited ? ' <span class="jtag edit">已改</span>' : '') + '</div>'
       + ((L.lords || []).length || (L.bestLords || []).length ? '<div class="hlords">' + lordChips(hudLordNames(L)) + '</div>' : '')
       + (L.nocode
         ? '<p class="hsub">第三方数据，无可导入阵容码</p>'

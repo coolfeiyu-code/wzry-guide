@@ -199,12 +199,42 @@ function mergeUsing(diskUsing, incUsing) {
   return out;
 }
 
+// 阵容编辑按套合并。rev 大的那份赢；rev 相同才用 at 兜底。
+// cleared 墓碑也留着，这样「恢复官方」能穿透到别的电脑。
+function mergeEdits(disk, incoming) {
+  if (!disk && !incoming) return null;
+  const dItems = (disk && disk.items) || {};
+  const iItems = (incoming && incoming.items) || {};
+  const seen = {};
+  const items = {};
+  function take(k) {
+    if (!k || seen[k]) return;
+    seen[k] = 1;
+    const a = dItems[k];
+    const b = iItems[k];
+    let pick = a || b;
+    if (a && b) {
+      const ar = Number(a.rev || 0);
+      const br = Number(b.rev || 0);
+      if (br > ar) pick = b;
+      else if (ar > br) pick = a;
+      else pick = Number(b.at || 0) >= Number(a.at || 0) ? b : a;
+    }
+    if (pick) items[k] = pick;
+  }
+  Object.keys(dItems).forEach(take);
+  Object.keys(iItems).forEach(take);
+  return { items: items };
+}
+
 function mergeCfg(disk, incoming) {
   const out = Object.assign({}, disk || {}, incoming || {});
   out.v = 1;
   out.updatedAt = new Date().toISOString();
   const merged = mergeUsing((disk && disk.using) || null, (incoming && incoming.using) || null);
   if (merged) out.using = merged;
+  const edits = mergeEdits(disk && disk.edits, incoming && incoming.edits);
+  if (edits) out.edits = edits;
   if (disk && disk.hudSize && incoming && incoming.hudSize) {
     out.hudSize = Object.assign({}, disk.hudSize, incoming.hudSize);
   }

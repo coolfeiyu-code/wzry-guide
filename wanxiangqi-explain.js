@@ -270,7 +270,7 @@
       + '<button type="button" class="jback" data-job-explain-back="' + esc(L.key) + '" title="返回阵容" aria-label="返回阵容">'
       + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4 7.5 12l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
       + '<header class="jdoc-head"><div class="jdoc-tit">'
-      + '<h1>讲解 · ' + esc(L.name) + '</h1>'
+      + '<h1>讲解 · ' + esc(L.name) + (L._edited ? ' <span class="jtag edit">已改</span>' : '') + '</h1>'
       + '<div class="jdoc-sub">大卡、思路、棋盘、推荐棋手</div>'
       + '</div></header>';
     // 引擎没加载 = 打包脚本 SCRIPTS 清单漏了 wanxiangqi-explain2.js（2026-09-28 踩过）。

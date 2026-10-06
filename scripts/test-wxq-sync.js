@@ -187,6 +187,32 @@ function cleanup() {
   check('无残留 .tmp', !files.some((f) => /\.tmp$/.test(f)), files.join(','));
   check('无残留 .lock', !fs.existsSync(path.join(CFG_DIR, '王者助手.json.lock')));
 
+  // 8. 阵容编辑按套合并，慢时钟 / 没带到的套都不能整组覆盖
+  console.log('\n【8】阵容编辑');
+  r = await post({ v: 1, edits: { items: {
+    e1: { rev: 1, at: 100, name: '甲' },
+    e2: { rev: 1, at: 100, name: '乙' }
+  } } });
+  check('e1 写入', r.cfg.edits && r.cfg.edits.items.e1 && r.cfg.edits.items.e1.name === '甲');
+  check('e2 写入', r.cfg.edits && r.cfg.edits.items.e2 && r.cfg.edits.items.e2.name === '乙');
+  r = await post({ v: 1, edits: { items: { e1: { rev: 2, at: 50, name: '甲改' } } } });
+  check('高 rev 覆盖 e1，哪怕 at 更早', r.cfg.edits.items.e1.name === '甲改', r.cfg.edits.items.e1.name);
+  check('这次没带到的 e2 还在', r.cfg.edits.items.e2 && r.cfg.edits.items.e2.name === '乙');
+  r = await post({ v: 1, edits: { items: { e1: { rev: 1, at: 99999, name: '旧的' } } } });
+  check('低 rev 不能盖掉高 rev', r.cfg.edits.items.e1.name === '甲改', r.cfg.edits.items.e1.name);
+  r = await post({ v: 1, edits: { items: { e2: { rev: 2, at: 200, cleared: true } } } });
+  check('恢复官方的墓碑留在云端', !!(r.cfg.edits.items.e2 && r.cfg.edits.items.e2.cleared));
+  check('墓碑没有把 e1 清掉', r.cfg.edits.items.e1.name === '甲改');
+  r = await post({ v: 1, theme: 'dark' });
+  check('不带 edits 的写入不清编辑', r.cfg.edits && r.cfg.edits.items.e1 && r.cfg.edits.items.e1.name === '甲改');
+  await Promise.all([
+    post({ v: 1, edits: { items: { pA: { rev: 1, at: 1, name: 'A' } } } }),
+    post({ v: 1, edits: { items: { pB: { rev: 1, at: 1, name: 'B' } } } })
+  ]);
+  r = await get();
+  check('并发各改一套都留着', !!(r.cfg.edits.items.pA && r.cfg.edits.items.pB), JSON.stringify(Object.keys(r.cfg.edits.items)));
+  check('并发没有弄丢 e1', r.cfg.edits.items.e1 && r.cfg.edits.items.e1.name === '甲改');
+
   console.log('\n══ 结果: ' + pass + ' 通过 / ' + fail + ' 失败 ══');
   cleanup();
   process.exit(fail ? 1 : 0);

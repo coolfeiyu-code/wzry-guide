@@ -455,7 +455,7 @@
     }
     var third = !!(L.nocode || L.source === 'datawxq');
     var cap = third ? '一条登顶对局的站位' : '作者摆的站位';
-    var lord = (L.lordGuide && L.lordGuide[0] && L.lordGuide[0].name) || (L.lords && L.lords[0]) || '';
+    var lord = (L._editLords && L.lords && L.lords[0]) || (L.lordGuide && L.lordGuide[0] && L.lordGuide[0].name) || (L.lords && L.lords[0]) || '';
     var foot = lord
       ? '<button type="button" class="gx-lord-pin" data-job-lord-go="' + esc(lord) + '"><img src="' + lordImg(lord) + '" alt="' + esc(lord) + '"><span>' + esc(lord) + '</span></button>'
       : '';
@@ -463,6 +463,14 @@
   }
 
   function lordRows(L) {
+    if (L && L._editLords) {
+      var editedGuide = L.lordGuide || [];
+      var editedBy = Object.create(null);
+      editedGuide.forEach(function (g) { if (g && g.name) editedBy[g.name] = g; });
+      return (L.lords || []).slice(0, 3).map(function (n) {
+        return { name: n, guide: editedBy[n] || null, stat: null, player: pools().lord[n] || null };
+      });
+    }
     var guide = L.lordGuide || [];
     var byName = Object.create(null);
     guide.forEach(function (g) { if (g && g.name) byName[g.name] = g; });

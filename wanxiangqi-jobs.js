@@ -37,15 +37,22 @@
     (stats.overlay || []).forEach(function (r) { ov[String(r.officialKey)] = r; });
     var list = (jobs.list || []).map(function (L) {
       var r = ov[String(L.key)];
-      if (!r) return L;
-      var o = {};
-      for (var k in L) o[k] = L[k];
-      if (r.stats) o.stats7d = r.stats;
-      // 棋手适配：来自近7日详情里各棋手自己的前三/登顶/场次，不是推测
-      if (r.bestLords && r.bestLords.length) o.bestLords = r.bestLords;
+      var o = L;
+      if (r) {
+        o = {};
+        for (var k in L) o[k] = L[k];
+        if (r.stats) o.stats7d = r.stats;
+        // 棋手适配：来自近7日详情里各棋手自己的前三/登顶/场次，不是推测
+        if (r.bestLords && r.bestLords.length) o.bestLords = r.bestLords;
+      }
+      if (global.WXQ_EDIT && WXQ_EDIT.apply) o = WXQ_EDIT.apply(o);
       return o;
     });
-    (stats.list || []).forEach(function (L) { list.push(L); });
+    (stats.list || []).forEach(function (L) {
+      var o = L;
+      if (global.WXQ_EDIT && WXQ_EDIT.apply) o = WXQ_EDIT.apply(o);
+      list.push(o);
+    });
     jobs._wxqView = { meta: jobs.meta, list: list };
     return jobs._wxqView;
   }
@@ -253,7 +260,7 @@
     return '<article class="jcard" data-job="' + esc(L.key) + '">'
       + (phoneView() ? '' : '<button type="button" class="jstar' + (on ? ' on' : '') + '" data-job-using="' + esc(L.key) + '" title="' + (on ? '取消在用' : '收藏为在用') + '" aria-label="' + (on ? '取消在用' : '收藏为在用') + '">★</button>')
       + '<div class="jcard-avs">' + (faces || '') + '</div>'
-      + '<div class="jcard-nm">' + esc(L.name) + '</div>'
+      + '<div class="jcard-nm">' + esc(L.name) + (L._edited ? ' <span class="jtag edit">已改</span>' : '') + '</div>'
       + (lords ? '<div class="jcard-lords">' + lords + '</div>' : '')
       + '<div class="jcard-au">' + esc(L.author || '匿名')
       + (tag ? ' ' + tag : '')
@@ -266,6 +273,7 @@
   // 卡片上直接标出棋手（各自配色）：有近7日适配数据就以数据为准并用数据的顺序，
   // 没有再退回官方库原文的 lords。用户要求「数据第一位」。
   function cardLordNames(L) {
+    if (L && L._editLords) return (L.lords || []).slice(0, 3);
     var adapt = (L.bestLords || []).length ? L.bestLords
       : ((L.d7 && L.d7.lords) || []);
     if (adapt.length) return adapt.slice(0, 3).map(function (r) { return r.name; });
@@ -295,8 +303,8 @@
   // 棋手块：有近7日适配数据就**以数据为准**（名单、顺序、每个棋手自己的成绩都用
   // 统计里的），官方库原文里的 lords 只在没有数据时兜底。用户要求「数据第一位」。
   function lordsHtml(L) {
-    var adapt = (L.bestLords || []).length ? L.bestLords
-      : ((L.d7 && L.d7.lords) || []).filter(function (r) { return (r.app || 0) >= 0.08; });
+    var adapt = (L && L._editLords) ? [] : ((L.bestLords || []).length ? L.bestLords
+      : ((L.d7 && L.d7.lords) || []).filter(function (r) { return (r.app || 0) >= 0.08; }));
     var names, stat = {};
     if (adapt.length) {
       adapt.forEach(function (r) { stat[r.name] = r; });
@@ -488,6 +496,7 @@
         + ' · ' + wan(L.useNum) + ' 使用'
         + (sc > 0 ? ' · ' + esc(L.score) + ' 分' : '')
         + (st ? ' · ' + st : ''));
+    if (L._edited) sub += ' · 已修改';
     return '<article class="jdoc">'
       // 返回用图标按钮：文字版太不显眼（用户 2026-09-21 反馈）。sticky 让它
       // 在长详情里滚动时一直挂在左上角，随时能点。
@@ -496,7 +505,7 @@
       + '</button>'
       + '<header class="jdoc-head">'
       + av(cover, coverName, 'jav lg')
-      + '<div class="jdoc-tit"><h1>' + esc(L.name) + '</h1>'
+      + '<div class="jdoc-tit"><h1>' + esc(L.name) + (L._edited ? ' <span class="jtag edit">已改</span>' : '') + '</h1>'
       + '<div class="jdoc-sub">' + sub + '</div></div>'
       + '<div class="jdoc-acts">'
       + (L.nocode
@@ -508,6 +517,7 @@
       + (global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.match(L)
         ? '<button type="button" class="jbtn" data-job-explain="' + esc(L.key) + '">讲解这套</button>'
         : '')
+      + (global.WXQ_EDIT ? '<button type="button" class="jbtn" data-job-edit="' + esc(L.key) + '">编辑</button>' : '')
       + '</div>'
       + '</header>'
       + '<div class="jtri">'
@@ -516,13 +526,13 @@
       + '<section class="jbox"><h3>装备分析</h3><p>' + esc(eqTx) + '</p></section>'
       + '</div>'
       + '<div class="jtwo">'
-      + '<section class="jbox"><h3>棋手 <span>按登场率</span></h3>' + (d7 ? d7LordsHtml(L) : lordsHtml(L)) + '</section>'
+      + '<section class="jbox"><h3>棋手 <span>' + (L._editLords ? '已修改' : '按登场率') + '</span></h3>' + (d7 && !L._editLords ? d7LordsHtml(L) : lordsHtml(L)) + '</section>'
       + '<div>'
       + '<section class="jbox"><h3>阵容站位</h3>' + boardHtml(L) + '</section>'
       + '<section class="jbox" style="margin-top:12px"><h3>推荐装备</h3>' + equipsHtml(L) + '</section>'
       + '</div></div>'
       + ((L.ops && L.ops.length) ? '<section class="jbox"><h3>运营思路 <span>前 / 中 / 后期上阵</span></h3>' + opsHtml(L) + '</section>' : '')
-      + ((L.talents && L.talents.length) ? '<section class="jbox"><h3>关键天赋</h3>' + (d7 ? d7TalentsHtml(L) : talentsHtml(L)) + '</section>' : '')
+      + ((L.talents && L.talents.length) ? '<section class="jbox"><h3>关键天赋</h3>' + (d7 && !L._edited ? d7TalentsHtml(L) : talentsHtml(L)) + '</section>' : '')
       // 7 日数据卡专属：接口带回来的装备组合、变体阵容、多套参考站位
       + (d7 && (L.d7.builds || []).length ? '<section class="jbox"><h3>装备组合 <span>按前三率排序，只列场次≥5 的搭配</span></h3>' + d7BuildsHtml(L) + '</section>' : '')
       + (d7 && (L.d7.variants || []).length ? '<section class="jbox"><h3>同类变体 <span>同一套英雄，换了人之后的数据</span></h3>' + d7VariantsHtml(L) + '</section>' : '')
@@ -547,6 +557,14 @@
     if (!fromRoute) setHash('#j-' + encodeURIComponent(L.key), true);
     var grid = document.getElementById('grid');
     if (grid) render(grid, ui().state || { q: '' });
+  }
+
+  function openEdit(key) {
+    var L = find(key);
+    if (!L || !global.WXQ_EDIT || !WXQ_EDIT.begin) return;
+    js.openKey = String(L.key);
+    js.view = 'edit';
+    WXQ_EDIT.begin(L);
   }
 
   function openExplain(key, fromRoute) {
@@ -627,6 +645,11 @@
         grid.className = 'jobs-root';
         grid.style.gridTemplateColumns = '';
         if (countEl) countEl.textContent = L.name;
+        if (js.view === 'edit' && global.WXQ_EDIT && global.WXQ_EDIT.pageHtml) {
+          grid.innerHTML = global.WXQ_EDIT.pageHtml(L);
+          if (global.WXQ_EDIT.bind) global.WXQ_EDIT.bind(grid);
+          return;
+        }
         if (js.view === 'explain' && global.WXQ_EXPLAIN && global.WXQ_EXPLAIN.pageHtml) {
           grid.innerHTML = global.WXQ_EXPLAIN.pageHtml(L);
         } else {
@@ -695,6 +718,15 @@
 
   function onGridClick(e) {
     var t = e.target;
+    var edRoot = t.closest && t.closest('[data-ed-root]');
+    if (edRoot && global.WXQ_EDIT && WXQ_EDIT.onClick) {
+      var er = WXQ_EDIT.onClick(e);
+      if (er === 'rerender') return 'rerender';
+      if (er === 'detail') { js.view = ''; return 'rerender'; }
+      return 'open';
+    }
+    var editBtn = t.closest && t.closest('[data-job-edit]');
+    if (editBtn) { openEdit(editBtn.getAttribute('data-job-edit')); return 'rerender'; }
     var usingBtn = t.closest && t.closest('[data-job-using]');
     if (usingBtn && global.WXQ_HUD) {
       global.WXQ_HUD.toggle(usingBtn.getAttribute('data-job-using'));

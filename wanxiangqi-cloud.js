@@ -20,6 +20,7 @@
   var BRIDGE_PORT = 17871;
   var KEYS = {
     using: 'wxq-using-v1',
+    edits: 'wxq-lineup-edits-v1',
     hudSize: 'wxq-hud-size',
     hudPos: 'wxq-hud-pos',
     hudDb: 'wxq-hud-db',
@@ -72,7 +73,50 @@
     if (db != null) o.hudDb = db;
     var theme = lsGet(KEYS.theme);
     if (theme) o.theme = theme;
+    var edits = parseJson(lsGet(KEYS.edits));
+    if (edits && edits.items && Object.keys(edits.items).length) o.edits = edits;
     return o;
+  }
+  // 阵容编辑按套合并：rev 大的赢，rev 相同才看 at。
+  // 不能整组按时间戳覆盖，否则慢时钟的电脑会把另一台改过的套清掉。
+  function decideEdits(cfgEdits) {
+    if (!cfgEdits || !cfgEdits.items || typeof cfgEdits.items !== 'object') return 'none';
+    var local = parseJson(lsGet(KEYS.edits)) || { items: {} };
+    var localItems = (local.items && typeof local.items === 'object') ? local.items : {};
+    var cloudItems = cfgEdits.items;
+    var seen = {};
+    var items = {};
+    var localNewer = false;
+    function consider(k) {
+      if (!k || seen[k]) return;
+      seen[k] = 1;
+      var a = localItems[k];
+      var b = cloudItems[k];
+      var pick = a || b;
+      if (a && b) {
+        var ar = Number(a.rev || 0);
+        var br = Number(b.rev || 0);
+        if (br > ar) pick = b;
+        else if (ar > br) { pick = a; localNewer = true; }
+        else pick = Number(b.at || 0) >= Number(a.at || 0) ? b : a;
+      } else if (a && !b) {
+        pick = a;
+        localNewer = true;
+      }
+      if (pick) items[k] = pick;
+      if (b && (!a || Number(b.rev || 0) > Number(a.rev || 0)) && global.WXQ_EDIT && WXQ_EDIT.noteRemote) {
+        WXQ_EDIT.noteRemote(k, b);
+      }
+    }
+    Object.keys(localItems).forEach(consider);
+    Object.keys(cloudItems).forEach(consider);
+    var same = JSON.stringify(items) === JSON.stringify(localItems);
+    if (!same) {
+      lsSet(KEYS.edits, JSON.stringify({ items: items }));
+      if (global.WXQ_JOBS) delete global.WXQ_JOBS._wxqView;
+    }
+    if (localNewer) return 'local_newer';
+    return same ? 'none' : 'adopt';
   }
   // 返回 'adopt'(云端新，整组覆盖本机) | 'local_newer'(本机新，需写回云端) | 'none'(云端空)
   // 返回 'adopt'(云端有本机没有的，整组收敛) | 'local_newer'(本机有云端没有的，写回) | 'none'(无变化)
@@ -155,6 +199,7 @@
     if (!cfg || typeof cfg !== 'object') return false;
     var changed = false;
     if (decideUsing(cfg.using) === 'adopt') changed = true;
+    if (decideEdits(cfg.edits) === 'adopt') changed = true;
     if (cfg.theme && lsGet(KEYS.theme) == null) { lsSet(KEYS.theme, cfg.theme); changed = true; }
     if (cfg.hudSize && lsGet(KEYS.hudSize) == null) { lsSet(KEYS.hudSize, JSON.stringify(cfg.hudSize)); changed = true; }
     if (cfg.hudPos && lsGet(KEYS.hudPos) == null) { lsSet(KEYS.hudPos, JSON.stringify(cfg.hudPos)); changed = true; }
@@ -235,13 +280,7 @@
     return bridgeCall('/api/cloud', null, 3000).then(function (j) {
       if (!j || !j.ok) return false;
       var cfg = j.cfg || { v: 1 };
-      var d = decideUsing(cfg.using);
-      if (d === 'adopt') {
-        if (global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-      } else if (d === 'local_newer') {
-        return queueWrite(); // 本机更新，把整组写回云端
-      }
-      return false;
+      return afterPull(cfg);
     }).catch(function () { return false; });
   }
   function bridgeWrite() {
@@ -271,6 +310,10 @@
         };
         if (ack.del && typeof ack.del === 'object') keep.del = ack.del;
         lsSet(KEYS.using, JSON.stringify(keep));
+      }
+      if (j.cfg && j.cfg.edits) {
+        var ed = decideEdits(j.cfg.edits);
+        if (ed === 'adopt' && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
       }
       return true;
     });
@@ -362,6 +405,14 @@
     scheduledWrite('已自动保存');
   }
 
+  function afterPull(cfg) {
+    cfg = cfg || {};
+    var d = decideUsing(cfg.using);
+    var e = decideEdits(cfg.edits);
+    if ((d === 'adopt' || e === 'adopt') && global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
+    if (d === 'local_newer' || e === 'local_newer') return queueWrite();
+    return false;
+  }
   function pull() {
     if (mode === 'bridge') return bridgePull();
     if (!dirHandle) return Promise.resolve(false);
@@ -371,13 +422,7 @@
         var m = String(txt).match(/window\.WXQ_CLOUD_BOOT\s*=\s*(\{[\s\S]*\});?/);
         var cfg = m ? parseJson(m[1]) : null;
         if (!cfg) cfg = { v: 1 };
-        var d = decideUsing(cfg.using);
-        if (d === 'adopt') {
-          if (global.WXQ_HUD && WXQ_HUD.hydrate) WXQ_HUD.hydrate();
-        } else if (d === 'local_newer') {
-          return queueWrite(); // 本机更新，把整组写回云端
-        }
-        return false;
+        return afterPull(cfg);
       }).catch(function () { return false; });
   }
 

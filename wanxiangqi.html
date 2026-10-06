@@ -585,6 +585,8 @@
   .jtag.hot,.jtag.god,.jtag.exp,.jtag.d7,.jtag.using{background:var(--accent-fill);}
   .jtag.official{background:var(--ink);}
   .jtag.beg{background:var(--celadon-soft);color:var(--ink);}
+  .jtag.edit{background:#0F766E;color:#fff;font-family:var(--font-sans);font-weight:700;letter-spacing:0;}
+  .jcard-nm .jtag.edit,.jdoc-tit h1 .jtag.edit,.hname .jtag.edit{font-size:12px;line-height:1.4;vertical-align:2px;margin-left:8px;}
   .ex-ol{margin:0;padding-left:1.2em;font-size:14px;color:var(--ink);line-height:1.8;}
   .ex-ol li{margin:6px 0;}
   .ex-ul{margin:0;padding-left:1.2em;font-size:14px;color:var(--ink);line-height:1.8;}
@@ -776,7 +778,34 @@
     .gx-lord-tx{grid-column:1 / -1;}
     .jbox{padding:12px 13px 14px;border-radius:12px;}
     .jav.lg{width:44px;height:44px;}
+    .ed .jcell .jcn{display:block;}
   }
+  .ed .jbox{margin:0 0 12px;}
+  .ed input,.ed select,.ed textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;box-sizing:border-box;}
+  .ed textarea{min-height:88px;resize:vertical;line-height:1.6;}
+  .ed-lab{display:block;font-size:12px;color:var(--ink-soft);margin:10px 0 4px;}
+  .ed-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0;}
+  .ed-row select,.ed-row input[type="search"]{flex:1 1 160px;width:auto;}
+  .ed-row select.ed-spot{flex:0 0 118px;width:118px;}
+  .ed-rounds input{width:88px;flex:none;}
+  .ed-check{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--ink);}
+  .ed-checks{display:flex;flex-wrap:wrap;gap:6px 12px;margin:4px 0 8px;}
+  .ed-hero{padding:8px 0;border-top:1px dashed var(--line);}
+  .ed-phase{padding:12px 0;border-top:1px dashed var(--line);}
+  .ed-phase:first-child{border-top:none;padding-top:0;}
+  .ed-ph{font-weight:700;font-size:14px;margin-bottom:4px;}
+  .ed-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;}
+  .ed-add input,.ed-add select{flex:1 1 140px;width:auto;}
+  .ed-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .ed-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 8px;border:1px solid var(--line);
+    border-radius:999px;background:var(--paper-2);font-size:13px;}
+  .ed-chip button{border:none;background:transparent;color:var(--ink-soft);cursor:pointer;font:inherit;font-size:16px;line-height:1;padding:0 4px;}
+  .ed-bar{position:sticky;top:64px;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    background:var(--paper);padding:8px 0 12px;}
+  .ed-note{font-size:12px;color:var(--ink-soft);line-height:1.55;flex:1 1 220px;margin:0;}
+  .ed .jcell.on{outline:2px solid var(--accent);outline-offset:1px;}
+  .ed .jcell .jcn{display:block;}
 
   /* ===== 词条悬停浮层 ===== */
   .wxq-term{cursor:pointer;border-bottom:1px dotted var(--celadon);color:var(--celadon-deep);font-weight:600;transition:background .12s;padding:0 1px;border-radius:3px;}
@@ -985,6 +1014,7 @@
 <script src="wanxiangqi-data.js"></script>
 <script src="wanxiangqi-lineups.js"></script>
 <script src="wanxiangqi-stats.js"></script>
+<script src="wanxiangqi-edit.js"></script>
 <script src="wanxiangqi-jobs.js"></script>
 <script src="wanxiangqi-rules.js"></script>
 <script src="wanxiangqi-explain2.js"></script>
